@@ -3,416 +3,493 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>AUEM — Rack Réception</title>
+<title>AUEM — Rack</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-  :root {
-    --bg: #0f0f0f;
-    --surface: #1a1a1a;
-    --border: #2a2a2a;
-    --text: #f0ede8;
-    --muted: #666;
-    --green: #22c55e;
-    --yellow: #f59e0b;
-    --red: #ef4444;
-  }
+:root {
+  --bg: #0a0a0a;
+  --card: #141414;
+  --card2: #1c1c1c;
+  --border: #252525;
+  --border2: #2e2e2e;
+  --text: #f5f5f5;
+  --text2: #999;
+  --text3: #555;
+  --green-bg: #052e16;
+  --green-light: #4ade80;
+  --yellow-bg: #422006;
+  --yellow-light: #fbbf24;
+  --red-bg: #450a0a;
+  --red-light: #f87171;
+  --blue-bg: #0f172a;
+  --blue-light: #60a5fa;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    padding-bottom: 60px;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
 
-  /* HEADER */
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+.header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 
-  .header-title { font-family: 'Bebas Neue'; font-size: 1.4rem; letter-spacing: 3px; }
-  .header-sub { font-size: 0.5rem; color: var(--muted); letter-spacing: 2px; }
+.header-left { display: flex; align-items: center; gap: 10px; }
 
-  .sync-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--muted);
-    transition: background 0.3s;
-  }
-  .sync-dot.ok { background: var(--green); }
-  .sync-dot.loading { background: var(--yellow); animation: pulse 0.8s infinite alternate; }
-  .sync-dot.error { background: var(--red); }
-  @keyframes pulse { from { opacity: 0.4; } to { opacity: 1; } }
+.header-logo {
+  width: 34px; height: 34px;
+  background: var(--text);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 10px; color: #000; letter-spacing: 0.5px;
+}
 
-  /* VIEWS */
-  .view { display: none; }
-  .view.active { display: block; }
+.header-title { font-weight: 700; font-size: 15px; }
+.header-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
 
-  /* LOADING */
-  .loading-screen {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    height: 60vh; gap: 16px;
-  }
-  .loading-spinner {
-    width: 32px; height: 32px;
-    border: 2px solid var(--border);
-    border-top-color: var(--text);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 0.6rem; color: var(--muted); letter-spacing: 3px; }
+.header-right { display: flex; align-items: center; gap: 8px; }
 
-  /* RACK VIEW */
-  .rack-view { padding: 14px; }
-  .section-title { font-size: 0.55rem; color: var(--muted); letter-spacing: 3px; margin-bottom: 12px; }
+.sync-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text3); transition: background 0.3s;
+}
+.sync-dot.ok { background: var(--green-light); }
+.sync-dot.loading { background: var(--yellow-light); animation: blink 0.6s infinite alternate; }
+.sync-dot.error { background: var(--red-light); }
+@keyframes blink { to { opacity: 0.3; } }
 
-  .etage-block { margin-bottom: 16px; }
+.btn-icon {
+  width: 34px; height: 34px;
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.btn-icon:active { background: var(--border); }
 
-  .etage-label {
-    font-family: 'Bebas Neue'; font-size: 1rem; letter-spacing: 3px;
-    color: var(--muted); margin-bottom: 8px;
-    border-left: 2px solid var(--border); padding-left: 8px;
-    display: flex; align-items: center; gap: 8px;
-  }
+.view { display: none; }
+.view.active { display: block; }
 
-  .etage-badge {
-    font-size: 0.45rem; padding: 2px 6px;
-    border: 1px solid var(--border); border-radius: 10px;
-    color: var(--muted); letter-spacing: 1px;
-  }
+.loading-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 50vh; gap: 12px;
+}
+.spinner {
+  width: 28px; height: 28px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 12px; color: var(--text3); }
 
-  .emplacements-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
+/* RACK */
+.rack-view { padding: 14px; }
 
-  .emp-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 10px 8px;
-    cursor: pointer;
-    min-height: 72px;
-    position: relative;
-    transition: border-color 0.2s;
-  }
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
 
-  .emp-card:active { transform: scale(0.97); }
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  text-align: center;
+}
 
-  .emp-top {
-    display: flex; align-items: center;
-    justify-content: space-between; margin-bottom: 6px;
-  }
+.stat-num { font-size: 22px; font-weight: 700; line-height: 1; }
+.stat-num.g { color: var(--green-light); }
+.stat-num.y { color: var(--yellow-light); }
+.stat-num.r { color: var(--red-light); }
+.stat-label { font-size: 10px; color: var(--text3); margin-top: 3px; }
 
-  .emp-id { font-family: 'Bebas Neue'; font-size: 1.2rem; letter-spacing: 2px; }
+.etage-section { margin-bottom: 18px; }
 
-  .emp-badge {
-    font-size: 0.5rem; padding: 2px 5px;
-    border-radius: 10px; background: var(--border); color: var(--muted);
-  }
-  .emp-badge.has { background: #1a2e1a; color: var(--green); }
+.etage-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
 
-  .emp-preview { font-size: 0.5rem; color: var(--muted); line-height: 1.7; }
-  .emp-preview-item { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .emp-preview-item.urgent { color: var(--red); }
-  .emp-preview-item.attention { color: var(--yellow); }
-  .emp-preview-item.ok { color: #4ade80; }
+.etage-pill {
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
 
-  .emp-indicator {
-    position: absolute; top: 8px; right: 8px;
-    width: 7px; height: 7px; border-radius: 50%;
-  }
+.etage-desc { font-size: 11px; color: var(--text3); }
 
-  /* SEPARATEUR RACK */
-  .rack-separator {
-    display: flex; align-items: center; gap: 8px;
-    margin: 4px 0 14px;
-  }
-  .sep-line-h { flex: 1; height: 1px; background: #2a2a2a; }
-  .sep-text { font-size: 0.45rem; color: #3a3a3a; letter-spacing: 2px; white-space: nowrap; }
+.emp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
 
-  /* COLONNE VIEW */
-  .col-header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 16px;
-    display: flex; align-items: center; gap: 12px;
-    position: sticky; top: 0; z-index: 10;
-  }
+.emp-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  cursor: pointer;
+  min-height: 80px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.1s;
+}
 
-  .btn-back {
-    background: none; border: none; color: var(--text);
-    font-size: 1.3rem; cursor: pointer; padding: 2px 6px;
-  }
+.emp-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
 
-  .col-id { font-family: 'Bebas Neue'; font-size: 1.6rem; letter-spacing: 3px; }
-  .col-sub { font-size: 0.5rem; color: var(--muted); letter-spacing: 2px; }
+.emp-card.c-green::before { background: var(--green-light); }
+.emp-card.c-yellow::before { background: var(--yellow-light); }
+.emp-card.c-red::before { background: var(--red-light); }
+.emp-card:active { transform: scale(0.97); }
 
-  .col-body { padding: 14px; }
+.emp-id { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.emp-company { font-size: 10px; color: var(--yellow-light); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* FORM */
-  .add-form {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 12px; margin-bottom: 16px;
-  }
+.emp-badge {
+  display: inline-block;
+  background: var(--card2);
+  border-radius: 20px;
+  padding: 2px 7px;
+  font-size: 10px; color: var(--text3);
+  margin-bottom: 5px;
+}
+.emp-badge.has { background: var(--green-bg); color: var(--green-light); }
 
-  .form-title { font-size: 0.5rem; color: var(--muted); letter-spacing: 3px; margin-bottom: 10px; }
+.emp-previews { display: flex; flex-direction: column; gap: 2px; }
+.emp-prev { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text3); }
+.emp-prev.c-green { color: var(--green-light); }
+.emp-prev.c-yellow { color: var(--yellow-light); }
+.emp-prev.c-red { color: var(--red-light); }
 
-  .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.sep-rack {
+  display: flex; align-items: center; gap: 8px;
+  margin: 10px 0 14px;
+}
+.sep-line { flex: 1; height: 1px; background: var(--border); }
+.sep-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; white-space: nowrap; }
 
-  .form-input {
-    flex: 1; background: var(--bg);
-    border: 1px solid var(--border); color: var(--text);
-    font-family: 'DM Mono'; font-size: 0.8rem;
-    padding: 9px 10px; border-radius: 3px; outline: none;
-  }
-  .form-input::placeholder { color: #444; }
-  .form-input:focus { border-color: #555; }
+/* BACK HEADER */
+.back-header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
 
-  .form-select {
-    background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); font-family: 'DM Mono'; font-size: 0.7rem;
-    padding: 9px 6px; border-radius: 3px; outline: none;
-  }
+.btn-back {
+  width: 34px; height: 34px;
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
 
-  .btn-add {
-    width: 100%; background: #1f1f1f;
-    border: 1px solid #444; color: var(--text);
-    font-family: 'DM Mono'; font-size: 0.65rem;
-    letter-spacing: 2px; padding: 10px;
-    border-radius: 3px; cursor: pointer;
-  }
-  .btn-add:active { background: #333; }
+.bh-title { font-size: 17px; font-weight: 700; }
+.bh-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
 
-  /* COLIS LIST */
-  .colis-section-title {
-    font-size: 0.5rem; color: var(--muted);
-    letter-spacing: 3px; margin-bottom: 10px;
-  }
+.view-body { padding: 14px; }
 
-  .colis-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 12px; margin-bottom: 8px;
-    display: flex; align-items: flex-start; gap: 10px;
-  }
+/* SECTION */
+.section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+}
 
-  .colis-item.done { opacity: 0.3; }
+.section-lbl {
+  font-size: 11px; font-weight: 600;
+  color: var(--text3); letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
 
-  .colis-color-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    flex-shrink: 0; margin-top: 3px;
-  }
+/* INPUTS */
+.inp {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.inp:focus { border-color: #444; }
+.inp::placeholder { color: var(--text3); }
 
-  .colis-info { flex: 1; min-width: 0; }
+.inp-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.inp-row:last-child { margin-bottom: 0; }
+.inp-sm { width: 70px; flex: none; }
 
-  .colis-ref {
-    font-size: 0.8rem; font-weight: 500;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .colis-item.done .colis-ref { text-decoration: line-through; color: var(--muted); }
+/* BUTTONS */
+.btn-main {
+  width: 100%;
+  background: var(--text);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 11px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.15s;
+}
+.btn-main:active { opacity: 0.8; }
 
-  .colis-note { font-size: 0.55rem; color: var(--muted); margin-top: 3px; }
+.btn-sec {
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  padding: 10px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-sec:active { background: var(--border); }
 
-  .colis-count-badge {
-    font-size: 0.5rem; color: var(--muted);
-    background: var(--border); padding: 2px 6px;
-    border-radius: 10px; margin-top: 4px; display: inline-block;
-  }
+/* COLIS CARDS */
+.colis-card {
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
 
-  .colis-urgence {
-    font-size: 0.45rem; padding: 2px 6px;
-    border-radius: 10px; letter-spacing: 1px; flex-shrink: 0;
-  }
-  .u-urgent { background: #3a0f0f; color: var(--red); }
-  .u-attention { background: #3a2a0f; color: var(--yellow); }
-  .u-ok { background: #0f2a0f; color: var(--green); }
+.colis-card.done { opacity: 0.3; }
 
-  .colis-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.colis-stripe {
+  width: 4px; border-radius: 2px;
+  flex-shrink: 0; align-self: stretch; min-height: 40px;
+}
 
-  .btn-check {
-    background: none; border: 1px solid var(--border);
-    color: var(--muted); width: 28px; height: 28px;
-    border-radius: 50%; cursor: pointer; font-size: 0.8rem;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .colis-item.done .btn-check { border-color: var(--green); color: var(--green); }
+.colis-body { flex: 1; min-width: 0; }
 
-  .btn-del {
-    background: none; border: none; color: #333;
-    font-size: 1.1rem; cursor: pointer; padding: 2px 4px;
-    transition: color 0.15s;
-  }
-  .btn-del:active { color: var(--red); }
+.colis-ref { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.colis-card.done .colis-ref { text-decoration: line-through; color: var(--text3); }
 
-  .empty-col {
-    text-align: center; padding: 28px;
-    font-size: 0.55rem; color: #333; letter-spacing: 2px;
-  }
+.colis-meta { display: flex; align-items: center; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+.colis-note-txt { font-size: 11px; color: var(--text2); }
 
-  /* QR VIEW */
-  .qr-view { padding: 16px; }
-  .qr-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-  .qr-main-title { font-family: 'Bebas Neue'; font-size: 1.3rem; letter-spacing: 3px; }
-  .qr-subtitle { font-size: 0.55rem; color: var(--muted); letter-spacing: 2px; margin-bottom: 20px; }
+.badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+.b-green { background: var(--green-bg); color: var(--green-light); }
+.b-yellow { background: var(--yellow-bg); color: var(--yellow-light); }
+.b-red { background: var(--red-bg); color: var(--red-light); }
+.b-blue { background: var(--blue-bg); color: var(--blue-light); }
+.b-gray { background: var(--card); color: var(--text2); border: 1px solid var(--border2); }
 
-  .qr-center {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 14px;
-  }
+.colis-afs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 
-  .qr-box {
-    background: white; padding: 16px;
-    border-radius: 6px; display: inline-block;
-  }
+.colis-acts { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
 
-  .qr-box canvas { display: block; }
+.btn-circ {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border2);
+  background: var(--card);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+}
+.colis-card.done .btn-circ.chk { border-color: var(--green-light); color: var(--green-light); }
+.btn-circ.del:active { border-color: var(--red-light); color: var(--red-light); }
 
-  .qr-label {
-    font-family: 'Bebas Neue'; font-size: 1rem;
-    letter-spacing: 3px; text-align: center;
-    color: var(--muted);
-  }
+/* AFS */
+.afs-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+}
+.afs-num { flex: 1; font-size: 13px; font-weight: 500; color: var(--blue-light); }
+.btn-afs-del { background: none; border: none; color: var(--text3); font-size: 16px; cursor: pointer; padding: 0 4px; }
+.btn-afs-del:active { color: var(--red-light); }
 
-  .qr-instructions {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 4px; padding: 14px; width: 100%;
-    font-size: 0.55rem; line-height: 1.9; color: var(--muted);
-  }
+.empty { text-align: center; padding: 24px 16px; color: var(--text3); font-size: 13px; line-height: 1.8; }
 
-  .qr-instructions strong { color: var(--text); display: block; margin-bottom: 4px; }
+.divider { height: 1px; background: var(--border); margin: 10px 0; }
 
-  /* TOAST */
-  .toast {
-    position: fixed; bottom: 20px; left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: #222; border: 1px solid #444;
-    color: var(--text); font-size: 0.6rem; letter-spacing: 2px;
-    padding: 10px 20px; border-radius: 20px;
-    transition: transform 0.3s; z-index: 999;
-    white-space: nowrap;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+/* QR */
+.qr-center { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px 0; }
+.qr-box { background: white; padding: 16px; border-radius: 12px; }
+.qr-name { font-size: 13px; font-weight: 600; color: var(--text2); letter-spacing: 0.5px; text-align: center; }
 
-  /* BTN QR HEADER */
-  .btn-header {
-    background: var(--border); border: 1px solid #444;
-    color: var(--text); font-family: 'DM Mono'; font-size: 0.55rem;
-    letter-spacing: 2px; padding: 6px 10px;
-    border-radius: 3px; cursor: pointer;
-  }
+.qr-info {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px; width: 100%;
+}
+.qr-info-title { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 10px; }
+
+.qr-step { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; font-size: 12px; color: var(--text2); line-height: 1.5; }
+.qr-num { width: 20px; height: 20px; border-radius: 50%; background: var(--card2); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+
+.color-legend { display: flex; flex-direction: column; gap: 6px; }
+.color-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
+.cdot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--text); color: #000;
+  font-size: 13px; font-weight: 600;
+  padding: 10px 20px; border-radius: 20px;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 999; white-space: nowrap;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div>
-    <div class="header-title">RACK RÉCEPTION</div>
-    <div class="header-sub">AUEM — 5S</div>
+  <div class="header-left">
+    <div class="header-logo">AUEM</div>
+    <div>
+      <div class="header-title">Rack Réception</div>
+      <div class="header-sub">Temps réel — tous opérateurs</div>
+    </div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <div class="sync-dot loading" id="sync-dot" title="Synchronisation"></div>
-    <button class="btn-header" onclick="showQR()">QR</button>
+  <div class="header-right">
+    <div class="sync-dot loading" id="sync-dot"></div>
+    <button class="btn-icon" onclick="showQR()">⬛</button>
   </div>
 </div>
 
 <!-- VUE RACK -->
 <div class="view active" id="view-rack">
   <div class="rack-view">
-    <div class="section-title">▸ D = HAUT — A = BAS — Appuyez pour modifier</div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num g" id="s-ok">—</div><div class="stat-label">Récents</div></div>
+      <div class="stat-card"><div class="stat-num y" id="s-att">—</div><div class="stat-label">Attention</div></div>
+      <div class="stat-card"><div class="stat-num r" id="s-urg">—</div><div class="stat-label">Urgent</div></div>
+    </div>
     <div id="rack-grid">
-      <div class="loading-screen">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">CHARGEMENT...</div>
-      </div>
+      <div class="loading-screen"><div class="spinner"></div><div class="loading-text">Chargement...</div></div>
     </div>
   </div>
 </div>
 
-<!-- VUE COLONNE -->
+<!-- VUE EMPLACEMENT -->
 <div class="view" id="view-colonne">
-  <div class="col-header">
+  <div class="back-header">
     <button class="btn-back" onclick="showRack()">←</button>
     <div>
-      <div class="col-id" id="col-title">A1</div>
-      <div class="col-sub" id="col-sub">EMPLACEMENT</div>
+      <div class="bh-title" id="col-title">A1</div>
+      <div class="bh-sub" id="col-sub">Emplacement</div>
     </div>
   </div>
-  <div class="col-body">
-    <div class="add-form">
-      <div class="form-title">▸ ENTREPRISE ASSOCIÉE</div>
-      <div class="form-row">
-        <input class="form-input" id="inp-company" placeholder="Nom entreprise (ex: ESRT, PICANOL...)" />
-        <button class="btn-add" style="width:auto;padding:9px 14px;" onclick="saveCompany()">✓</button>
+  <div class="view-body">
+    <div class="section">
+      <div class="section-lbl">Entreprise associée</div>
+      <div class="inp-row">
+        <input class="inp" id="inp-company" placeholder="Ex: ESRT, PICANOL..." />
+        <button class="btn-sec" onclick="saveCompany()">✓</button>
       </div>
-      <div style="font-size:0.5rem;color:#444;letter-spacing:1px;margin-top:-4px;">Laissez vide pour retirer l'entreprise</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">Laissez vide pour retirer</div>
     </div>
-
-    <div class="add-form">
-      <div class="form-title">▸ AJOUTER UN COLIS</div>
-      <div class="form-row">
-        <input class="form-input" id="inp-ref" placeholder="Référence / N° commande" />
+    <div class="section">
+      <div class="section-lbl">Nouveau colis</div>
+      <div class="inp-row"><input class="inp" id="inp-ref" placeholder="Référence / N° commande" /></div>
+      <div class="inp-row">
+        <input class="inp" id="inp-note" placeholder="Note (optionnel)" />
+        <input class="inp inp-sm" id="inp-count" type="number" min="1" max="99" value="1" placeholder="Qté" />
       </div>
-      <div class="form-row">
-        <input class="form-input" id="inp-note" placeholder="Note (optionnel)" style="flex:1" />
-        <input class="form-input" id="inp-count" type="number" min="1" max="99" value="1" placeholder="Qté" style="width:60px;flex:none" />
-      </div>
-      <div class="form-row">
-        <input class="form-input" id="inp-afs" placeholder="N° AFS (ex: 12345, 67890...)" />
-      </div>
-      <button class="btn-add" onclick="addColis()">+ AJOUTER CE COLIS</button>
+      <div class="inp-row"><input class="inp" id="inp-afs" placeholder="N° AFS — séparés par virgule si plusieurs" /></div>
+      <button class="btn-main" onclick="addColis()">+ Ajouter ce colis</button>
     </div>
-    <div class="colis-section-title">▸ COLIS EN COURS</div>
+    <div class="section-lbl" style="padding:0 2px 8px;">Colis en cours</div>
     <div id="colis-list"></div>
   </div>
 </div>
 
 <!-- VUE DÉTAIL COLIS -->
 <div class="view" id="view-colis">
-  <div class="col-header">
+  <div class="back-header">
     <button class="btn-back" onclick="backToColonne()">←</button>
     <div>
-      <div class="col-id" id="colis-title">COLIS</div>
-      <div class="col-sub" id="colis-sub">DÉTAIL</div>
+      <div class="bh-title" id="colis-title">Colis</div>
+      <div class="bh-sub" id="colis-sub">Modifier</div>
     </div>
   </div>
-  <div class="col-body">
-    <!-- Infos colis -->
-    <div class="add-form" id="colis-edit-form">
-      <div class="form-title">▸ MODIFIER LE COLIS</div>
-      <div class="form-row">
-        <input class="form-input" id="edit-ref" placeholder="Référence" />
+  <div class="view-body">
+    <div class="section">
+      <div class="section-lbl">Informations</div>
+      <div class="inp-row"><input class="inp" id="edit-ref" placeholder="Référence" /></div>
+      <div class="inp-row">
+        <input class="inp" id="edit-note" placeholder="Note (optionnel)" />
+        <input class="inp inp-sm" id="edit-count" type="number" min="1" max="99" value="1" />
       </div>
-      <div class="form-row">
-        <input class="form-input" id="edit-note" placeholder="Note (optionnel)" style="flex:1" />
-        <input class="form-input" id="edit-count" type="number" min="1" max="99" value="1" style="width:60px;flex:none" />
-      </div>
-      <button class="btn-add" onclick="saveColis()">✓ ENREGISTRER</button>
+      <button class="btn-main" onclick="saveColis()">✓ Enregistrer les modifications</button>
     </div>
-
-    <!-- AFS -->
-    <div class="add-form">
-      <div class="form-title">▸ NUMÉROS AFS</div>
-      <div id="afs-list" style="margin-bottom:10px;"></div>
-      <div class="form-row">
-        <input class="form-input" id="inp-new-afs" placeholder="Ajouter un N° AFS..." />
-        <button class="btn-add" style="width:auto;padding:9px 14px;" onclick="addAFS()">+</button>
+    <div class="section">
+      <div class="section-lbl">Numéros AFS</div>
+      <div id="afs-list"></div>
+      <div class="divider"></div>
+      <div class="inp-row">
+        <input class="inp" id="inp-new-afs" placeholder="Ajouter un ou plusieurs N° AFS..." />
+        <button class="btn-sec" onclick="addAFS()">+</button>
       </div>
     </div>
   </div>
@@ -420,450 +497,329 @@
 
 <!-- VUE QR -->
 <div class="view" id="view-qr">
-  <div class="qr-view">
-    <div class="qr-header">
-      <button class="btn-back" onclick="showRack()">←</button>
-      <div class="qr-main-title">QR CODE RACK</div>
+  <div class="back-header">
+    <button class="btn-back" onclick="showRack()">←</button>
+    <div>
+      <div class="bh-title">QR Code</div>
+      <div class="bh-sub">Scanner pour accéder au rack</div>
     </div>
-    <div class="qr-subtitle">1 SEUL QR CODE — TOUS LES OPÉRATEURS</div>
+  </div>
+  <div class="view-body">
     <div class="qr-center">
       <div class="qr-box">
-        <div id="qr-container" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;background:#f5f5f5;border-radius:4px;">
-          <span style="font-size:0.6rem;color:#999;letter-spacing:2px;">CHARGEMENT...</span>
+        <div id="qr-container" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;">
+          <div class="spinner"></div>
         </div>
       </div>
-      <div class="qr-label">RACK RÉCEPTION AUEM</div>
-      <div class="qr-instructions">
-        <strong>Comment utiliser</strong>
-        1. Imprimez ce QR code et plastifiez-le<br>
-        2. Fixez-le sur le rack à hauteur des yeux<br>
-        3. Chaque opérateur scanne et voit tout en temps réel<br>
-        4. Les modifications sont visibles instantanément par tous<br>
-        <br>
-        <strong>Code couleur automatique par ancienneté</strong>
-        🟢 Vert — arrivé depuis moins d'1 semaine<br>
-        🟡 Jaune — arrivé depuis 1 à 2 semaines<br>
-        🔴 Rouge — arrivé depuis plus de 2 semaines
+      <div class="qr-name">RACK RÉCEPTION — AUEM</div>
+      <div class="qr-info">
+        <div class="qr-info-title">Comment utiliser</div>
+        <div class="qr-step"><div class="qr-num">1</div>Imprimez et plastifiez ce QR code</div>
+        <div class="qr-step"><div class="qr-num">2</div>Fixez-le sur le rack à hauteur des yeux</div>
+        <div class="qr-step"><div class="qr-num">3</div>Tous les opérateurs scannent et voient le même rack en temps réel</div>
+        <div class="divider"></div>
+        <div class="qr-info-title">Code couleur automatique</div>
+        <div class="color-legend">
+          <div class="color-row"><div class="cdot" style="background:#4ade80"></div>Vert — moins d'1 semaine</div>
+          <div class="color-row"><div class="cdot" style="background:#fbbf24"></div>Jaune — 1 à 2 semaines</div>
+          <div class="color-row"><div class="cdot" style="background:#f87171"></div>Rouge — plus de 2 semaines</div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════
-// CONFIG
-// ══════════════════════════════════════════
-const ETAGES = ['D','C','B','A']; // D en haut, A en bas dans l'affichage
-const ETAGE_LABELS = {
-  'D': { label: 'ÉTAGE D — HAUT', badge: 'Gerbeur obligatoire' },
-  'C': { label: 'ÉTAGE C', badge: 'Gerbeur nécessaire' },
-  'B': { label: 'ÉTAGE B', badge: 'Accessible à la main' },
-  'A': { label: 'ÉTAGE A — BAS', badge: 'Niveau sol' },
-};
-const EMP_LABELS = {
-  'A1': 'IS'
+const ETAGES = ['D','C','B','A'];
+const ETAGE_INFO = {
+  'D': { name: 'Étage D', desc: 'Haut — gerbeur obligatoire' },
+  'C': { name: 'Étage C', desc: 'Gerbeur nécessaire' },
+  'B': { name: 'Étage B', desc: 'Accessible à la main' },
+  'A': { name: 'Étage A', desc: 'Bas — niveau sol' },
 };
 const COLS = 6;
+const FIREBASE = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/rack.json';
 
-// Firebase config
-const FIREBASE_URL = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/rack.json';
-
-let state = {};
-let currentCol = null;
-let saveTimer = null;
-
-// ══════════════════════════════════════════
-// SYNC
-// ══════════════════════════════════════════
-function setSyncDot(status) {
-  const dot = document.getElementById('sync-dot');
-  dot.className = 'sync-dot ' + status;
-}
+let state = {}, currentCol = null, currentColisIdx = null, saveTimer = null;
 
 function initState() {
   const s = {};
+  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) s[`${e}${i}`]={colis:[],company:''}; });
+  return s;
+}
+
+function migrate(data) {
+  const s = data || initState();
   ETAGES.forEach(e => {
-    for (let i = 1; i <= COLS; i++) {
-      s[`${e}${i}`] = { colis: [], company: '' };
+    for(let i=1;i<=COLS;i++) {
+      const id=`${e}${i}`;
+      if(!s[id]) s[id]={colis:[],company:''};
+      if(Array.isArray(s[id])) s[id]={colis:s[id],company:''};
+      if(!s[id].colis) s[id].colis=[];
+      if(!s[id].company) s[id].company='';
     }
   });
   return s;
 }
 
+function setSyncDot(st) { document.getElementById('sync-dot').className='sync-dot '+st; }
+
 async function loadFromServer() {
   setSyncDot('loading');
   try {
-    const res = await fetch(FIREBASE_URL);
-    if (!res.ok) throw new Error();
-    const data = await res.json();
-    state = data || initState();
-    ETAGES.forEach(e => {
-      for (let i = 1; i <= COLS; i++) {
-        const id = `${e}${i}`;
-        if (!state[id]) state[id] = { colis: [], company: '' };
-        // Migration ancien format (tableau)
-        if (Array.isArray(state[id])) state[id] = { colis: state[id], company: '' };
-        if (!state[id].colis) state[id].colis = [];
-        if (!state[id].company) state[id].company = '';
-      }
-    });
+    const res = await fetch(FIREBASE);
+    if(!res.ok) throw new Error();
+    state = migrate(await res.json());
     setSyncDot('ok');
     renderRack();
-  } catch(err) {
-    try {
-      const saved = localStorage.getItem('auem_rack_v2');
-      state = saved ? JSON.parse(saved) : initState();
-    } catch(e) { state = initState(); }
+  } catch {
+    try { state = migrate(JSON.parse(localStorage.getItem('auem_v3'))); } catch { state=initState(); }
     setSyncDot('error');
     renderRack();
-    showToast('Mode hors-ligne — modifications locales uniquement');
+    showToast('Mode hors-ligne');
   }
 }
 
 async function saveToServer() {
   setSyncDot('loading');
   try {
-    await fetch(FIREBASE_URL, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(state)
-    });
-    localStorage.setItem('auem_rack_v2', JSON.stringify(state));
+    await fetch(FIREBASE, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(state) });
+    localStorage.setItem('auem_v3', JSON.stringify(state));
     setSyncDot('ok');
-  } catch(err) {
-    localStorage.setItem('auem_rack_v2', JSON.stringify(state));
+  } catch {
+    localStorage.setItem('auem_v3', JSON.stringify(state));
     setSyncDot('error');
   }
 }
 
-function scheduleSave() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveToServer, 800);
+function scheduleSave() { clearTimeout(saveTimer); saveTimer=setTimeout(saveToServer,600); }
+setInterval(()=>{ if(document.getElementById('view-rack').classList.contains('active')) loadFromServer(); },30000);
+
+function ageColor(ts) {
+  const d=(Date.now()-ts)/86400000;
+  return d>=14?'c-red':d>=7?'c-yellow':'c-green';
 }
-
-// Auto-refresh toutes les 30 secondes
-setInterval(() => {
-  if (document.getElementById('view-rack').classList.contains('active')) {
-    loadFromServer();
-  }
-}, 30000);
-
-// ══════════════════════════════════════════
-// RENDU RACK
-// ══════════════════════════════════════════
-function dominantColor(id) {
-  const active = (state[id]?.colis || []).filter(c => !c.done);
-  if (!active.length) return null;
-  const oldest = active.reduce((a, b) => (a.ts < b.ts ? a : b));
+function ageBadge(ts) {
+  const d=(Date.now()-ts)/86400000;
+  return d>=14?'b-red':d>=7?'b-yellow':'b-green';
+}
+function ageLabel(ts) {
+  const d=Math.floor((Date.now()-ts)/86400000);
+  return d===0?"Aujourd'hui":d===1?'1 jour':`${d} jours`;
+}
+function ageStripe(ts) {
+  const d=(Date.now()-ts)/86400000;
+  return d>=14?'#f87171':d>=7?'#fbbf24':'#4ade80';
+}
+function dominantClass(id) {
+  const active=(state[id]?.colis||[]).filter(c=>!c.done);
+  if(!active.length) return '';
+  const oldest=active.reduce((a,b)=>a.ts<b.ts?a:b);
   return ageColor(oldest.ts);
 }
 
-// Couleur basée sur l'ancienneté du colis
-function ageColor(ts) {
-  const days = (Date.now() - ts) / (1000 * 60 * 60 * 24);
-  if (days >= 14) return '#ef4444'; // rouge après 2 semaines
-  if (days >= 7)  return '#f59e0b'; // jaune après 1 semaine
-  return '#22c55e'; // vert à l'arrivée
+function updateStats() {
+  let ok=0,att=0,urg=0;
+  ETAGES.forEach(e=>{ for(let i=1;i<=COLS;i++) {
+    (state[`${e}${i}`]?.colis||[]).filter(c=>!c.done).forEach(c=>{
+      const d=(Date.now()-c.ts)/86400000;
+      if(d>=14) urg++; else if(d>=7) att++; else ok++;
+    });
+  }});
+  document.getElementById('s-ok').textContent=ok;
+  document.getElementById('s-att').textContent=att;
+  document.getElementById('s-urg').textContent=urg;
 }
-
-function ageClass(ts) {
-  const days = (Date.now() - ts) / (1000 * 60 * 60 * 24);
-  if (days >= 14) return 'u-urgent';
-  if (days >= 7)  return 'u-attention';
-  return 'u-ok';
-}
-
-function ageLabel(ts) {
-  const days = Math.floor((Date.now() - ts) / (1000 * 60 * 60 * 24));
-  if (days === 0) return "Aujourd'hui";
-  if (days === 1) return '1 jour';
-  return `${days} jours`;
-}
-
-// Garde urgColor pour compatibilité
-function urgColor(u) { return '#22c55e'; }
-function urgClass(u) { return 'u-ok'; }
-function urgLabel(u) { return 'OK'; }
 
 function renderRack() {
-  const grid = document.getElementById('rack-grid');
-  grid.innerHTML = '';
-
-  ETAGES.forEach((etage, ei) => {
-    const info = ETAGE_LABELS[etage];
-    const block = document.createElement('div');
-    block.className = 'etage-block';
-
-    block.innerHTML = `
-      <div class="etage-label">
-        ${info.label}
-        <span class="etage-badge">${info.badge}</span>
-      </div>
-    `;
-
-    const empGrid = document.createElement('div');
-    empGrid.className = 'emplacements-grid';
-
-    for (let i = 1; i <= COLS; i++) {
-      const id = `${etage}${i}`;
-      const all = state[id]?.colis || [];
-      const company = state[id]?.company || '';
-      const active = all.filter(c => !c.done);
-      const color = dominantColor(id);
-      const totalColis = active.reduce((sum, c) => sum + (c.count || 1), 0);
-
-      const card = document.createElement('div');
-      card.className = `emp-card ${active.length ? 'has-items' : 'empty'}`;
-      if (color) card.style.borderColor = color + '66';
-
-      if (color) {
-        card.innerHTML += `<div class="emp-indicator" style="background:${color}"></div>`;
-      }
-
-      card.innerHTML += `
-        <div class="emp-top">
-          <span class="emp-id">${id}</span>
-          <span class="emp-badge ${active.length ? 'has' : ''}">${totalColis > 0 ? totalColis + ' colis' : '—'}</span>
-        </div>
-        ${company ? `<div style="font-size:0.55rem;color:#f59e0b;letter-spacing:1px;margin-bottom:4px;">🏭 ${company}</div>` : ''}
-        <div class="emp-preview">
-          ${active.slice(0,2).map(c =>
-            `<span class="emp-preview-item ${ageClass(c.ts)}">${c.ref}${c.count > 1 ? ` ×${c.count}` : ''}</span>`
-          ).join('')}
-          ${active.length > 2 ? `<span class="emp-preview-item">+${active.length - 2} autres</span>` : ''}
-          ${!active.length ? '<span style="color:#2a2a2a">vide</span>' : ''}
-        </div>
-      `;
-
-      card.onclick = () => openColonne(id);
-      empGrid.appendChild(card);
+  updateStats();
+  const grid=document.getElementById('rack-grid');
+  grid.innerHTML='';
+  ETAGES.forEach((etage,ei)=>{
+    const info=ETAGE_INFO[etage];
+    const sec=document.createElement('div');
+    sec.className='etage-section';
+    sec.innerHTML=`<div class="etage-header"><span class="etage-pill">${info.name}</span><span class="etage-desc">${info.desc}</span></div>`;
+    const g=document.createElement('div');
+    g.className='emp-grid';
+    for(let i=1;i<=COLS;i++) {
+      const id=`${etage}${i}`;
+      const active=(state[id]?.colis||[]).filter(c=>!c.done);
+      const company=state[id]?.company||'';
+      const total=active.reduce((s,c)=>s+(c.count||1),0);
+      const dc=dominantClass(id);
+      const card=document.createElement('div');
+      card.className=`emp-card ${dc}`;
+      card.innerHTML=`
+        <div class="emp-id">${id}</div>
+        ${company?`<div class="emp-company">🏭 ${company}</div>`:''}
+        <div class="emp-badge ${total?'has':''}">${total||'Vide'}</div>
+        <div class="emp-previews">
+          ${active.slice(0,2).map(c=>`<div class="emp-prev ${ageColor(c.ts)}">${c.ref}</div>`).join('')}
+          ${active.length>2?`<div class="emp-prev">+${active.length-2} autres</div>`:''}
+        </div>`;
+      card.onclick=()=>openColonne(id);
+      g.appendChild(card);
     }
-
-    block.appendChild(empGrid);
-
-    // Séparateur entre B et A (passage hauteur d'homme)
-    if (etage === 'B') {
-      const sep = document.createElement('div');
-      sep.className = 'rack-separator';
-      sep.innerHTML = `<div class="sep-line-h"></div><div class="sep-text">HAUTEUR D'HOMME</div><div class="sep-line-h"></div>`;
-      block.appendChild(sep);
+    sec.appendChild(g);
+    if(etage==='B') {
+      const sep=document.createElement('div');
+      sep.className='sep-rack';
+      sep.innerHTML=`<div class="sep-line"></div><div class="sep-label">HAUTEUR D'HOMME</div><div class="sep-line"></div>`;
+      sec.appendChild(sep);
     }
-
-    grid.appendChild(block);
+    grid.appendChild(sec);
   });
 }
 
-// ══════════════════════════════════════════
-// COLONNE DÉTAIL
-// ══════════════════════════════════════════
 function openColonne(id) {
-  currentCol = id;
-  const info = ETAGE_LABELS[id[0]];
-  const company = state[id]?.company || '';
-  document.getElementById('col-title').textContent = id;
-  document.getElementById('col-sub').textContent = info.label;
-  document.getElementById('inp-company').value = company;
-  document.getElementById('inp-ref').value = '';
-  document.getElementById('inp-note').value = '';
-  document.getElementById('inp-count').value = '1';
-  document.getElementById('inp-afs').value = '';
+  currentCol=id;
+  const info=ETAGE_INFO[id[0]];
+  document.getElementById('col-title').textContent=id;
+  document.getElementById('col-sub').textContent=info.name+' — '+info.desc;
+  document.getElementById('inp-company').value=state[id]?.company||'';
+  ['inp-ref','inp-note','inp-afs'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('inp-count').value='1';
   renderColisList();
   showView('view-colonne');
 }
 
 function renderColisList() {
-  const list = document.getElementById('colis-list');
-  const all = state[currentCol]?.colis || [];
-
-  if (!all.length) {
-    list.innerHTML = '<div class="empty-col">AUCUN COLIS<br>Ajoutez-en un ci-dessus</div>';
-    return;
-  }
-
-  list.innerHTML = '';
-
-  // Actifs d'abord, terminés ensuite
-  const sorted = [...all.filter(c => !c.done), ...all.filter(c => c.done)];
-
-  sorted.forEach((colis, rawIdx) => {
-    const idx = all.indexOf(colis);
-    const item = document.createElement('div');
-    item.className = `colis-item ${colis.done ? 'done' : ''}`;
-
-    item.innerHTML = `
-      <div class="colis-color-dot" style="background:${ageColor(colis.ts)}"></div>
-      <div class="colis-info">
+  const list=document.getElementById('colis-list');
+  const all=state[currentCol]?.colis||[];
+  if(!all.length) { list.innerHTML='<div class="empty">Aucun colis sur cet emplacement<br>Ajoutez-en un ci-dessus</div>'; return; }
+  list.innerHTML='';
+  [...all.filter(c=>!c.done),...all.filter(c=>c.done)].forEach(colis=>{
+    const idx=all.indexOf(colis);
+    const card=document.createElement('div');
+    card.className=`colis-card ${colis.done?'done':''}`;
+    card.innerHTML=`
+      <div class="colis-stripe" style="background:${colis.done?'#333':ageStripe(colis.ts)}"></div>
+      <div class="colis-body">
         <div class="colis-ref">${colis.ref}</div>
-        ${colis.note ? `<div class="colis-note">${colis.note}</div>` : ''}
-        ${(colis.count || 1) > 1 ? `<span class="colis-count-badge">${colis.count} colis</span>` : ''}
-        ${colis.afs && colis.afs.length ? `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">${colis.afs.map(a => `<span style="font-size:0.5rem;background:#1a2a3a;color:#60a5fa;padding:2px 6px;border-radius:10px;letter-spacing:1px;">AFS ${a}</span>`).join('')}</div>` : ''}
+        <div class="colis-meta">
+          ${!colis.done?`<span class="badge ${ageBadge(colis.ts)}">${ageLabel(colis.ts)}</span>`:''}
+          ${(colis.count||1)>1?`<span class="badge b-gray">${colis.count} colis</span>`:''}
+          ${colis.note?`<span class="colis-note-txt">${colis.note}</span>`:''}
+        </div>
+        ${colis.afs&&colis.afs.length?`<div class="colis-afs">${colis.afs.map(a=>`<span class="badge b-blue">AFS ${a}</span>`).join('')}</div>`:''}
       </div>
-      <span class="colis-urgence ${ageClass(colis.ts)}">${ageLabel(colis.ts)}</span>
-      <div class="colis-actions">
-        <button class="btn-check" onclick="openColis(${idx})" style="font-size:0.7rem;">✏️</button>
-        <button class="btn-check" onclick="toggleDone(${idx})">${colis.done ? '✓' : '○'}</button>
-        <button class="btn-del" onclick="deleteColis(${idx})">×</button>
-      </div>
-    `;
-    list.appendChild(item);
+      <div class="colis-acts">
+        <button class="btn-circ" onclick="openColis(${idx})" title="Modifier">✏️</button>
+        <button class="btn-circ chk" onclick="toggleDone(${idx})">${colis.done?'↩':'✓'}</button>
+        <button class="btn-circ del" onclick="deleteColis(${idx})">✕</button>
+      </div>`;
+    list.appendChild(card);
   });
 }
 
 function addColis() {
-  const ref = document.getElementById('inp-ref').value.trim();
-  if (!ref) { showToast('Entrez une référence'); return; }
-  const note = document.getElementById('inp-note').value.trim();
-  const count = parseInt(document.getElementById('inp-count').value) || 1;
-  const afsRaw = document.getElementById('inp-afs').value.trim();
-  const afs = afsRaw ? afsRaw.split(/[,;\s]+/).filter(a => a) : [];
-
-  if (!state[currentCol]) state[currentCol] = { colis: [], company: '' };
-  if (!state[currentCol].colis) state[currentCol].colis = [];
-  state[currentCol].colis.push({ ref, note, count, afs, done: false, ts: Date.now() });
-
-  document.getElementById('inp-ref').value = '';
-  document.getElementById('inp-note').value = '';
-  document.getElementById('inp-count').value = '1';
-  document.getElementById('inp-afs').value = '';
-
-  renderColisList();
-  scheduleSave();
+  const ref=document.getElementById('inp-ref').value.trim();
+  if(!ref){showToast('Entrez une référence');return;}
+  const note=document.getElementById('inp-note').value.trim();
+  const count=parseInt(document.getElementById('inp-count').value)||1;
+  const afs=document.getElementById('inp-afs').value.trim().split(/[,;\s]+/).filter(Boolean);
+  if(!state[currentCol]) state[currentCol]={colis:[],company:''};
+  state[currentCol].colis.push({ref,note,count,afs,done:false,ts:Date.now()});
+  ['inp-ref','inp-note','inp-afs'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('inp-count').value='1';
+  renderColisList(); renderRack(); scheduleSave();
   showToast('Colis ajouté ✓');
 }
 
-let currentColisIdx = null;
+function toggleDone(idx) {
+  state[currentCol].colis[idx].done=!state[currentCol].colis[idx].done;
+  renderColisList(); renderRack(); scheduleSave();
+}
+
+function deleteColis(idx) {
+  if(!confirm('Supprimer ce colis ?')) return;
+  state[currentCol].colis.splice(idx,1);
+  renderColisList(); renderRack(); scheduleSave();
+}
+
+function saveCompany() {
+  const c=document.getElementById('inp-company').value.trim();
+  if(!state[currentCol]) state[currentCol]={colis:[],company:''};
+  state[currentCol].company=c;
+  renderRack(); scheduleSave();
+  showToast(c?'Entreprise enregistrée ✓':'Entreprise retirée ✓');
+}
 
 function openColis(idx) {
-  currentColisIdx = idx;
-  const colis = state[currentCol].colis[idx];
-  document.getElementById('colis-title').textContent = colis.ref;
-  document.getElementById('colis-sub').textContent = currentCol + ' — ' + ETAGE_LABELS[currentCol[0]].label;
-  document.getElementById('edit-ref').value = colis.ref;
-  document.getElementById('edit-note').value = colis.note || '';
-  document.getElementById('edit-count').value = colis.count || 1;
-  document.getElementById('inp-new-afs').value = '';
+  currentColisIdx=idx;
+  const c=state[currentCol].colis[idx];
+  document.getElementById('colis-title').textContent=c.ref;
+  document.getElementById('colis-sub').textContent=currentCol;
+  document.getElementById('edit-ref').value=c.ref;
+  document.getElementById('edit-note').value=c.note||'';
+  document.getElementById('edit-count').value=c.count||1;
+  document.getElementById('inp-new-afs').value='';
   renderAFSList();
   showView('view-colis');
 }
 
 function renderAFSList() {
-  const colis = state[currentCol].colis[currentColisIdx];
-  const afs = colis.afs || [];
-  const container = document.getElementById('afs-list');
-
-  if (!afs.length) {
-    container.innerHTML = '<div style="font-size:0.55rem;color:#333;letter-spacing:2px;">Aucun AFS associé</div>';
-    return;
-  }
-
-  container.innerHTML = afs.map((a, i) => `
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <span style="flex:1;font-size:0.75rem;background:#1a2a3a;color:#60a5fa;padding:6px 10px;border-radius:4px;letter-spacing:1px;">AFS ${a}</span>
-      <button onclick="removeAFS(${i})" style="background:none;border:none;color:#333;font-size:1.1rem;cursor:pointer;padding:2px 6px;">×</button>
-    </div>
-  `).join('');
+  const afs=state[currentCol].colis[currentColisIdx].afs||[];
+  const el=document.getElementById('afs-list');
+  if(!afs.length){el.innerHTML='<div class="empty" style="padding:8px 0 4px;text-align:left;">Aucun AFS associé</div>';return;}
+  el.innerHTML=afs.map((a,i)=>`<div class="afs-item"><span class="afs-num">AFS ${a}</span><button class="btn-afs-del" onclick="removeAFS(${i})">×</button></div>`).join('');
 }
 
 function addAFS() {
-  const val = document.getElementById('inp-new-afs').value.trim();
-  if (!val) return;
-  const nums = val.split(/[,;\s]+/).filter(a => a);
-  if (!state[currentCol].colis[currentColisIdx].afs) {
-    state[currentCol].colis[currentColisIdx].afs = [];
-  }
-  nums.forEach(n => state[currentCol].colis[currentColisIdx].afs.push(n));
-  document.getElementById('inp-new-afs').value = '';
-  renderAFSList();
-  renderColisList();
-  scheduleSave();
+  const val=document.getElementById('inp-new-afs').value.trim();
+  if(!val) return;
+  if(!state[currentCol].colis[currentColisIdx].afs) state[currentCol].colis[currentColisIdx].afs=[];
+  val.split(/[,;\s]+/).filter(Boolean).forEach(n=>state[currentCol].colis[currentColisIdx].afs.push(n));
+  document.getElementById('inp-new-afs').value='';
+  renderAFSList(); renderColisList(); scheduleSave();
   showToast('AFS ajouté ✓');
 }
 
-function removeAFS(afsIdx) {
-  state[currentCol].colis[currentColisIdx].afs.splice(afsIdx, 1);
-  renderAFSList();
-  renderColisList();
-  scheduleSave();
+function removeAFS(i) {
+  state[currentCol].colis[currentColisIdx].afs.splice(i,1);
+  renderAFSList(); renderColisList(); scheduleSave();
 }
 
 function saveColis() {
-  const ref = document.getElementById('edit-ref').value.trim();
-  if (!ref) { showToast('Entrez une référence'); return; }
-  const note = document.getElementById('edit-note').value.trim();
-  const count = parseInt(document.getElementById('edit-count').value) || 1;
-  state[currentCol].colis[currentColisIdx].ref = ref;
-  state[currentCol].colis[currentColisIdx].note = note;
-  state[currentCol].colis[currentColisIdx].count = count;
-  renderColisList();
-  renderRack();
-  scheduleSave();
-  showToast('Colis modifié ✓');
+  const ref=document.getElementById('edit-ref').value.trim();
+  if(!ref){showToast('Entrez une référence');return;}
+  const c=state[currentCol].colis[currentColisIdx];
+  c.ref=ref; c.note=document.getElementById('edit-note').value.trim();
+  c.count=parseInt(document.getElementById('edit-count').value)||1;
+  document.getElementById('colis-title').textContent=ref;
+  renderColisList(); renderRack(); scheduleSave();
+  showToast('Modifié ✓');
 }
 
-function backToColonne() {
-  renderColisList();
-  showView('view-colonne');
-}
+function backToColonne() { renderColisList(); showView('view-colonne'); }
 
-function toggleDone(idx) {
-  state[currentCol].colis[idx].done = !state[currentCol].colis[idx].done;
-  renderColisList();
-  renderRack();
-  scheduleSave();
-}
-
-function deleteColis(idx) {
-  state[currentCol].colis.splice(idx, 1);
-  renderColisList();
-  renderRack();
-  scheduleSave();
-}
-
-function saveCompany() {
-  const company = document.getElementById('inp-company').value.trim();
-  if (!state[currentCol]) state[currentCol] = { colis: [], company: '' };
-  state[currentCol].company = company;
-  renderRack();
-  scheduleSave();
-  showToast(company ? `Entreprise "${company}" enregistrée ✓` : 'Entreprise retirée ✓');
-}
-
-// ══════════════════════════════════════════
-// QR CODE
-// ══════════════════════════════════════════
 function showQR() {
-  const url = window.location.href.split('?')[0];
-  const container = document.getElementById('qr-container');
-  container.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=111111&margin=10" style="display:block;width:200px;height:200px;" />`;
+  const url=window.location.href.split('?')[0];
+  const container=document.getElementById('qr-container');
+  const img=new Image();
+  img.style.cssText='display:block;width:200px;height:200px;border-radius:4px;';
+  img.onload=()=>{container.innerHTML='';container.appendChild(img);};
+  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=0a0a0a&margin=12`;
   showView('view-qr');
 }
 
-// ══════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════
 function showView(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
 }
 
-function showRack() {
-  renderRack();
-  showView('view-rack');
-}
+function showRack() { renderRack(); showView('view-rack'); }
 
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
 }
 
-// ══════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════
 loadFromServer();
 </script>
 </body>
