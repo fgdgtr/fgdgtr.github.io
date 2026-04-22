@@ -373,10 +373,48 @@
         <input class="form-input" id="inp-note" placeholder="Note (optionnel)" style="flex:1" />
         <input class="form-input" id="inp-count" type="number" min="1" max="99" value="1" placeholder="Qté" style="width:60px;flex:none" />
       </div>
+      <div class="form-row">
+        <input class="form-input" id="inp-afs" placeholder="N° AFS (ex: 12345, 67890...)" />
+      </div>
       <button class="btn-add" onclick="addColis()">+ AJOUTER CE COLIS</button>
     </div>
     <div class="colis-section-title">▸ COLIS EN COURS</div>
     <div id="colis-list"></div>
+  </div>
+</div>
+
+<!-- VUE DÉTAIL COLIS -->
+<div class="view" id="view-colis">
+  <div class="col-header">
+    <button class="btn-back" onclick="backToColonne()">←</button>
+    <div>
+      <div class="col-id" id="colis-title">COLIS</div>
+      <div class="col-sub" id="colis-sub">DÉTAIL</div>
+    </div>
+  </div>
+  <div class="col-body">
+    <!-- Infos colis -->
+    <div class="add-form" id="colis-edit-form">
+      <div class="form-title">▸ MODIFIER LE COLIS</div>
+      <div class="form-row">
+        <input class="form-input" id="edit-ref" placeholder="Référence" />
+      </div>
+      <div class="form-row">
+        <input class="form-input" id="edit-note" placeholder="Note (optionnel)" style="flex:1" />
+        <input class="form-input" id="edit-count" type="number" min="1" max="99" value="1" style="width:60px;flex:none" />
+      </div>
+      <button class="btn-add" onclick="saveColis()">✓ ENREGISTRER</button>
+    </div>
+
+    <!-- AFS -->
+    <div class="add-form">
+      <div class="form-title">▸ NUMÉROS AFS</div>
+      <div id="afs-list" style="margin-bottom:10px;"></div>
+      <div class="form-row">
+        <input class="form-input" id="inp-new-afs" placeholder="Ajouter un N° AFS..." />
+        <button class="btn-add" style="width:auto;padding:9px 14px;" onclick="addAFS()">+</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -631,6 +669,7 @@ function openColonne(id) {
   document.getElementById('inp-ref').value = '';
   document.getElementById('inp-note').value = '';
   document.getElementById('inp-count').value = '1';
+  document.getElementById('inp-afs').value = '';
   renderColisList();
   showView('view-colonne');
 }
@@ -660,9 +699,11 @@ function renderColisList() {
         <div class="colis-ref">${colis.ref}</div>
         ${colis.note ? `<div class="colis-note">${colis.note}</div>` : ''}
         ${(colis.count || 1) > 1 ? `<span class="colis-count-badge">${colis.count} colis</span>` : ''}
+        ${colis.afs && colis.afs.length ? `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">${colis.afs.map(a => `<span style="font-size:0.5rem;background:#1a2a3a;color:#60a5fa;padding:2px 6px;border-radius:10px;letter-spacing:1px;">AFS ${a}</span>`).join('')}</div>` : ''}
       </div>
       <span class="colis-urgence ${ageClass(colis.ts)}">${ageLabel(colis.ts)}</span>
       <div class="colis-actions">
+        <button class="btn-check" onclick="openColis(${idx})" style="font-size:0.7rem;">✏️</button>
         <button class="btn-check" onclick="toggleDone(${idx})">${colis.done ? '✓' : '○'}</button>
         <button class="btn-del" onclick="deleteColis(${idx})">×</button>
       </div>
@@ -676,18 +717,95 @@ function addColis() {
   if (!ref) { showToast('Entrez une référence'); return; }
   const note = document.getElementById('inp-note').value.trim();
   const count = parseInt(document.getElementById('inp-count').value) || 1;
+  const afsRaw = document.getElementById('inp-afs').value.trim();
+  const afs = afsRaw ? afsRaw.split(/[,;\s]+/).filter(a => a) : [];
 
   if (!state[currentCol]) state[currentCol] = { colis: [], company: '' };
   if (!state[currentCol].colis) state[currentCol].colis = [];
-  state[currentCol].colis.push({ ref, note, count, done: false, ts: Date.now() });
+  state[currentCol].colis.push({ ref, note, count, afs, done: false, ts: Date.now() });
 
   document.getElementById('inp-ref').value = '';
   document.getElementById('inp-note').value = '';
   document.getElementById('inp-count').value = '1';
+  document.getElementById('inp-afs').value = '';
 
   renderColisList();
   scheduleSave();
   showToast('Colis ajouté ✓');
+}
+
+let currentColisIdx = null;
+
+function openColis(idx) {
+  currentColisIdx = idx;
+  const colis = state[currentCol].colis[idx];
+  document.getElementById('colis-title').textContent = colis.ref;
+  document.getElementById('colis-sub').textContent = currentCol + ' — ' + ETAGE_LABELS[currentCol[0]].label;
+  document.getElementById('edit-ref').value = colis.ref;
+  document.getElementById('edit-note').value = colis.note || '';
+  document.getElementById('edit-count').value = colis.count || 1;
+  document.getElementById('inp-new-afs').value = '';
+  renderAFSList();
+  showView('view-colis');
+}
+
+function renderAFSList() {
+  const colis = state[currentCol].colis[currentColisIdx];
+  const afs = colis.afs || [];
+  const container = document.getElementById('afs-list');
+
+  if (!afs.length) {
+    container.innerHTML = '<div style="font-size:0.55rem;color:#333;letter-spacing:2px;">Aucun AFS associé</div>';
+    return;
+  }
+
+  container.innerHTML = afs.map((a, i) => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="flex:1;font-size:0.75rem;background:#1a2a3a;color:#60a5fa;padding:6px 10px;border-radius:4px;letter-spacing:1px;">AFS ${a}</span>
+      <button onclick="removeAFS(${i})" style="background:none;border:none;color:#333;font-size:1.1rem;cursor:pointer;padding:2px 6px;">×</button>
+    </div>
+  `).join('');
+}
+
+function addAFS() {
+  const val = document.getElementById('inp-new-afs').value.trim();
+  if (!val) return;
+  const nums = val.split(/[,;\s]+/).filter(a => a);
+  if (!state[currentCol].colis[currentColisIdx].afs) {
+    state[currentCol].colis[currentColisIdx].afs = [];
+  }
+  nums.forEach(n => state[currentCol].colis[currentColisIdx].afs.push(n));
+  document.getElementById('inp-new-afs').value = '';
+  renderAFSList();
+  renderColisList();
+  scheduleSave();
+  showToast('AFS ajouté ✓');
+}
+
+function removeAFS(afsIdx) {
+  state[currentCol].colis[currentColisIdx].afs.splice(afsIdx, 1);
+  renderAFSList();
+  renderColisList();
+  scheduleSave();
+}
+
+function saveColis() {
+  const ref = document.getElementById('edit-ref').value.trim();
+  if (!ref) { showToast('Entrez une référence'); return; }
+  const note = document.getElementById('edit-note').value.trim();
+  const count = parseInt(document.getElementById('edit-count').value) || 1;
+  state[currentCol].colis[currentColisIdx].ref = ref;
+  state[currentCol].colis[currentColisIdx].note = note;
+  state[currentCol].colis[currentColisIdx].count = count;
+  renderColisList();
+  renderRack();
+  scheduleSave();
+  showToast('Colis modifié ✓');
+}
+
+function backToColonne() {
+  renderColisList();
+  showView('view-colonne');
 }
 
 function toggleDone(idx) {
