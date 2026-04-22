@@ -356,6 +356,15 @@
   </div>
   <div class="col-body">
     <div class="add-form">
+      <div class="form-title">▸ ENTREPRISE ASSOCIÉE</div>
+      <div class="form-row">
+        <input class="form-input" id="inp-company" placeholder="Nom entreprise (ex: ESRT, PICANOL...)" />
+        <button class="btn-add" style="width:auto;padding:9px 14px;" onclick="saveCompany()">✓</button>
+      </div>
+      <div style="font-size:0.5rem;color:#444;letter-spacing:1px;margin-top:-4px;">Laissez vide pour retirer l'entreprise</div>
+    </div>
+
+    <div class="add-form">
       <div class="form-title">▸ AJOUTER UN COLIS</div>
       <div class="form-row">
         <input class="form-input" id="inp-ref" placeholder="Référence / N° commande" />
@@ -440,7 +449,7 @@ function initState() {
   const s = {};
   ETAGES.forEach(e => {
     for (let i = 1; i <= COLS; i++) {
-      s[`${e}${i}`] = [];
+      s[`${e}${i}`] = { colis: [], company: '' };
     }
   });
   return s;
@@ -456,7 +465,11 @@ async function loadFromServer() {
     ETAGES.forEach(e => {
       for (let i = 1; i <= COLS; i++) {
         const id = `${e}${i}`;
-        if (!state[id]) state[id] = [];
+        if (!state[id]) state[id] = { colis: [], company: '' };
+        // Migration ancien format (tableau)
+        if (Array.isArray(state[id])) state[id] = { colis: state[id], company: '' };
+        if (!state[id].colis) state[id].colis = [];
+        if (!state[id].company) state[id].company = '';
       }
     });
     setSyncDot('ok');
@@ -504,7 +517,7 @@ setInterval(() => {
 // RENDU RACK
 // ══════════════════════════════════════════
 function dominantColor(id) {
-  const active = (state[id] || []).filter(c => !c.done);
+  const active = (state[id]?.colis || []).filter(c => !c.done);
   if (!active.length) return null;
   const oldest = active.reduce((a, b) => (a.ts < b.ts ? a : b));
   return ageColor(oldest.ts);
@@ -558,7 +571,8 @@ function renderRack() {
 
     for (let i = 1; i <= COLS; i++) {
       const id = `${etage}${i}`;
-      const all = state[id] || [];
+      const all = state[id]?.colis || [];
+      const company = state[id]?.company || '';
       const active = all.filter(c => !c.done);
       const color = dominantColor(id);
       const totalColis = active.reduce((sum, c) => sum + (c.count || 1), 0);
@@ -573,9 +587,10 @@ function renderRack() {
 
       card.innerHTML += `
         <div class="emp-top">
-          <span class="emp-id">${id}${EMP_LABELS[id] ? ` <span style="font-size:0.7rem;color:#f59e0b;font-family:'DM Mono'">— ${EMP_LABELS[id]}</span>` : ''}</span>
+          <span class="emp-id">${id}</span>
           <span class="emp-badge ${active.length ? 'has' : ''}">${totalColis > 0 ? totalColis + ' colis' : '—'}</span>
         </div>
+        ${company ? `<div style="font-size:0.55rem;color:#f59e0b;letter-spacing:1px;margin-bottom:4px;">🏭 ${company}</div>` : ''}
         <div class="emp-preview">
           ${active.slice(0,2).map(c =>
             `<span class="emp-preview-item ${ageClass(c.ts)}">${c.ref}${c.count > 1 ? ` ×${c.count}` : ''}</span>`
@@ -609,8 +624,10 @@ function renderRack() {
 function openColonne(id) {
   currentCol = id;
   const info = ETAGE_LABELS[id[0]];
-  document.getElementById('col-title').textContent = id + (EMP_LABELS[id] ? ` — ${EMP_LABELS[id]}` : '');
+  const company = state[id]?.company || '';
+  document.getElementById('col-title').textContent = id;
   document.getElementById('col-sub').textContent = info.label;
+  document.getElementById('inp-company').value = company;
   document.getElementById('inp-ref').value = '';
   document.getElementById('inp-note').value = '';
   document.getElementById('inp-count').value = '1';
@@ -620,7 +637,7 @@ function openColonne(id) {
 
 function renderColisList() {
   const list = document.getElementById('colis-list');
-  const all = state[currentCol] || [];
+  const all = state[currentCol]?.colis || [];
 
   if (!all.length) {
     list.innerHTML = '<div class="empty-col">AUCUN COLIS<br>Ajoutez-en un ci-dessus</div>';
@@ -660,8 +677,9 @@ function addColis() {
   const note = document.getElementById('inp-note').value.trim();
   const count = parseInt(document.getElementById('inp-count').value) || 1;
 
-  if (!state[currentCol]) state[currentCol] = [];
-  state[currentCol].push({ ref, note, count, done: false, ts: Date.now() });
+  if (!state[currentCol]) state[currentCol] = { colis: [], company: '' };
+  if (!state[currentCol].colis) state[currentCol].colis = [];
+  state[currentCol].colis.push({ ref, note, count, done: false, ts: Date.now() });
 
   document.getElementById('inp-ref').value = '';
   document.getElementById('inp-note').value = '';
@@ -673,17 +691,26 @@ function addColis() {
 }
 
 function toggleDone(idx) {
-  state[currentCol][idx].done = !state[currentCol][idx].done;
+  state[currentCol].colis[idx].done = !state[currentCol].colis[idx].done;
   renderColisList();
   renderRack();
   scheduleSave();
 }
 
 function deleteColis(idx) {
-  state[currentCol].splice(idx, 1);
+  state[currentCol].colis.splice(idx, 1);
   renderColisList();
   renderRack();
   scheduleSave();
+}
+
+function saveCompany() {
+  const company = document.getElementById('inp-company').value.trim();
+  if (!state[currentCol]) state[currentCol] = { colis: [], company: '' };
+  state[currentCol].company = company;
+  renderRack();
+  scheduleSave();
+  showToast(company ? `Entreprise "${company}" enregistrée ✓` : 'Entreprise retirée ✓');
 }
 
 // ══════════════════════════════════════════
