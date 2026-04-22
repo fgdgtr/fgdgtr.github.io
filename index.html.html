@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AUEM — Rack Réception</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #f0ede8;
+    --muted: #666;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-title { font-family: 'Bebas Neue'; font-size: 1.4rem; letter-spacing: 3px; }
+  .header-sub { font-size: 0.5rem; color: var(--muted); letter-spacing: 2px; }
+
+  .sync-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+  .sync-dot.ok { background: var(--green); }
+  .sync-dot.loading { background: var(--yellow); animation: pulse 0.8s infinite alternate; }
+  .sync-dot.error { background: var(--red); }
+  @keyframes pulse { from { opacity: 0.4; } to { opacity: 1; } }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* LOADING */
+  .loading-screen {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 60vh; gap: 16px;
+  }
+  .loading-spinner {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--text);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 0.6rem; color: var(--muted); letter-spacing: 3px; }
+
+  /* RACK VIEW */
+  .rack-view { padding: 14px; }
+  .section-title { font-size: 0.55rem; color: var(--muted); letter-spacing: 3px; margin-bottom: 12px; }
+
+  .etage-block { margin-bottom: 16px; }
+
+  .etage-label {
+    font-family: 'Bebas Neue'; font-size: 1rem; letter-spacing: 3px;
+    color: var(--muted); margin-bottom: 8px;
+    border-left: 2px solid var(--border); padding-left: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .etage-badge {
+    font-size: 0.45rem; padding: 2px 6px;
+    border: 1px solid var(--border); border-radius: 10px;
+    color: var(--muted); letter-spacing: 1px;
+  }
+
+  .emplacements-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .emp-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 8px;
+    cursor: pointer;
+    min-height: 72px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .emp-card:active { transform: scale(0.97); }
+
+  .emp-top {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 6px;
+  }
+
+  .emp-id { font-family: 'Bebas Neue'; font-size: 1.2rem; letter-spacing: 2px; }
+
+  .emp-badge {
+    font-size: 0.5rem; padding: 2px 5px;
+    border-radius: 10px; background: var(--border); color: var(--muted);
+  }
+  .emp-badge.has { background: #1a2e1a; color: var(--green); }
+
+  .emp-preview { font-size: 0.5rem; color: var(--muted); line-height: 1.7; }
+  .emp-preview-item { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .emp-preview-item.urgent { color: var(--red); }
+  .emp-preview-item.attention { color: var(--yellow); }
+  .emp-preview-item.ok { color: #4ade80; }
+
+  .emp-indicator {
+    position: absolute; top: 8px; right: 8px;
+    width: 7px; height: 7px; border-radius: 50%;
+  }
+
+  /* SEPARATEUR RACK */
+  .rack-separator {
+    display: flex; align-items: center; gap: 8px;
+    margin: 4px 0 14px;
+  }
+  .sep-line-h { flex: 1; height: 1px; background: #2a2a2a; }
+  .sep-text { font-size: 0.45rem; color: #3a3a3a; letter-spacing: 2px; white-space: nowrap; }
+
+  /* COLONNE VIEW */
+  .col-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .btn-back {
+    background: none; border: none; color: var(--text);
+    font-size: 1.3rem; cursor: pointer; padding: 2px 6px;
+  }
+
+  .col-id { font-family: 'Bebas Neue'; font-size: 1.6rem; letter-spacing: 3px; }
+  .col-sub { font-size: 0.5rem; color: var(--muted); letter-spacing: 2px; }
+
+  .col-body { padding: 14px; }
+
+  /* FORM */
+  .add-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px; margin-bottom: 16px;
+  }
+
+  .form-title { font-size: 0.5rem; color: var(--muted); letter-spacing: 3px; margin-bottom: 10px; }
+
+  .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
+
+  .form-input {
+    flex: 1; background: var(--bg);
+    border: 1px solid var(--border); color: var(--text);
+    font-family: 'DM Mono'; font-size: 0.8rem;
+    padding: 9px 10px; border-radius: 3px; outline: none;
+  }
+  .form-input::placeholder { color: #444; }
+  .form-input:focus { border-color: #555; }
+
+  .form-select {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Mono'; font-size: 0.7rem;
+    padding: 9px 6px; border-radius: 3px; outline: none;
+  }
+
+  .btn-add {
+    width: 100%; background: #1f1f1f;
+    border: 1px solid #444; color: var(--text);
+    font-family: 'DM Mono'; font-size: 0.65rem;
+    letter-spacing: 2px; padding: 10px;
+    border-radius: 3px; cursor: pointer;
+  }
+  .btn-add:active { background: #333; }
+
+  /* COLIS LIST */
+  .colis-section-title {
+    font-size: 0.5rem; color: var(--muted);
+    letter-spacing: 3px; margin-bottom: 10px;
+  }
+
+  .colis-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px; margin-bottom: 8px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+
+  .colis-item.done { opacity: 0.3; }
+
+  .colis-color-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 3px;
+  }
+
+  .colis-info { flex: 1; min-width: 0; }
+
+  .colis-ref {
+    font-size: 0.8rem; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .colis-item.done .colis-ref { text-decoration: line-through; color: var(--muted); }
+
+  .colis-note { font-size: 0.55rem; color: var(--muted); margin-top: 3px; }
+
+  .colis-count-badge {
+    font-size: 0.5rem; color: var(--muted);
+    background: var(--border); padding: 2px 6px;
+    border-radius: 10px; margin-top: 4px; display: inline-block;
+  }
+
+  .colis-urgence {
+    font-size: 0.45rem; padding: 2px 6px;
+    border-radius: 10px; letter-spacing: 1px; flex-shrink: 0;
+  }
+  .u-urgent { background: #3a0f0f; color: var(--red); }
+  .u-attention { background: #3a2a0f; color: var(--yellow); }
+  .u-ok { background: #0f2a0f; color: var(--green); }
+
+  .colis-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+  .btn-check {
+    background: none; border: 1px solid var(--border);
+    color: var(--muted); width: 28px; height: 28px;
+    border-radius: 50%; cursor: pointer; font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .colis-item.done .btn-check { border-color: var(--green); color: var(--green); }
+
+  .btn-del {
+    background: none; border: none; color: #333;
+    font-size: 1.1rem; cursor: pointer; padding: 2px 4px;
+    transition: color 0.15s;
+  }
+  .btn-del:active { color: var(--red); }
+
+  .empty-col {
+    text-align: center; padding: 28px;
+    font-size: 0.55rem; color: #333; letter-spacing: 2px;
+  }
+
+  /* QR VIEW */
+  .qr-view { padding: 16px; }
+  .qr-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .qr-main-title { font-family: 'Bebas Neue'; font-size: 1.3rem; letter-spacing: 3px; }
+  .qr-subtitle { font-size: 0.55rem; color: var(--muted); letter-spacing: 2px; margin-bottom: 20px; }
+
+  .qr-center {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 14px;
+  }
+
+  .qr-box {
+    background: white; padding: 16px;
+    border-radius: 6px; display: inline-block;
+  }
+
+  .qr-box canvas { display: block; }
+
+  .qr-label {
+    font-family: 'Bebas Neue'; font-size: 1rem;
+    letter-spacing: 3px; text-align: center;
+    color: var(--muted);
+  }
+
+  .qr-instructions {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 14px; width: 100%;
+    font-size: 0.55rem; line-height: 1.9; color: var(--muted);
+  }
+
+  .qr-instructions strong { color: var(--text); display: block; margin-bottom: 4px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #222; border: 1px solid #444;
+    color: var(--text); font-size: 0.6rem; letter-spacing: 2px;
+    padding: 10px 20px; border-radius: 20px;
+    transition: transform 0.3s; z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* BTN QR HEADER */
+  .btn-header {
+    background: var(--border); border: 1px solid #444;
+    color: var(--text); font-family: 'DM Mono'; font-size: 0.55rem;
+    letter-spacing: 2px; padding: 6px 10px;
+    border-radius: 3px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">RACK RÉCEPTION</div>
+    <div class="header-sub">AUEM — 5S</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="sync-dot loading" id="sync-dot" title="Synchronisation"></div>
+    <button class="btn-header" onclick="showQR()">QR</button>
+  </div>
+</div>
+
+<!-- VUE RACK -->
+<div class="view active" id="view-rack">
+  <div class="rack-view">
+    <div class="section-title">▸ D = HAUT — A = BAS — Appuyez pour modifier</div>
+    <div id="rack-grid">
+      <div class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">CHARGEMENT...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VUE COLONNE -->
+<div class="view" id="view-colonne">
+  <div class="col-header">
+    <button class="btn-back" onclick="showRack()">←</button>
+    <div>
+      <div class="col-id" id="col-title">A1</div>
+      <div class="col-sub" id="col-sub">EMPLACEMENT</div>
+    </div>
+  </div>
+  <div class="col-body">
+    <div class="add-form">
+      <div class="form-title">▸ AJOUTER UN COLIS</div>
+      <div class="form-row">
+        <input class="form-input" id="inp-ref" placeholder="Référence / N° commande" />
+      </div>
+      <div class="form-row">
+        <input class="form-input" id="inp-note" placeholder="Note (optionnel)" style="flex:1" />
+        <input class="form-input" id="inp-count" type="number" min="1" max="99" value="1" placeholder="Qté" style="width:60px;flex:none" />
+      </div>
+      <button class="btn-add" onclick="addColis()">+ AJOUTER CE COLIS</button>
+    </div>
+    <div class="colis-section-title">▸ COLIS EN COURS</div>
+    <div id="colis-list"></div>
+  </div>
+</div>
+
+<!-- VUE QR -->
+<div class="view" id="view-qr">
+  <div class="qr-view">
+    <div class="qr-header">
+      <button class="btn-back" onclick="showRack()">←</button>
+      <div class="qr-main-title">QR CODE RACK</div>
+    </div>
+    <div class="qr-subtitle">1 SEUL QR CODE — TOUS LES OPÉRATEURS</div>
+    <div class="qr-center">
+      <div class="qr-box">
+        <div id="qr-container" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;background:#f5f5f5;border-radius:4px;">
+          <span style="font-size:0.6rem;color:#999;letter-spacing:2px;">CHARGEMENT...</span>
+        </div>
+      </div>
+      <div class="qr-label">RACK RÉCEPTION AUEM</div>
+      <div class="qr-instructions">
+        <strong>Comment utiliser</strong>
+        1. Imprimez ce QR code et plastifiez-le<br>
+        2. Fixez-le sur le rack à hauteur des yeux<br>
+        3. Chaque opérateur scanne et voit tout en temps réel<br>
+        4. Les modifications sont visibles instantanément par tous<br>
+        <br>
+        <strong>Code couleur automatique par ancienneté</strong>
+        🟢 Vert — arrivé depuis moins d'1 semaine<br>
+        🟡 Jaune — arrivé depuis 1 à 2 semaines<br>
+        🔴 Rouge — arrivé depuis plus de 2 semaines
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+const ETAGES = ['D','C','B','A']; // D en haut, A en bas dans l'affichage
+const ETAGE_LABELS = {
+  'D': { label: 'ÉTAGE D — HAUT', badge: 'Gerbeur obligatoire' },
+  'C': { label: 'ÉTAGE C', badge: 'Gerbeur nécessaire' },
+  'B': { label: 'ÉTAGE B', badge: 'Accessible à la main' },
+  'A': { label: 'ÉTAGE A — BAS', badge: 'Niveau sol' },
+};
+const COLS = 6;
+
+// JSONBin config - données partagées entre tous
+const BIN_ID = '683588f78a456b796681cdf5';
+const API_KEY = '$2a$10$oBF7dCNKGPDqSZaFgkBMy.RKm3ZxGH8qe1vJFYnT3pLsWQdAiEuOG';
+const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+let state = {};
+let currentCol = null;
+let saveTimer = null;
+
+// ══════════════════════════════════════════
+// SYNC
+// ══════════════════════════════════════════
+function setSyncDot(status) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot ' + status;
+}
+
+function initState() {
+  const s = {};
+  ETAGES.forEach(e => {
+    for (let i = 1; i <= COLS; i++) {
+      s[`${e}${i}`] = [];
+    }
+  });
+  return s;
+}
+
+async function loadFromServer() {
+  setSyncDot('loading');
+  try {
+    const res = await fetch(API_URL + '/latest', {
+      headers: { 'X-Master-Key': API_KEY }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    state = data.record || initState();
+    // S'assurer que tous les emplacements existent
+    ETAGES.forEach(e => {
+      for (let i = 1; i <= COLS; i++) {
+        const id = `${e}${i}`;
+        if (!state[id]) state[id] = [];
+      }
+    });
+    setSyncDot('ok');
+    renderRack();
+  } catch(err) {
+    // Fallback localStorage
+    try {
+      const saved = localStorage.getItem('auem_rack_v2');
+      state = saved ? JSON.parse(saved) : initState();
+    } catch(e) { state = initState(); }
+    setSyncDot('error');
+    renderRack();
+    showToast('Mode hors-ligne — modifications locales uniquement');
+  }
+}
+
+async function saveToServer() {
+  setSyncDot('loading');
+  try {
+    await fetch(API_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': API_KEY
+      },
+      body: JSON.stringify(state)
+    });
+    localStorage.setItem('auem_rack_v2', JSON.stringify(state));
+    setSyncDot('ok');
+  } catch(err) {
+    localStorage.setItem('auem_rack_v2', JSON.stringify(state));
+    setSyncDot('error');
+  }
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToServer, 800);
+}
+
+// Auto-refresh toutes les 30 secondes
+setInterval(() => {
+  if (document.getElementById('view-rack').classList.contains('active')) {
+    loadFromServer();
+  }
+}, 30000);
+
+// ══════════════════════════════════════════
+// RENDU RACK
+// ══════════════════════════════════════════
+function dominantColor(id) {
+  const active = (state[id] || []).filter(c => !c.done);
+  if (!active.length) return null;
+  const oldest = active.reduce((a, b) => (a.ts < b.ts ? a : b));
+  return ageColor(oldest.ts);
+}
+
+// Couleur basée sur l'ancienneté du colis
+function ageColor(ts) {
+  const days = (Date.now() - ts) / (1000 * 60 * 60 * 24);
+  if (days >= 14) return '#ef4444'; // rouge après 2 semaines
+  if (days >= 7)  return '#f59e0b'; // jaune après 1 semaine
+  return '#22c55e'; // vert à l'arrivée
+}
+
+function ageClass(ts) {
+  const days = (Date.now() - ts) / (1000 * 60 * 60 * 24);
+  if (days >= 14) return 'u-urgent';
+  if (days >= 7)  return 'u-attention';
+  return 'u-ok';
+}
+
+function ageLabel(ts) {
+  const days = Math.floor((Date.now() - ts) / (1000 * 60 * 60 * 24));
+  if (days === 0) return "Aujourd'hui";
+  if (days === 1) return '1 jour';
+  return `${days} jours`;
+}
+
+// Garde urgColor pour compatibilité
+function urgColor(u) { return '#22c55e'; }
+function urgClass(u) { return 'u-ok'; }
+function urgLabel(u) { return 'OK'; }
+
+function renderRack() {
+  const grid = document.getElementById('rack-grid');
+  grid.innerHTML = '';
+
+  ETAGES.forEach((etage, ei) => {
+    const info = ETAGE_LABELS[etage];
+    const block = document.createElement('div');
+    block.className = 'etage-block';
+
+    block.innerHTML = `
+      <div class="etage-label">
+        ${info.label}
+        <span class="etage-badge">${info.badge}</span>
+      </div>
+    `;
+
+    const empGrid = document.createElement('div');
+    empGrid.className = 'emplacements-grid';
+
+    for (let i = 1; i <= COLS; i++) {
+      const id = `${etage}${i}`;
+      const all = state[id] || [];
+      const active = all.filter(c => !c.done);
+      const color = dominantColor(id);
+      const totalColis = active.reduce((sum, c) => sum + (c.count || 1), 0);
+
+      const card = document.createElement('div');
+      card.className = `emp-card ${active.length ? 'has-items' : 'empty'}`;
+      if (color) card.style.borderColor = color + '66';
+
+      if (color) {
+        card.innerHTML += `<div class="emp-indicator" style="background:${color}"></div>`;
+      }
+
+      card.innerHTML += `
+        <div class="emp-top">
+          <span class="emp-id">${id}</span>
+          <span class="emp-badge ${active.length ? 'has' : ''}">${totalColis > 0 ? totalColis + ' colis' : '—'}</span>
+        </div>
+        <div class="emp-preview">
+          ${active.slice(0,2).map(c =>
+            `<span class="emp-preview-item ${ageClass(c.ts)}">${c.ref}${c.count > 1 ? ` ×${c.count}` : ''}</span>`
+          ).join('')}
+          ${active.length > 2 ? `<span class="emp-preview-item">+${active.length - 2} autres</span>` : ''}
+          ${!active.length ? '<span style="color:#2a2a2a">vide</span>' : ''}
+        </div>
+      `;
+
+      card.onclick = () => openColonne(id);
+      empGrid.appendChild(card);
+    }
+
+    block.appendChild(empGrid);
+
+    // Séparateur entre B et A (passage hauteur d'homme)
+    if (etage === 'B') {
+      const sep = document.createElement('div');
+      sep.className = 'rack-separator';
+      sep.innerHTML = `<div class="sep-line-h"></div><div class="sep-text">HAUTEUR D'HOMME</div><div class="sep-line-h"></div>`;
+      block.appendChild(sep);
+    }
+
+    grid.appendChild(block);
+  });
+}
+
+// ══════════════════════════════════════════
+// COLONNE DÉTAIL
+// ══════════════════════════════════════════
+function openColonne(id) {
+  currentCol = id;
+  const info = ETAGE_LABELS[id[0]];
+  document.getElementById('col-title').textContent = id;
+  document.getElementById('col-sub').textContent = info.label;
+  document.getElementById('inp-ref').value = '';
+  document.getElementById('inp-note').value = '';
+  document.getElementById('inp-count').value = '1';
+  renderColisList();
+  showView('view-colonne');
+}
+
+function renderColisList() {
+  const list = document.getElementById('colis-list');
+  const all = state[currentCol] || [];
+
+  if (!all.length) {
+    list.innerHTML = '<div class="empty-col">AUCUN COLIS<br>Ajoutez-en un ci-dessus</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+
+  // Actifs d'abord, terminés ensuite
+  const sorted = [...all.filter(c => !c.done), ...all.filter(c => c.done)];
+
+  sorted.forEach((colis, rawIdx) => {
+    const idx = all.indexOf(colis);
+    const item = document.createElement('div');
+    item.className = `colis-item ${colis.done ? 'done' : ''}`;
+
+    item.innerHTML = `
+      <div class="colis-color-dot" style="background:${ageColor(colis.ts)}"></div>
+      <div class="colis-info">
+        <div class="colis-ref">${colis.ref}</div>
+        ${colis.note ? `<div class="colis-note">${colis.note}</div>` : ''}
+        ${(colis.count || 1) > 1 ? `<span class="colis-count-badge">${colis.count} colis</span>` : ''}
+      </div>
+      <span class="colis-urgence ${ageClass(colis.ts)}">${ageLabel(colis.ts)}</span>
+      <div class="colis-actions">
+        <button class="btn-check" onclick="toggleDone(${idx})">${colis.done ? '✓' : '○'}</button>
+        <button class="btn-del" onclick="deleteColis(${idx})">×</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function addColis() {
+  const ref = document.getElementById('inp-ref').value.trim();
+  if (!ref) { showToast('Entrez une référence'); return; }
+  const note = document.getElementById('inp-note').value.trim();
+  const count = parseInt(document.getElementById('inp-count').value) || 1;
+
+  if (!state[currentCol]) state[currentCol] = [];
+  state[currentCol].push({ ref, note, count, done: false, ts: Date.now() });
+
+  document.getElementById('inp-ref').value = '';
+  document.getElementById('inp-note').value = '';
+  document.getElementById('inp-count').value = '1';
+
+  renderColisList();
+  scheduleSave();
+  showToast('Colis ajouté ✓');
+}
+
+function toggleDone(idx) {
+  state[currentCol][idx].done = !state[currentCol][idx].done;
+  renderColisList();
+  renderRack();
+  scheduleSave();
+}
+
+function deleteColis(idx) {
+  state[currentCol].splice(idx, 1);
+  renderColisList();
+  renderRack();
+  scheduleSave();
+}
+
+// ══════════════════════════════════════════
+// QR CODE
+// ══════════════════════════════════════════
+function showQR() {
+  const url = window.location.href.split('?')[0];
+  const container = document.getElementById('qr-container');
+  container.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=111111&margin=10" style="display:block;width:200px;height:200px;" />`;
+  showView('view-qr');
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showRack() {
+  renderRack();
+  showView('view-rack');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+loadFromServer();
+</script>
+</body>
+</html>
