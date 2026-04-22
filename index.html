@@ -573,7 +573,7 @@ function renderRack() {
 
       card.innerHTML += `
         <div class="emp-top">
-          <span class="emp-id">${id}</span>
+          <span class="emp-id">${id}${EMP_LABELS[id] ? ` <span style="font-size:0.7rem;color:#f59e0b;font-family:'DM Mono'">— ${EMP_LABELS[id]}</span>` : ''}</span>
           <span class="emp-badge ${active.length ? 'has' : ''}">${totalColis > 0 ? totalColis + ' colis' : '—'}</span>
         </div>
         <div class="emp-preview">
@@ -609,7 +609,7 @@ function renderRack() {
 function openColonne(id) {
   currentCol = id;
   const info = ETAGE_LABELS[id[0]];
-  document.getElementById('col-title').textContent = id;
+  document.getElementById('col-title').textContent = id + (EMP_LABELS[id] ? ` — ${EMP_LABELS[id]}` : '');
   document.getElementById('col-sub').textContent = info.label;
   document.getElementById('inp-ref').value = '';
   document.getElementById('inp-note').value = '';
