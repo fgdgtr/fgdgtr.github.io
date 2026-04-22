@@ -418,10 +418,8 @@ const ETAGE_LABELS = {
 };
 const COLS = 6;
 
-// JSONBin config - données partagées entre tous
-const BIN_ID = '683588f78a456b796681cdf5';
-const API_KEY = '$2a$10$oBF7dCNKGPDqSZaFgkBMy.RKm3ZxGH8qe1vJFYnT3pLsWQdAiEuOG';
-const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+// Firebase config
+const FIREBASE_URL = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/rack.json';
 
 let state = {};
 let currentCol = null;
@@ -448,13 +446,10 @@ function initState() {
 async function loadFromServer() {
   setSyncDot('loading');
   try {
-    const res = await fetch(API_URL + '/latest', {
-      headers: { 'X-Master-Key': API_KEY }
-    });
+    const res = await fetch(FIREBASE_URL);
     if (!res.ok) throw new Error();
     const data = await res.json();
-    state = data.record || initState();
-    // S'assurer que tous les emplacements existent
+    state = data || initState();
     ETAGES.forEach(e => {
       for (let i = 1; i <= COLS; i++) {
         const id = `${e}${i}`;
@@ -464,7 +459,6 @@ async function loadFromServer() {
     setSyncDot('ok');
     renderRack();
   } catch(err) {
-    // Fallback localStorage
     try {
       const saved = localStorage.getItem('auem_rack_v2');
       state = saved ? JSON.parse(saved) : initState();
@@ -478,12 +472,9 @@ async function loadFromServer() {
 async function saveToServer() {
   setSyncDot('loading');
   try {
-    await fetch(API_URL, {
+    await fetch(FIREBASE_URL, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': API_KEY
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(state)
     });
     localStorage.setItem('auem_rack_v2', JSON.stringify(state));
