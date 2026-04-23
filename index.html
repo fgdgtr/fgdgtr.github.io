@@ -1,11 +1,11 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>AUEM — Rack</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="[fonts.googleapis.com](https://fonts.googleapis.com)">
+<link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap)" rel="stylesheet">
 <style>
 :root {
   --bg: #080808;
@@ -26,6 +26,8 @@
   --red-bg: #3d0a0a;
   --blue: #3b82f6;
   --blue-bg: #0d1a35;
+  --purple: #a855f7;
+  --purple-bg: #2e1065;
   --r: 12px;
   --r-sm: 8px;
   --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
@@ -135,8 +137,6 @@ body {
 .sr-age { font-size: 11px; font-family: 'DM Mono', monospace; flex-shrink: 0; }
 .search-empty { padding: 16px; text-align: center; color: var(--text3); font-size: 13px; }
 
-
-
 /* FILTER BAR */
 .filter-bar { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .filter-bar::-webkit-scrollbar { display: none; }
@@ -189,8 +189,6 @@ body {
 .emp-previews { display: flex; flex-direction: column; gap: 2px; }
 .emp-prev { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text3); font-family: 'DM Mono', monospace; }
 .emp-prev.c-green { color: var(--green); } .emp-prev.c-yellow { color: var(--yellow); } .emp-prev.c-red { color: var(--red); }
-
-
 
 /* SEP */
 .sep-rack { display: flex; align-items: center; gap: 8px; margin: 10px 0 14px; }
@@ -267,15 +265,17 @@ body {
 .colis-card.swiping .swipe-hint { opacity: 1; }
 .colis-stripe { width: 3px; border-radius: 3px; flex-shrink: 0; align-self: stretch; min-height: 42px; }
 .colis-body { flex: 1; min-width: 0; }
-.colis-ref { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
-.colis-card.done .colis-ref { text-decoration: line-through; color: var(--text3); }
+.colis-client { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
+.colis-card.done .colis-client { text-decoration: line-through; color: var(--text3); }
+.colis-company { font-size: 11px; color: var(--yellow); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .colis-meta { display: flex; align-items: center; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
-.colis-note-txt { font-size: 11px; color: var(--text2); font-style: italic; }
+.colis-arc-txt { font-size: 11px; color: var(--purple); font-weight: 500; }
 .badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; white-space: nowrap; font-family: 'DM Mono', monospace; }
 .b-green { background: var(--green-bg); color: var(--green); }
 .b-yellow { background: var(--yellow-bg); color: var(--yellow); }
 .b-red { background: var(--red-bg); color: var(--red); }
 .b-blue { background: var(--blue-bg); color: var(--blue); }
+.b-purple { background: var(--purple-bg); color: var(--purple); }
 .b-gray { background: var(--card); color: var(--text2); border: 1px solid var(--border2); }
 .colis-afs { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
 .colis-acts { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
@@ -465,7 +465,7 @@ body {
     </div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input class="search-inp" id="search-inp" placeholder="Référence, AFS, entreprise…" oninput="onSearch(this.value)" />
+      <input class="search-inp" id="search-inp" placeholder="N° client, AFS, ARC, entreprise…" oninput="onSearch(this.value)" />
       <button class="search-clear" id="search-clear" onclick="clearSearch()">×</button>
     </div>
     <div class="search-results" id="search-results"></div>
@@ -488,17 +488,10 @@ body {
   </div>
   <div class="view-body">
     <div class="section">
-      <div class="section-lbl">Entreprise associée</div>
-      <div class="inp-row">
-        <input class="inp" id="inp-company" placeholder="Ex: ESRT, PICANOL…" />
-        <button class="btn-sec" onclick="saveCompany()">✓</button>
-      </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:5px;">Laissez vide pour retirer</div>
-    </div>
-    <div class="section">
       <div class="section-lbl">Nouveau colis</div>
-      <div class="inp-row"><input class="inp" id="inp-ref" placeholder="Référence / N° commande" /></div>
-      <div class="inp-row"><input class="inp" id="inp-note" placeholder="Note (optionnel)" /></div>
+      <div class="inp-row"><input class="inp" id="inp-client" placeholder="N° Client" /></div>
+      <div class="inp-row"><input class="inp" id="inp-company" placeholder="Entreprise (ex: ESRT, PICANOL…)" /></div>
+      <div class="inp-row"><input class="inp" id="inp-arc" placeholder="ARC (optionnel)" /></div>
       <div class="inp-row"><input class="inp" id="inp-afs" placeholder="N° AFS — virgule si plusieurs" /></div>
       <button class="btn-main" onclick="addColis()">+ Ajouter ce colis</button>
     </div>
@@ -516,8 +509,9 @@ body {
   <div class="view-body">
     <div class="section">
       <div class="section-lbl">Informations</div>
-      <div class="inp-row"><input class="inp" id="edit-ref" placeholder="Référence" /></div>
-      <div class="inp-row"><input class="inp" id="edit-note" placeholder="Note (optionnel)" /></div>
+      <div class="inp-row"><input class="inp" id="edit-client" placeholder="N° Client" /></div>
+      <div class="inp-row"><input class="inp" id="edit-company" placeholder="Entreprise" /></div>
+      <div class="inp-row"><input class="inp" id="edit-arc" placeholder="ARC (optionnel)" /></div>
       <button class="btn-main" onclick="saveColis()">✓ Enregistrer</button>
     </div>
     <div class="section">
@@ -617,22 +611,27 @@ const ETAGE_INFO={
   'A':{name:'Étage A',desc:'Bas — niveau sol'},
 };
 const COLS=6;
-const FIREBASE='https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/rack.json';
+const FIREBASE='[auem-rac-default-rtdb.europe-west1.firebasedatabase.app](https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/rack.json)';
 
 let state={}, currentCol=null, currentColisIdx=null, saveTimer=null;
 let activeFilter='all', viewMode='normal', deleteTargetIdx=null;
 let activityLog=JSON.parse(localStorage.getItem('auem_log')||'[]');
 
 /* STATE */
-function initState(){const s={};ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++)s[`${e}${i}`]={colis:[],company:''};});return s;}
+function initState(){const s={};ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++)s[`${e}${i}`]={colis:[]};});return s;}
 function migrate(data){
   const s=data||initState();
   ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){
     const id=`${e}${i}`;
-    if(!s[id])s[id]={colis:[],company:''};
-    if(Array.isArray(s[id]))s[id]={colis:s[id],company:''};
+    if(!s[id])s[id]={colis:[]};
+    if(Array.isArray(s[id]))s[id]={colis:s[id]};
     if(!s[id].colis)s[id].colis=[];
-    if(!s[id].company)s[id].company='';
+    // Migration: convertir ref/note vers client/arc si nécessaire
+    s[id].colis.forEach(c=>{
+      if(c.ref && !c.client) { c.client = c.ref; delete c.ref; }
+      if(c.note && !c.arc) { c.arc = c.note; delete c.note; }
+      if(!c.company) c.company = '';
+    });
   }});
   return s;
 }
@@ -746,7 +745,6 @@ function renderRack(){
       if(!cardMatchesFilter(id))continue;
       anyVisible=true;
       const active=(state[id]?.colis||[]).filter(c=>!c.done);
-      const company=state[id]?.company||'';
       const dc=dominantClass(id);
       const card=document.createElement('div');
       card.className=`emp-card ${dc} ${active.length?'has-colis':''}`;
@@ -755,10 +753,9 @@ function renderRack(){
       }else{
         card.innerHTML=`
           <div class="emp-id">${id}</div>
-          ${company?`<div class="emp-company">🏭 ${company}</div>`:''}
           <div class="emp-badge ${active.length?'has':''}">${active.length||'Vide'}</div>
           <div class="emp-previews">
-            ${active.slice(0,2).map(c=>`<div class="emp-prev ${ageColor(c.ts)}">${c.ref}</div>`).join('')}
+            ${active.slice(0,2).map(c=>`<div class="emp-prev ${ageColor(c.ts)}">${c.client}${c.company?` · ${c.company}`:''}</div>`).join('')}
             ${active.length>2?`<div class="emp-prev">+${active.length-2}</div>`:''}
           </div>`;
       }
@@ -781,9 +778,9 @@ function onSearch(q){
   const hits=[];
   ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){
     const id=`${e}${i}`;
-    const comp=(state[id]?.company||'').toLowerCase();
     (state[id]?.colis||[]).filter(c=>!c.done).forEach(c=>{
-      if(c.ref.toLowerCase().includes(q.toLowerCase())||(c.note||'').toLowerCase().includes(q.toLowerCase())||comp.includes(q.toLowerCase())||(c.afs||[]).some(a=>a.toLowerCase().includes(q.toLowerCase())))
+      const searchStr = `${c.client||''} ${c.company||''} ${c.arc||''} ${(c.afs||[]).join(' ')}`.toLowerCase();
+      if(searchStr.includes(q.toLowerCase()))
         hits.push({id,colis:c});
     });
   }});
@@ -792,7 +789,7 @@ function onSearch(q){
   const agecol=(ts)=>{const d=ageDays(ts);return d>=14?'var(--red)':d>=7?'var(--yellow)':'var(--green)';};
   results.innerHTML=hits.slice(0,7).map(h=>`<div class="search-result-item" onclick="clearSearch();openColonne('${h.id}')">
     <span class="sr-loc">${h.id}</span>
-    <span class="sr-ref">${h.colis.ref}${h.colis.note?` <span style="color:var(--text3);font-size:11px;font-style:italic;">· ${h.colis.note}</span>`:''}</span>
+    <span class="sr-ref">${h.colis.client}${h.colis.company?` <span style="color:var(--yellow);font-size:11px;">· ${h.colis.company}</span>`:''}</span>
     <span class="sr-age" style="color:${agecol(h.colis.ts)}">${ageLabel(h.colis.ts)}</span>
   </div>`).join('');
 }
@@ -808,8 +805,7 @@ function openColonne(id){
   const info=ETAGE_INFO[id[0]];
   document.getElementById('col-title').textContent=id;
   document.getElementById('col-sub').textContent=info.name+' — '+info.desc;
-  document.getElementById('inp-company').value=state[id]?.company||'';
-  ['inp-ref','inp-note','inp-afs'].forEach(x=>document.getElementById(x).value='');
+  ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x=>document.getElementById(x).value='');
   renderColisList();showView('view-colonne');
 }
 
@@ -826,10 +822,11 @@ function renderColisList(){
       <div class="swipe-hint">✓ Retiré</div>
       <div class="colis-stripe" style="background:${colis.done?'#252525':ageStripe(colis.ts)}"></div>
       <div class="colis-body">
-        <div class="colis-ref">${colis.ref}</div>
+        <div class="colis-client">${colis.client}</div>
+        ${colis.company?`<div class="colis-company">🏭 ${colis.company}</div>`:''}
         <div class="colis-meta">
           ${!colis.done?`<span class="badge ${ageBadge(colis.ts)}">${ageLabel(colis.ts)}</span>`:'<span class="badge b-gray">Retiré</span>'}
-          ${colis.note?`<span class="colis-note-txt">· ${colis.note}</span>`:''}
+          ${colis.arc?`<span class="colis-arc-txt">ARC: ${colis.arc}</span>`:''}
         </div>
         ${colis.afs&&colis.afs.length?`<div class="colis-afs">${colis.afs.map(a=>`<span class="badge b-blue">AFS ${a}</span>`).join('')}</div>`:''}
       </div>
@@ -844,16 +841,17 @@ function renderColisList(){
 }
 
 function addColis(){
-  const ref=document.getElementById('inp-ref').value.trim();
-  if(!ref){showToast('Entrez une référence','⚠️');return;}
-  const note=document.getElementById('inp-note').value.trim();
+  const client=document.getElementById('inp-client').value.trim();
+  if(!client){showToast('Entrez un N° client','⚠️');return;}
+  const company=document.getElementById('inp-company').value.trim();
+  const arc=document.getElementById('inp-arc').value.trim();
   const afs=document.getElementById('inp-afs').value.trim().split(/[,;\s]+/).filter(Boolean);
-  if(!state[currentCol])state[currentCol]={colis:[],company:''};
-  state[currentCol].colis.push({ref,note,afs,done:false,ts:Date.now()});
-  ['inp-ref','inp-note','inp-afs'].forEach(x=>document.getElementById(x).value='');
+  if(!state[currentCol])state[currentCol]={colis:[]};
+  state[currentCol].colis.push({client,company,arc,afs,done:false,ts:Date.now()});
+  ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x=>document.getElementById(x).value='');
   renderColisList();renderRack();scheduleSave();
-  addLog('➕',`Colis ajouté : ${ref}`,currentCol);
-  showToast(`${ref} ajouté`,'✓');haptic('light');
+  addLog('➕',`Colis ajouté : ${client}${company?' · '+company:''}`,currentCol);
+  showToast(`${client} ajouté`,'✓');haptic('light');
 }
 
 function toggleDone(idx){
@@ -861,33 +859,25 @@ function toggleDone(idx){
   c.done=!c.done;
   if(c.done)spawnParticles();
   renderColisList();renderRack();scheduleSave();
-  addLog(c.done?'📦':'↩',c.done?`Retiré : ${c.ref}`:`Restauré : ${c.ref}`,currentCol);
+  addLog(c.done?'📦':'↩',c.done?`Retiré : ${c.client}`:`Restauré : ${c.client}`,currentCol);
   showToast(c.done?'Colis retiré ':'Restauré',c.done?'📦':'↩');
   haptic(c.done?'success':'light');
 }
 
 function askDelete(idx){
   deleteTargetIdx=idx;
-  document.getElementById('modal-ref-label').textContent=`Supprimer "${state[currentCol].colis[idx].ref}" définitivement ?`;
+  document.getElementById('modal-ref-label').textContent=`Supprimer "${state[currentCol].colis[idx].client}" définitivement ?`;
   document.getElementById('modal-confirm').classList.add('open');
 }
 function closeModal(){document.getElementById('modal-confirm').classList.remove('open');deleteTargetIdx=null;}
 function confirmDelete(){
   if(deleteTargetIdx===null)return;
-  const ref=state[currentCol].colis[deleteTargetIdx].ref;
+  const client=state[currentCol].colis[deleteTargetIdx].client;
   state[currentCol].colis.splice(deleteTargetIdx,1);
   renderColisList();renderRack();scheduleSave();closeModal();
-  addLog('🗑','Supprimé : '+ref,currentCol);showToast('Supprimé','🗑');haptic('heavy');
+  addLog('🗑','Supprimé : '+client,currentCol);showToast('Supprimé','🗑');haptic('heavy');
 }
 document.getElementById('modal-confirm').addEventListener('click',function(e){if(e.target===this)closeModal();});
-
-function saveCompany(){
-  const c=document.getElementById('inp-company').value.trim();
-  if(!state[currentCol])state[currentCol]={colis:[],company:''};
-  state[currentCol].company=c;renderRack();scheduleSave();
-  addLog('🏭',c?`Entreprise : ${c}`:'Entreprise retirée',currentCol);
-  showToast(c?`${c} enregistré`:'Retirée','🏭');haptic('light');
-}
 
 /* SWIPE */
 function initSwipe(card,idx){
@@ -906,10 +896,11 @@ function initSwipe(card,idx){
 /* COLIS DETAIL */
 function openColis(idx){
   currentColisIdx=idx;const c=state[currentCol].colis[idx];
-  document.getElementById('colis-title').textContent=c.ref;
+  document.getElementById('colis-title').textContent=c.client;
   document.getElementById('colis-sub').textContent=currentCol;
-  document.getElementById('edit-ref').value=c.ref;
-  document.getElementById('edit-note').value=c.note||'';
+  document.getElementById('edit-client').value=c.client;
+  document.getElementById('edit-company').value=c.company||'';
+  document.getElementById('edit-arc').value=c.arc||'';
   document.getElementById('inp-new-afs').value='';
   renderAFSList();showView('view-colis');
 }
@@ -927,10 +918,12 @@ function addAFS(){
 }
 function removeAFS(i){state[currentCol].colis[currentColisIdx].afs.splice(i,1);renderAFSList();renderColisList();scheduleSave();}
 function saveColis(){
-  const ref=document.getElementById('edit-ref').value.trim();if(!ref){showToast('Entrez une référence','⚠️');return;}
+  const client=document.getElementById('edit-client').value.trim();if(!client){showToast('Entrez un N° client','⚠️');return;}
   const c=state[currentCol].colis[currentColisIdx];
-  c.ref=ref;c.note=document.getElementById('edit-note').value.trim();
-  document.getElementById('colis-title').textContent=ref;
+  c.client=client;
+  c.company=document.getElementById('edit-company').value.trim();
+  c.arc=document.getElementById('edit-arc').value.trim();
+  document.getElementById('colis-title').textContent=client;
   renderColisList();renderRack();scheduleSave();showToast('Modifié','✓');
 }
 function backToColonne(){renderColisList();showView('view-colonne');}
@@ -970,9 +963,10 @@ function renderStatsBody(){
   const allColis=[];const companyCount={};
   ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){
     const id=`${e}${i}`;
-    const comp=state[id]?.company||'';
-    if(comp)companyCount[comp]=(companyCount[comp]||0)+1;
-    (state[id]?.colis||[]).filter(c=>!c.done).forEach(c=>allColis.push({...c,loc:id}));
+    (state[id]?.colis||[]).filter(c=>!c.done).forEach(c=>{
+      allColis.push({...c,loc:id});
+      if(c.company)companyCount[c.company]=(companyCount[c.company]||0)+1;
+    });
   }});
   const oldest=allColis.length?allColis.reduce((a,b)=>a.ts<b.ts?a:b):null;
   const companies=Object.entries(companyCount).sort((a,b)=>b[1]-a[1]).slice(0,4);
@@ -993,10 +987,10 @@ function renderStatsBody(){
     </div>
     ${oldest?`<div class="section" style="margin-bottom:10px;">
       <div class="section-lbl">Colis le plus ancien</div>
-      <div class="sd-row"><span class="sd-row-lbl">${oldest.ref}</span><span class="sd-row-val" style="color:var(--red)">${Math.floor(ageDays(oldest.ts))}j · ${oldest.loc}</span></div>
-      ${oldest.note?`<div style="font-size:11px;color:var(--text2);margin-top:4px;font-style:italic;">${oldest.note}</div>`:''}
+      <div class="sd-row"><span class="sd-row-lbl">${oldest.client}${oldest.company?' · '+oldest.company:''}</span><span class="sd-row-val" style="color:var(--red)">${Math.floor(ageDays(oldest.ts))}j · ${oldest.loc}</span></div>
+      ${oldest.arc?`<div style="font-size:11px;color:var(--purple);margin-top:4px;">ARC: ${oldest.arc}</div>`:''}
     </div>`:''}
-    ${companies.length?`<div class="section" style="margin-bottom:10px;"><div class="section-lbl">Entreprises actives</div>${companies.map(([n,c])=>`<div class="sd-row"><span class="sd-row-lbl">🏭 ${n}</span><span class="sd-row-val">${c} empl.</span></div>`).join('')}</div>`:''}
+    ${companies.length?`<div class="section" style="margin-bottom:10px;"><div class="section-lbl">Entreprises actives</div>${companies.map(([n,c])=>`<div class="sd-row"><span class="sd-row-lbl">🏭 ${n}</span><span class="sd-row-val">${c} colis</span></div>`).join('')}</div>`:''}
     ${s.urg>0?`<div class="section" style="border-color:rgba(239,68,68,0.3);background:var(--red-bg);margin-bottom:10px;">
       <div class="section-lbl" style="color:var(--red);">⚠️ Action requise</div>
       <div style="font-size:13px;color:var(--text2);line-height:1.6;">${s.urg} colis attendent depuis plus de 2 semaines et doivent être traités.</div>
@@ -1011,7 +1005,7 @@ function showQR(){
   const img=new Image();
   img.style.cssText='display:block;width:200px;height:200px;border-radius:4px;';
   img.onload=()=>{container.innerHTML='';container.appendChild(img);};
-  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=080808&margin=12`;
+  img.src=`[api.qrserver.com](https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=080808&margin=12)`;
   showView('view-qr');
 }
 
@@ -1055,13 +1049,14 @@ function showToast(msg,icon=''){
 }
 
 /* KEYBOARD */
-document.getElementById('inp-ref').addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});
-document.getElementById('inp-note').addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});
+document.getElementById('inp-client').addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});
+document.getElementById('inp-company').addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});
+document.getElementById('inp-arc').addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});
 document.getElementById('inp-afs').addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});
 document.getElementById('inp-new-afs').addEventListener('keydown',e=>{if(e.key==='Enter')addAFS();});
-document.getElementById('inp-company').addEventListener('keydown',e=>{if(e.key==='Enter')saveCompany();});
-document.getElementById('edit-ref').addEventListener('keydown',e=>{if(e.key==='Enter')saveColis();});
-document.getElementById('edit-note').addEventListener('keydown',e=>{if(e.key==='Enter')saveColis();});
+document.getElementById('edit-client').addEventListener('keydown',e=>{if(e.key==='Enter')saveColis();});
+document.getElementById('edit-company').addEventListener('keydown',e=>{if(e.key==='Enter')saveColis();});
+document.getElementById('edit-arc').addEventListener('keydown',e=>{if(e.key==='Enter')saveColis();});
 
 document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap')&&!e.target.closest('.search-results'))clearSearch();});
 
