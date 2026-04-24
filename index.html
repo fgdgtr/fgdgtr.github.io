@@ -3,18 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>AUEM — Rack</title>
-<link rel="preconnect" href="[fonts.googleapis.com](https://fonts.googleapis.com)">
-<link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap)" rel="stylesheet">
+<title>AUEM — Rack Réception</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #080808;
   --card: #111111;
   --card2: #181818;
-  --card3: #1e1e1e;
   --border: #222;
   --border2: #2a2a2a;
-  --border3: #333;
   --text: #f0f0f0;
   --text2: #888;
   --text3: #444;
@@ -41,9 +39,8 @@ body {
 }
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border3); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
-/* HEADER */
 .header {
   background: rgba(8,8,8,0.93); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border); padding: 11px 14px;
@@ -73,20 +70,16 @@ body {
 }
 .btn-icon:active { background: var(--border2); transform: scale(0.92); }
 
-/* VIEWS */
 .view { display: none; }
 .view.active { display: block; animation: fadeUp 0.2s cubic-bezier(0.4,0,0.2,1); }
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 
-/* RACK */
 .rack-view { padding: 13px; }
 
-/* STATS */
 .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
 .stat-card {
   background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
-  padding: 13px 8px; text-align: center; position: relative; overflow: hidden;
-  cursor: pointer; transition: all var(--transition);
+  padding: 13px 8px; text-align: center; cursor: pointer; transition: all var(--transition);
 }
 .stat-card:active { transform: scale(0.95); }
 .stat-card::after {
@@ -99,13 +92,10 @@ body {
 .stat-num {
   font-size: 28px; font-weight: 700; line-height: 1;
   font-family: 'DM Mono', monospace; letter-spacing: -1px;
-  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
 }
-.stat-num.bump { transform: scale(1.25); }
 .stat-num.g { color: var(--green); } .stat-num.y { color: var(--yellow); } .stat-num.r { color: var(--red); }
 .stat-label { font-size: 9px; color: var(--text3); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
 
-/* SEARCH */
 .search-wrap { position: relative; margin-bottom: 12px; }
 .search-inp {
   width: 100%; background: var(--card); border: 1px solid var(--border2);
@@ -113,7 +103,7 @@ body {
   font-size: 14px; padding: 10px 36px 10px 38px; outline: none;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
-.search-inp:focus { border-color: var(--border3); box-shadow: 0 0 0 3px rgba(255,255,255,0.04); }
+.search-inp:focus { border-color: var(--border2); box-shadow: 0 0 0 3px rgba(255,255,255,0.04); }
 .search-inp::placeholder { color: var(--text3); }
 .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; opacity: 0.4; }
 .search-clear {
@@ -133,12 +123,11 @@ body {
 .search-result-item:last-child { border-bottom: none; }
 .search-result-item:active { background: var(--card2); }
 .sr-loc { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text2); min-width: 28px; }
-.sr-ref { font-size: 13px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sr-ref { font-size: 13px; font-weight: 600; flex: 1; }
 .sr-age { font-size: 11px; font-family: 'DM Mono', monospace; flex-shrink: 0; }
 .search-empty { padding: 16px; text-align: center; color: var(--text3); font-size: 13px; }
 
-/* FILTER BAR */
-.filter-bar { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.filter-bar { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; scrollbar-width: none; }
 .filter-bar::-webkit-scrollbar { display: none; }
 .filter-btn {
   flex-shrink: 0; padding: 6px 13px; border-radius: 20px; border: 1px solid var(--border2);
@@ -148,7 +137,6 @@ body {
 .filter-btn.active { background: var(--text); color: #000; border-color: var(--text); }
 .filter-btn:active { transform: scale(0.95); }
 
-/* ÉTAGES */
 .etage-section { margin-bottom: 20px; }
 .etage-header { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
 .etage-pill {
@@ -158,7 +146,6 @@ body {
 .etage-desc { font-size: 11px; color: var(--text3); }
 .emp-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
 
-/* EMP CARDS */
 .emp-card {
   background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
   padding: 10px 9px 9px; cursor: pointer; min-height: 80px;
@@ -176,9 +163,7 @@ body {
 .emp-card.c-yellow::before { background: var(--yellow); }
 .emp-card.c-red::before { background: var(--red); }
 .emp-card:active { transform: scale(0.95); }
-.emp-card.c-red.has-colis { box-shadow: 0 0 0 1px rgba(239,68,68,0.08); }
 .emp-id { font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; margin-bottom: 2px; letter-spacing: 0.5px; }
-.emp-company { font-size: 9px; color: var(--yellow); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .emp-badge {
   display: inline-flex; align-items: center;
   background: var(--card2); border: 1px solid var(--border2);
@@ -190,12 +175,10 @@ body {
 .emp-prev { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text3); font-family: 'DM Mono', monospace; }
 .emp-prev.c-green { color: var(--green); } .emp-prev.c-yellow { color: var(--yellow); } .emp-prev.c-red { color: var(--red); }
 
-/* SEP */
 .sep-rack { display: flex; align-items: center; gap: 8px; margin: 10px 0 14px; }
 .sep-line { flex: 1; height: 1px; background: var(--border); }
 .sep-label { font-size: 9px; color: var(--text3); letter-spacing: 2px; white-space: nowrap; font-family: 'DM Mono', monospace; }
 
-/* BACK HEADER */
 .back-header {
   background: rgba(8,8,8,0.93); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border); padding: 11px 14px;
@@ -213,23 +196,20 @@ body {
 .bh-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
 .view-body { padding: 13px; }
 
-/* SECTION */
 .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 13px; margin-bottom: 10px; }
 .section-lbl { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 11px; font-family: 'DM Mono', monospace; }
 
-/* INPUTS */
 .inp {
   width: 100%; background: var(--bg); border: 1px solid var(--border2);
   border-radius: var(--r-sm); color: var(--text); font-family: 'DM Sans', sans-serif;
   font-size: 14px; padding: 10px 12px; outline: none;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
-.inp:focus { border-color: var(--border3); box-shadow: 0 0 0 3px rgba(255,255,255,0.04); }
+.inp:focus { border-color: var(--border2); box-shadow: 0 0 0 3px rgba(255,255,255,0.04); }
 .inp::placeholder { color: var(--text3); }
 .inp-row { display: flex; gap: 8px; margin-bottom: 8px; }
 .inp-row:last-child { margin-bottom: 0; }
 
-/* BUTTONS */
 .btn-main {
   width: 100%; background: var(--text); color: #000; border: none;
   border-radius: var(--r-sm); font-family: 'DM Sans', sans-serif;
@@ -244,7 +224,6 @@ body {
 }
 .btn-sec:active { transform: scale(0.95); }
 
-/* COLIS CARDS */
 .colis-card {
   background: var(--card2); border: 1px solid var(--border2); border-radius: var(--r);
   padding: 11px; margin-bottom: 7px;
@@ -255,14 +234,6 @@ body {
 }
 @keyframes slideIn { from { opacity:0; transform:translateY(-6px) scale(0.98); } to { opacity:1; transform:none; } }
 .colis-card.done { opacity: 0.32; }
-.swipe-hint {
-  position: absolute; right: 0; top: 0; bottom: 0;
-  display: flex; align-items: center; padding-right: 14px; gap: 6px;
-  font-size: 14px; font-weight: 700; color: var(--green);
-  opacity: 0; pointer-events: none; transition: opacity 0.15s;
-  background: linear-gradient(to left, rgba(5,46,22,0.9) 0%, transparent 100%);
-}
-.colis-card.swiping .swipe-hint { opacity: 1; }
 .colis-stripe { width: 3px; border-radius: 3px; flex-shrink: 0; align-self: stretch; min-height: 42px; }
 .colis-body { flex: 1; min-width: 0; }
 .colis-client { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
@@ -275,7 +246,6 @@ body {
 .b-yellow { background: var(--yellow-bg); color: var(--yellow); }
 .b-red { background: var(--red-bg); color: var(--red); }
 .b-blue { background: var(--blue-bg); color: var(--blue); }
-.b-purple { background: var(--purple-bg); color: var(--purple); }
 .b-gray { background: var(--card); color: var(--text2); border: 1px solid var(--border2); }
 .colis-afs { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
 .colis-acts { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
@@ -289,7 +259,6 @@ body {
 .colis-card.done .btn-circ.chk { border-color: var(--green); color: var(--green); background: var(--green-bg); }
 .btn-circ.del:active { border-color: var(--red); color: var(--red); }
 
-/* AFS */
 .afs-item {
   display: flex; align-items: center; gap: 8px; padding: 8px 10px;
   background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-sm);
@@ -302,7 +271,6 @@ body {
 .empty { text-align: center; padding: 24px 16px; color: var(--text3); font-size: 13px; line-height: 2; }
 .divider { height: 1px; background: var(--border); margin: 11px 0; }
 
-/* QR */
 .qr-center { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 16px 0; }
 .qr-box { background: white; padding: 16px; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.5); }
 .qr-name { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 2px; text-align: center; font-family: 'DM Mono', monospace; }
@@ -314,88 +282,15 @@ body {
 .color-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
 .cdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-/* DRAWER */
-.drawer-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
-  z-index: 150; opacity: 0; pointer-events: none; transition: opacity 0.22s;
-}
-.drawer-overlay.open { opacity: 1; pointer-events: all; }
-.drawer, .stats-drawer {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--card2); border: 1px solid var(--border2);
-  border-radius: 18px 18px 0 0; max-height: 75vh;
-  display: flex; flex-direction: column;
-  transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
-  z-index: 151;
-}
-.drawer-overlay.open .drawer,
-.drawer-overlay.open .stats-drawer { transform: translateY(0); }
-.drawer-handle { width: 36px; height: 4px; background: var(--border3); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
-.drawer-header { padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; border-bottom: 1px solid var(--border); }
-.drawer-title { font-size: 15px; font-weight: 700; }
-.drawer-action { background: none; border: none; color: var(--text3); font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-.drawer-body { overflow-y: auto; padding: 0 16px 28px; flex: 1; }
-.log-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 0; border-bottom: 1px solid var(--border);
-}
-.log-item:last-child { border-bottom: none; }
-.log-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-.log-content { flex: 1; min-width: 0; }
-.log-msg { font-size: 13px; color: var(--text); }
-.log-loc { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text2); margin-top: 2px; }
-.log-time { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; flex-shrink: 0; margin-top: 3px; white-space: nowrap; }
-.log-empty { text-align: center; padding: 32px 0; color: var(--text3); font-size: 13px; }
-.sd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
-.sd-card { background: var(--card3); border: 1px solid var(--border2); border-radius: var(--r); padding: 13px; }
-.sd-val { font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace; letter-spacing: -0.5px; }
-.sd-lbl { font-size: 10px; color: var(--text3); margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase; }
-.sd-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-.sd-row:last-child { border-bottom: none; }
-.sd-row-lbl { flex: 1; color: var(--text2); }
-.sd-row-val { font-family: 'DM Mono', monospace; font-weight: 600; }
-.prog-bar { background: var(--bg); border-radius: 6px; overflow: hidden; height: 8px; margin: 8px 0 6px; }
-.prog-fill { height: 100%; border-radius: 6px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
-
-/* MODAL */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
-  z-index: 200; display: flex; align-items: flex-end; justify-content: center;
-  padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-}
-.modal-overlay.open { opacity: 1; pointer-events: all; }
-.modal-box {
-  background: var(--card2); border: 1px solid var(--border2); border-radius: 16px;
-  padding: 20px; width: 100%; max-width: 400px;
-  transform: translateY(20px); transition: transform 0.25s cubic-bezier(0.34,1.4,0.64,1);
-}
-.modal-overlay.open .modal-box { transform: translateY(0); }
-.modal-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-.modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 18px; line-height: 1.5; }
-.modal-actions { display: flex; gap: 8px; }
-.btn-danger {
-  flex: 1; padding: 12px; background: var(--red-bg); border: 1px solid rgba(239,68,68,0.3);
-  border-radius: var(--r-sm); color: var(--red); font-family: 'DM Sans', sans-serif;
-  font-size: 13px; font-weight: 700; cursor: pointer; transition: all var(--transition);
-}
-.btn-danger:active { opacity: 0.8; }
-.btn-cancel {
-  flex: 1; padding: 12px; background: var(--card3); border: 1px solid var(--border2);
-  border-radius: var(--r-sm); color: var(--text2); font-family: 'DM Sans', sans-serif;
-  font-size: 13px; font-weight: 600; cursor: pointer;
-}
-
-/* LOADING */
 .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; gap: 12px; }
-.spinner { width: 22px; height: 22px; border: 2px solid var(--border3); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; }
+.spinner { width: 22px; height: 22px; border: 2px solid var(--border2); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; letter-spacing: 0.5px; }
 
-/* TOAST */
 .toast {
   position: fixed; bottom: 30px; left: 50%;
   transform: translateX(-50%) translateY(80px);
-  background: var(--card3); border: 1px solid var(--border3);
+  background: var(--card); border: 1px solid var(--border);
   color: var(--text); font-size: 13px; font-weight: 600;
   padding: 9px 16px; border-radius: 22px;
   transition: transform 0.3s cubic-bezier(0.34,1.4,0.64,1);
@@ -404,18 +299,6 @@ body {
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
-/* PARTICLES */
-.particle {
-  position: fixed; pointer-events: none; z-index: 9999;
-  width: 7px; height: 7px; border-radius: 50%;
-  animation: particle-burst 0.65s cubic-bezier(0.3,0,0.7,1) forwards;
-}
-@keyframes particle-burst {
-  0% { transform: translate(0,0) scale(1); opacity: 1; }
-  100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
-}
-
-/* BOTTOM NAV */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
   background: rgba(8,8,8,0.96); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -431,12 +314,6 @@ body {
 }
 .nav-btn.active { color: var(--text); }
 .nav-btn .nav-icon { font-size: 19px; line-height: 1; }
-.nav-notif {
-  position: absolute; top: 7px; right: calc(50% - 16px);
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--red); border: 1.5px solid var(--bg); display: none;
-}
-.nav-notif.show { display: block; animation: pulse-dot 1s ease-in-out infinite alternate; }
 </style>
 </head>
 <body>
@@ -455,13 +332,12 @@ body {
   </div>
 </div>
 
-<!-- RACK -->
 <div class="view active" id="view-rack">
   <div class="rack-view">
     <div class="stats-row">
-      <div class="stat-card" onclick="openStatsDrawer()"><div class="stat-num g" id="s-ok">—</div><div class="stat-label">Récents</div></div>
-      <div class="stat-card" onclick="openStatsDrawer()"><div class="stat-num y" id="s-att">—</div><div class="stat-label">Attention</div></div>
-      <div class="stat-card" onclick="openStatsDrawer()"><div class="stat-num r" id="s-urg">—</div><div class="stat-label">Urgent</div></div>
+      <div class="stat-card"><div class="stat-num g" id="s-ok">—</div><div class="stat-label">Récents</div></div>
+      <div class="stat-card"><div class="stat-num y" id="s-att">—</div><div class="stat-label">Attention</div></div>
+      <div class="stat-card"><div class="stat-num r" id="s-urg">—</div><div class="stat-label">Urgent</div></div>
     </div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
@@ -480,7 +356,6 @@ body {
   </div>
 </div>
 
-<!-- EMPLACEMENT -->
 <div class="view" id="view-colonne">
   <div class="back-header">
     <button class="btn-back" onclick="showRack()">←</button>
@@ -491,7 +366,7 @@ body {
       <div class="section-lbl">Nouveau colis</div>
       <div class="inp-row"><input class="inp" id="inp-client" placeholder="N° Client" /></div>
       <div class="inp-row"><input class="inp" id="inp-company" placeholder="Entreprise" /></div>
-      <div class="inp-row"><input class="inp" id="inp-arc" placeholder="ARC " /></div>
+      <div class="inp-row"><input class="inp" id="inp-arc" placeholder="ARC" /></div>
       <div class="inp-row"><input class="inp" id="inp-afs" placeholder="N° AFS — virgule ou espace si plusieurs" /></div>
       <button class="btn-main" onclick="addColis()">+ Ajouter ce colis</button>
     </div>
@@ -500,7 +375,6 @@ body {
   </div>
 </div>
 
-<!-- COLIS DÉTAIL -->
 <div class="view" id="view-colis">
   <div class="back-header">
     <button class="btn-back" onclick="backToColonne()">←</button>
@@ -526,7 +400,6 @@ body {
   </div>
 </div>
 
-<!-- QR -->
 <div class="view" id="view-qr">
   <div class="back-header">
     <button class="btn-back" onclick="showRack()">←</button>
@@ -553,54 +426,12 @@ body {
   </div>
 </div>
 
-<!-- LOG DRAWER -->
-<div class="drawer-overlay" id="log-overlay" onclick="closeLogDrawer(event)">
-  <div class="drawer">
-    <div class="drawer-handle"></div>
-    <div class="drawer-header">
-      <div class="drawer-title">📋 Activité récente</div>
-      <button class="drawer-action" onclick="clearLog()">Effacer tout</button>
-    </div>
-    <div class="drawer-body" id="log-body"></div>
-  </div>
-</div>
-
-<!-- STATS DRAWER -->
-<div class="drawer-overlay" id="stats-overlay" onclick="closeStatsDrawer(event)">
-  <div class="stats-drawer">
-    <div class="drawer-handle"></div>
-    <div class="drawer-header">
-      <div class="drawer-title">📊 Vue d'ensemble</div>
-      <button class="drawer-action" onclick="closeStatsDrawer()">Fermer</button>
-    </div>
-    <div class="drawer-body" id="sd-body"></div>
-  </div>
-</div>
-
-<!-- MODAL CONFIRM -->
-<div class="modal-overlay" id="modal-confirm">
-  <div class="modal-box">
-    <div class="modal-title">Supprimer ce colis ?</div>
-    <div class="modal-sub" id="modal-ref-label">Cette action est irréversible.</div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-      <button class="btn-danger" onclick="confirmDelete()">Supprimer</button>
-    </div>
-  </div>
-</div>
-
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <button class="nav-btn active" id="nav-rack" onclick="navTo('rack')">
-    <span class="nav-icon">📦</span>Rack
-  </button>
-  <button class="nav-btn" id="nav-stats" onclick="openStatsDrawer()">
-    <span class="nav-icon">📊</span>Stats
-    <div class="nav-notif" id="nav-notif"></div>
-  </button>
-</div>
-
 <div class="toast" id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-rack" onclick="navTo('rack')"><span class="nav-icon">📦</span>Rack</button>
+  <button class="nav-btn" id="nav-qr" onclick="navTo('qr')"><span class="nav-icon">⬛</span>QR</button>
+</div>
 
 <script>
 const ETAGES=['D','C','B','A'];
@@ -611,13 +442,11 @@ const ETAGE_INFO={
   'A':{name:'Étage A',desc:'Bas — niveau sol'},
 };
 const COLS=6;
-const FIREBASE='[auem-rac-default-rtdb.europe-west1.firebasedatabase.app](https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/rack.json)';
+const FIREBASE='https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/rack.json';
 
 let state={}, currentCol=null, currentColisIdx=null, saveTimer=null;
-let activeFilter='all', viewMode='normal', deleteTargetIdx=null;
-let activityLog=JSON.parse(localStorage.getItem('auem_log')||'[]');
+let activeFilter='all', deleteTargetIdx=null;
 
-/* STATE */
 function initState(){const s={};ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++)s[`${e}${i}`]={colis:[]};});return s;}
 function migrate(data){
   const s=data||initState();
@@ -626,17 +455,10 @@ function migrate(data){
     if(!s[id])s[id]={colis:[]};
     if(Array.isArray(s[id]))s[id]={colis:s[id]};
     if(!s[id].colis)s[id].colis=[];
-    // Migration: convertir ref/note vers client/arc si nécessaire
-    s[id].colis.forEach(c=>{
-      if(c.ref && !c.client) { c.client = c.ref; delete c.ref; }
-      if(c.note && !c.arc) { c.arc = c.note; delete c.note; }
-      if(!c.company) c.company = '';
-    });
   }});
   return s;
 }
 
-/* SYNC */
 function setSyncDot(st){
   document.getElementById('sync-dot').className='sync-dot '+st;
   const lbl=document.getElementById('sync-label');
@@ -648,27 +470,29 @@ function setSyncDot(st){
   }else if(st==='loading'){lbl.textContent='Synchronisation…';lbl.className='header-sub';}
   else{lbl.textContent='Hors-ligne';lbl.className='header-sub';}
 }
+
 async function loadFromServer(){
   setSyncDot('loading');
   try{
     const res=await fetch(FIREBASE);if(!res.ok)throw new Error();
     state=migrate(await res.json());setSyncDot('ok');renderRack();
   }catch{
-    try{state=migrate(JSON.parse(localStorage.getItem('auem_v3')));}catch{state=initState();}
+    try{state=migrate(JSON.parse(localStorage.getItem('auem_rac')));}catch{state=initState();}
     setSyncDot('error');renderRack();showToast('Mode hors-ligne','📡');
   }
 }
+
 async function saveToServer(){
   setSyncDot('loading');
   try{
     await fetch(FIREBASE,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});
-    localStorage.setItem('auem_v3',JSON.stringify(state));setSyncDot('ok');
-  }catch{localStorage.setItem('auem_v3',JSON.stringify(state));setSyncDot('error');}
+    localStorage.setItem('auem_rac',JSON.stringify(state));setSyncDot('ok');
+  }catch{localStorage.setItem('auem_rac',JSON.stringify(state));setSyncDot('error');}
 }
+
 function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveToServer,600);}
 setInterval(()=>{if(document.getElementById('view-rack').classList.contains('active'))loadFromServer();},30000);
 
-/* AGE */
 function ageDays(ts){return(Date.now()-ts)/86400000;}
 function ageColor(ts){const d=ageDays(ts);return d>=14?'c-red':d>=7?'c-yellow':'c-green';}
 function ageBadge(ts){const d=ageDays(ts);return d>=14?'b-red':d>=7?'b-yellow':'b-green';}
@@ -681,19 +505,13 @@ function dominantAge(id){
 }
 function dominantClass(id){const a=dominantAge(id);return a?`c-${a}`:'';}
 
-/* FILTER / MODE */
 function setFilter(f){
   activeFilter=f;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(`f-${f}`).classList.add('active');
   renderRack();
 }
-function setViewMode(m){
-  viewMode=m;
-  document.getElementById('vt-normal').classList.toggle('active',m==='normal');
-  document.getElementById('vt-heat').classList.toggle('active',m==='heatmap');
-  renderRack();
-}
+
 function cardMatchesFilter(id){
   if(activeFilter==='all')return true;
   const a=(state[id]?.colis||[]).filter(c=>!c.done);
@@ -703,7 +521,6 @@ function cardMatchesFilter(id){
   return activeFilter==='urgent'?age==='red':activeFilter==='attention'?age==='yellow':activeFilter==='ok'?age==='green':true;
 }
 
-/* STATS */
 function computeStats(){
   let ok=0,att=0,urg=0,total=0,locs=0;
   ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){
@@ -714,25 +531,18 @@ function computeStats(){
   }});
   return{ok,att,urg,total,locs};
 }
+
 function updateStats(){
   const{ok,att,urg}=computeStats();
-  animateNum('s-ok',ok);animateNum('s-att',att);animateNum('s-urg',urg);
-  const dot=document.getElementById('nav-notif');
-  if(dot) dot.classList.toggle('show',urg>0);
-}
-function animateNum(id,val){
-  const el=document.getElementById(id);
-  if(el.textContent===String(val))return;
-  el.classList.remove('bump');el.textContent=val;
-  requestAnimationFrame(()=>{el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),200);});
+  document.getElementById('s-ok').textContent=ok;
+  document.getElementById('s-att').textContent=att;
+  document.getElementById('s-urg').textContent=urg;
 }
 
-/* RENDER RACK */
 function renderRack(){
   updateStats();
   const grid=document.getElementById('rack-grid');
   grid.innerHTML='';
-  grid.className=viewMode==='heatmap'?'heatmap-mode':'';
   ETAGES.forEach(etage=>{
     const info=ETAGE_INFO[etage];
     const sec=document.createElement('div');
@@ -748,17 +558,13 @@ function renderRack(){
       const dc=dominantClass(id);
       const card=document.createElement('div');
       card.className=`emp-card ${dc} ${active.length?'has-colis':''}`;
-      if(viewMode==='heatmap'){
-        card.innerHTML=`<div class="emp-id">${id}</div><div class="emp-badge ${active.length?'has':''}">${active.length||'—'}</div>`;
-      }else{
-        card.innerHTML=`
-          <div class="emp-id">${id}</div>
-          <div class="emp-badge ${active.length?'has':''}">${active.length||'Vide'}</div>
-          <div class="emp-previews">
-            ${active.slice(0,2).map(c=>`<div class="emp-prev ${ageColor(c.ts)}">${c.client}${c.company?` · ${c.company}`:''}</div>`).join('')}
-            ${active.length>2?`<div class="emp-prev">+${active.length-2}</div>`:''}
-          </div>`;
-      }
+      card.innerHTML=`
+        <div class="emp-id">${id}</div>
+        <div class="emp-badge ${active.length?'has':''}">${active.length||'Vide'}</div>
+        <div class="emp-previews">
+          ${active.slice(0,2).map(c=>`<div class="emp-prev ${ageColor(c.ts)}">${c.client}</div>`).join('')}
+          ${active.length>2?`<div class="emp-prev">+${active.length-2}</div>`:''}
+        </div>`;
       card.onclick=()=>openColonne(id);
       g.appendChild(card);
     }
@@ -769,7 +575,6 @@ function renderRack(){
   });
 }
 
-/* SEARCH */
 function onSearch(q){
   q=q.trim();
   document.getElementById('search-clear').classList.toggle('show',q.length>0);
@@ -779,9 +584,8 @@ function onSearch(q){
   ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){
     const id=`${e}${i}`;
     (state[id]?.colis||[]).filter(c=>!c.done).forEach(c=>{
-      const searchStr = `${c.client||''} ${c.company||''} ${c.arc||''} ${(c.afs||[]).join(' ')}`.toLowerCase();
-      if(searchStr.includes(q.toLowerCase()))
-        hits.push({id,colis:c});
+      const searchStr=`${c.client||''} ${c.company||''} ${c.arc||''} ${(c.afs||[]).join(' ')}`.toLowerCase();
+      if(searchStr.includes(q.toLowerCase()))hits.push({id,colis:c});
     });
   }});
   results.classList.add('show');
@@ -789,17 +593,17 @@ function onSearch(q){
   const agecol=(ts)=>{const d=ageDays(ts);return d>=14?'var(--red)':d>=7?'var(--yellow)':'var(--green)';};
   results.innerHTML=hits.slice(0,7).map(h=>`<div class="search-result-item" onclick="clearSearch();openColonne('${h.id}')">
     <span class="sr-loc">${h.id}</span>
-    <span class="sr-ref">${h.colis.client}${h.colis.company?` <span style="color:var(--yellow);font-size:11px;">· ${h.colis.company}</span>`:''}</span>
+    <span class="sr-ref">${h.colis.client}${h.colis.company?` · ${h.colis.company}`:''}</span>
     <span class="sr-age" style="color:${agecol(h.colis.ts)}">${ageLabel(h.colis.ts)}</span>
   </div>`).join('');
 }
+
 function clearSearch(){
   document.getElementById('search-inp').value='';
   document.getElementById('search-clear').classList.remove('show');
   document.getElementById('search-results').classList.remove('show');
 }
 
-/* COLONNE */
 function openColonne(id){
   currentCol=id;
   const info=ETAGE_INFO[id[0]];
@@ -819,7 +623,6 @@ function renderColisList(){
     const card=document.createElement('div');
     card.className=`colis-card ${colis.done?'done':''}`;
     card.innerHTML=`
-      <div class="swipe-hint">✓ Retiré</div>
       <div class="colis-stripe" style="background:${colis.done?'#252525':ageStripe(colis.ts)}"></div>
       <div class="colis-body">
         <div class="colis-client">${colis.client}</div>
@@ -835,7 +638,6 @@ function renderColisList(){
         <button class="btn-circ chk" onclick="toggleDone(${idx})">${colis.done?'↩':'✓'}</button>
         <button class="btn-circ del" onclick="askDelete(${idx})">✕</button>
       </div>`;
-    if(!colis.done)initSwipe(card,idx);
     list.appendChild(card);
   });
 }
@@ -850,50 +652,32 @@ function addColis(){
   state[currentCol].colis.push({client,company,arc,afs,done:false,ts:Date.now()});
   ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x=>document.getElementById(x).value='');
   renderColisList();renderRack();scheduleSave();
-  addLog('➕',`Colis ajouté : ${client}${company?' · '+company:''}`,currentCol);
-  showToast(`${client} ajouté`,'✓');haptic('light');
+  showToast(`${client} ajouté`,'✓');
 }
 
 function toggleDone(idx){
   const c=state[currentCol].colis[idx];
   c.done=!c.done;
-  if(c.done)spawnParticles();
   renderColisList();renderRack();scheduleSave();
-  addLog(c.done?'📦':'↩',c.done?`Retiré : ${c.client}`:`Restauré : ${c.client}`,currentCol);
-  showToast(c.done?'Colis retiré ':'Restauré',c.done?'📦':'↩');
-  haptic(c.done?'success':'light');
+  showToast(c.done?'Colis retiré':'Restauré',c.done?'📦':'↩');
 }
 
 function askDelete(idx){
   deleteTargetIdx=idx;
-  document.getElementById('modal-ref-label').textContent=`Supprimer "${state[currentCol].colis[idx].client}" définitivement ?`;
-  document.getElementById('modal-confirm').classList.add('open');
+  if(confirm(`Supprimer "${state[currentCol].colis[idx].client}" ?`)){
+    confirmDelete();
+  }
 }
-function closeModal(){document.getElementById('modal-confirm').classList.remove('open');deleteTargetIdx=null;}
+
 function confirmDelete(){
   if(deleteTargetIdx===null)return;
   const client=state[currentCol].colis[deleteTargetIdx].client;
   state[currentCol].colis.splice(deleteTargetIdx,1);
-  renderColisList();renderRack();scheduleSave();closeModal();
-  addLog('🗑','Supprimé : '+client,currentCol);showToast('Supprimé','🗑');haptic('heavy');
-}
-document.getElementById('modal-confirm').addEventListener('click',function(e){if(e.target===this)closeModal();});
-
-/* SWIPE */
-function initSwipe(card,idx){
-  let startX=0,dx=0,moved=false;
-  card.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;moved=false;},{passive:true});
-  card.addEventListener('touchmove',e=>{
-    dx=e.touches[0].clientX-startX;
-    if(Math.abs(dx)>8){moved=true;card.classList.add('swiping');card.style.transform=`translateX(${Math.min(0,dx*0.35)}px)`;}
-  },{passive:true});
-  card.addEventListener('touchend',()=>{
-    card.classList.remove('swiping');card.style.transform='';
-    if(moved&&dx<-55){haptic('medium');toggleDone(idx);}
-  });
+  renderColisList();renderRack();scheduleSave();
+  showToast('Supprimé','🗑');
+  deleteTargetIdx=null;
 }
 
-/* COLIS DETAIL */
 function openColis(idx){
   currentColisIdx=idx;const c=state[currentCol].colis[idx];
   document.getElementById('colis-title').textContent=c.client;
@@ -904,19 +688,23 @@ function openColis(idx){
   document.getElementById('inp-new-afs').value='';
   renderAFSList();showView('view-colis');
 }
+
 function renderAFSList(){
   const afs=state[currentCol].colis[currentColisIdx].afs||[];
   const el=document.getElementById('afs-list');
   if(!afs.length){el.innerHTML='<div class="empty" style="padding:8px 0 4px;text-align:left;font-size:12px;">Aucun AFS</div>';return;}
   el.innerHTML=afs.map((a,i)=>`<div class="afs-item"><span class="afs-num">AFS ${a}</span><button class="btn-afs-del" onclick="removeAFS(${i})">×</button></div>`).join('');
 }
+
 function addAFS(){
   const val=document.getElementById('inp-new-afs').value.trim();if(!val)return;
   if(!state[currentCol].colis[currentColisIdx].afs)state[currentCol].colis[currentColisIdx].afs=[];
   val.split(/[,;\s]+/).filter(Boolean).forEach(n=>state[currentCol].colis[currentColisIdx].afs.push(n));
   document.getElementById('inp-new-afs').value='';renderAFSList();renderColisList();scheduleSave();showToast('AFS ajouté','✓');
 }
+
 function removeAFS(i){state[currentCol].colis[currentColisIdx].afs.splice(i,1);renderAFSList();renderColisList();scheduleSave();}
+
 function saveColis(){
   const client=document.getElementById('edit-client').value.trim();if(!client){showToast('Entrez un N° client','⚠️');return;}
   const c=state[currentCol].colis[currentColisIdx];
@@ -926,129 +714,35 @@ function saveColis(){
   document.getElementById('colis-title').textContent=client;
   renderColisList();renderRack();scheduleSave();showToast('Modifié','✓');
 }
+
 function backToColonne(){renderColisList();showView('view-colonne');}
 
-/* ACTIVITY LOG */
-function addLog(icon,msg,loc){
-  activityLog.unshift({icon,msg,loc,ts:Date.now()});
-  if(activityLog.length>60)activityLog=activityLog.slice(0,60);
-  localStorage.setItem('auem_log',JSON.stringify(activityLog));
-}
-function openLogDrawer(){
-  document.getElementById('nav-notif').classList.remove('show');
-  renderLogBody();document.getElementById('log-overlay').classList.add('open');
-}
-function closeLogDrawer(e){if(!e||e.target===document.getElementById('log-overlay'))document.getElementById('log-overlay').classList.remove('open');}
-function clearLog(){activityLog=[];localStorage.removeItem('auem_log');renderLogBody();}
-function renderLogBody(){
-  const el=document.getElementById('log-body');
-  if(!activityLog.length){el.innerHTML='<div class="log-empty">Aucune activité pour l\'instant</div>';return;}
-  el.innerHTML=activityLog.map(l=>{
-    const d=new Date(l.ts);
-    const time=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
-    const date=d.toLocaleDateString('fr',{day:'2-digit',month:'short'});
-    return `<div class="log-item">
-      <div class="log-icon">${l.icon}</div>
-      <div class="log-content"><div class="log-msg">${l.msg}</div>${l.loc?`<div class="log-loc">${l.loc}</div>`:''}</div>
-      <div class="log-time">${date} ${time}</div>
-    </div>`;
-  }).join('');
-}
-
-/* STATS DRAWER */
-function openStatsDrawer(){renderStatsBody();document.getElementById('stats-overlay').classList.add('open');}
-function closeStatsDrawer(e){if(!e||e.target===document.getElementById('stats-overlay'))document.getElementById('stats-overlay').classList.remove('open');}
-function renderStatsBody(){
-  const s=computeStats();
-  const allColis=[];const companyCount={};
-  ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){
-    const id=`${e}${i}`;
-    (state[id]?.colis||[]).filter(c=>!c.done).forEach(c=>{
-      allColis.push({...c,loc:id});
-      if(c.company)companyCount[c.company]=(companyCount[c.company]||0)+1;
-    });
-  }});
-  const oldest=allColis.length?allColis.reduce((a,b)=>a.ts<b.ts?a:b):null;
-  const companies=Object.entries(companyCount).sort((a,b)=>b[1]-a[1]).slice(0,4);
-  const totalLocs=ETAGES.length*COLS;
-  const occ=Math.round((s.locs/totalLocs)*100);
-  const occColor=occ>75?'var(--red)':occ>40?'var(--yellow)':'var(--green)';
-  document.getElementById('sd-body').innerHTML=`
-    <div class="sd-grid">
-      <div class="sd-card"><div class="sd-val">${s.total}</div><div class="sd-lbl">Colis actifs</div></div>
-      <div class="sd-card"><div class="sd-val">${s.locs}/${totalLocs}</div><div class="sd-lbl">Emplacements</div></div>
-      <div class="sd-card"><div class="sd-val" style="color:var(--red)">${s.urg}</div><div class="sd-lbl">Urgent</div></div>
-      <div class="sd-card"><div class="sd-val" style="color:var(--yellow)">${s.att}</div><div class="sd-lbl">Attention</div></div>
-    </div>
-    <div class="section" style="margin-bottom:10px;">
-      <div class="section-lbl">Occupation rack</div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${occ}%;background:${occColor};"></div></div>
-      <div style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;">${occ}% — ${s.locs} emplacements occupés sur ${totalLocs}</div>
-    </div>
-    ${oldest?`<div class="section" style="margin-bottom:10px;">
-      <div class="section-lbl">Colis le plus ancien</div>
-      <div class="sd-row"><span class="sd-row-lbl">${oldest.client}${oldest.company?' · '+oldest.company:''}</span><span class="sd-row-val" style="color:var(--red)">${Math.floor(ageDays(oldest.ts))}j · ${oldest.loc}</span></div>
-      ${oldest.arc?`<div style="font-size:11px;color:var(--purple);margin-top:4px;">ARC: ${oldest.arc}</div>`:''}
-    </div>`:''}
-    ${companies.length?`<div class="section" style="margin-bottom:10px;"><div class="section-lbl">Entreprises actives</div>${companies.map(([n,c])=>`<div class="sd-row"><span class="sd-row-lbl">🏭 ${n}</span><span class="sd-row-val">${c} colis</span></div>`).join('')}</div>`:''}
-    ${s.urg>0?`<div class="section" style="border-color:rgba(239,68,68,0.3);background:var(--red-bg);margin-bottom:10px;">
-      <div class="section-lbl" style="color:var(--red);">⚠️ Action requise</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.6;">${s.urg} colis attendent depuis plus de 2 semaines et doivent être traités.</div>
-    </div>`:''}
-  `;
-}
-
-/* QR */
 function showQR(){
   const url=window.location.href.split('?')[0];
   const container=document.getElementById('qr-container');
   const img=new Image();
   img.style.cssText='display:block;width:200px;height:200px;border-radius:4px;';
   img.onload=()=>{container.innerHTML='';container.appendChild(img);};
-  img.src=`[api.qrserver.com](https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=080808&margin=12)`;
+  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=080808&margin=12`;
   showView('view-qr');
 }
 
-/* NAV */
 function navTo(p){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   if(p==='rack'){document.getElementById('nav-rack').classList.add('active');showRack();}
-  else if(p==='qr'){showQR();}
+  else if(p==='qr'){document.getElementById('nav-qr').classList.add('active');showQR();}
 }
+
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
 function showRack(){renderRack();showView('view-rack');}
 
-/* PARTICLES */
-function spawnParticles(){
-  const colors=['#22c55e','#86efac','#4ade80','#bbf7d0','#ffffff'];
-  for(let i=0;i<14;i++){
-    const p=document.createElement('div');p.className='particle';
-    const angle=(360/14)*i+Math.random()*20;
-    const dist=40+Math.random()*70;
-    p.style.cssText=`left:50%;top:50%;background:${colors[i%colors.length]};--dx:${Math.cos(angle*Math.PI/180)*dist}px;--dy:${Math.sin(angle*Math.PI/180)*dist}px;animation-duration:${0.4+Math.random()*0.3}s;`;
-    document.body.appendChild(p);setTimeout(()=>p.remove(),900);
-  }
-}
-
-/* HAPTICS */
-function haptic(t='light'){
-  if(!navigator.vibrate)return;
-  if(t==='light')navigator.vibrate(10);
-  else if(t==='medium')navigator.vibrate(25);
-  else if(t==='heavy')navigator.vibrate([30,20,30]);
-  else if(t==='success')navigator.vibrate([10,30,10]);
-}
-
-/* TOAST */
-let toastTimer;
 function showToast(msg,icon=''){
   document.getElementById('toast-icon').textContent=icon;
   document.getElementById('toast-msg').textContent=msg;
   const t=document.getElementById('toast');t.classList.add('show');
-  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2000);
+  setTimeout(()=>t.classList.remove('show'),2000);
 }
 
-/* KEYBOARD */
 document.getElementById('inp-client').addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});
 document.getElementById('inp-company').addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});
 document.getElementById('inp-arc').addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});
