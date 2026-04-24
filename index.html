@@ -593,7 +593,7 @@ function onSearch(q){
   const agecol=(ts)=>{const d=ageDays(ts);return d>=14?'var(--red)':d>=7?'var(--yellow)':'var(--green)';};
   results.innerHTML=hits.slice(0,7).map(h=>`<div class="search-result-item" onclick="clearSearch();openColonne('${h.id}')">
     <span class="sr-loc">${h.id}</span>
-    <span class="sr-ref">${h.colis.client}${h.colis.company?` · ${h.colis.company}`:''}</span>
+    <span class="sr-ref">${h.colis.client} · ${h.colis.company || "pas d'entreprise assigner"}</span>
     <span class="sr-age" style="color:${agecol(h.colis.ts)}">${ageLabel(h.colis.ts)}</span>
   </div>`).join('');
 }
@@ -626,7 +626,7 @@ function renderColisList(){
       <div class="colis-stripe" style="background:${colis.done?'#252525':ageStripe(colis.ts)}"></div>
       <div class="colis-body">
         <div class="colis-client">${colis.client}</div>
-        ${colis.company?`<div class="colis-company">🏭 ${colis.company}</div>`:''}
+        <div class="colis-company">🏭 ${colis.company || "pas d'entreprise assigner"}</div>
         <div class="colis-meta">
           ${!colis.done?`<span class="badge ${ageBadge(colis.ts)}">${ageLabel(colis.ts)}</span>`:'<span class="badge b-gray">Retiré</span>'}
           ${colis.arc?`<span class="colis-arc-txt">ARC: ${colis.arc}</span>`:''}
