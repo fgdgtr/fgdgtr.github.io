@@ -149,7 +149,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 }
 .emp-card.has-colis::before{transform:scaleX(1);}
 .emp-card.has-colis{border-color:var(--border2);}
-/* tous les emplacements occupés ont la même couleur bleue — pas de délai */
 .emp-card.occupied::before{background:var(--blue);}
 .emp-card:active{transform:scale(.95);}
 
@@ -202,6 +201,15 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .inp-row{display:flex;gap:8px;margin-bottom:8px;}
 .inp-row:last-child{margin-bottom:0;}
 
+/* SELECT */
+.sel{
+  width:100%;background:var(--bg);border:1px solid var(--border2);
+  border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:14px;padding:10px 12px;outline:none;cursor:pointer;
+  transition:border-color .15s,box-shadow .15s;
+}
+.sel:focus{border-color:var(--border3);box-shadow:0 0 0 3px rgba(255,255,255,.04);}
+
 /* BUTTONS */
 .btn-main{
   width:100%;background:var(--text);color:#000;border:none;
@@ -234,6 +242,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .colis-company{font-size:11px;color:var(--yellow);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .colis-meta{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap;}
 .colis-arc{font-size:10px;color:var(--purple);font-weight:600;font-family:'DM Mono',monospace;}
+.colis-space{font-size:10px;color:var(--green);font-weight:600;font-family:'DM Mono',monospace;}
 .badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;white-space:nowrap;font-family:'DM Mono',monospace;}
 .b-blue{background:var(--blue-bg);color:var(--blue);}
 .b-gray{background:var(--card);color:var(--text2);border:1px solid var(--border2);}
@@ -382,6 +391,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
       <div class="inp-row"><input class="inp" id="inp-company" placeholder="Entreprise" /></div>
       <div class="inp-row"><input class="inp" id="inp-arc"     placeholder="ARC" /></div>
       <div class="inp-row"><input class="inp" id="inp-afs"     placeholder="N° AFS — virgule ou espace si plusieurs" /></div>
+      <div class="inp-row" id="space-row" style="display:none;">
+        <select class="sel" id="inp-space">
+          <option value="">Reste de la place ?</option>
+          <option value="oui">✅ Oui</option>
+          <option value="un-peu">⚠️ Un peu</option>
+          <option value="non">❌ Non</option>
+        </select>
+      </div>
       <button class="btn-main" onclick="addColis()">+ Ajouter ce colis</button>
     </div>
     <div class="purge-row">
@@ -414,6 +431,18 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
         <input class="inp" id="inp-new-afs" placeholder="Ajouter un ou plusieurs N° AFS…" />
         <button class="btn-sec" onclick="addAFS()">+</button>
       </div>
+    </div>
+    <div class="section" id="space-edit-section" style="display:none;">
+      <div class="section-lbl">Reste de la place ?</div>
+      <div class="inp-row">
+        <select class="sel" id="edit-space">
+          <option value="">Choisir…</option>
+          <option value="oui">✅ Oui</option>
+          <option value="un-peu">⚠️ Un peu</option>
+          <option value="non">❌ Non</option>
+        </select>
+      </div>
+      <button class="btn-main" onclick="saveSpace()">✓ Enregistrer</button>
     </div>
   </div>
 </div>
@@ -656,6 +685,16 @@ function openColonne(id) {
   document.getElementById('col-title').textContent = id;
   document.getElementById('col-sub').textContent   = info.name + ' — ' + info.desc;
   ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
+  
+  // Afficher/masquer le champ "reste de la place" pour B4, B5, B6
+  const spaceRow = document.getElementById('space-row');
+  if(['B4','B5','B6'].includes(id)) {
+    spaceRow.style.display = 'flex';
+    document.getElementById('inp-space').value = '';
+  } else {
+    spaceRow.style.display = 'none';
+  }
+  
   renderColisList();
   showView('view-colonne');
 }
@@ -688,6 +727,12 @@ function renderColisList() {
     }
     if(colis.arc) {
       const a = document.createElement('span'); a.className='colis-arc'; a.textContent='ARC: ' + colis.arc; meta.appendChild(a);
+    }
+    
+    // Afficher l'info "reste de la place" si présente
+    if(colis.space) {
+      const spaceLabel = {'oui':'✅ Oui','un-peu':'⚠️ Un peu','non':'❌ Non'}[colis.space] || colis.space;
+      const s = document.createElement('span'); s.className='colis-space'; s.textContent='Place: ' + spaceLabel; meta.appendChild(s);
     }
 
     body.appendChild(clientEl); body.appendChild(compEl); body.appendChild(meta);
@@ -726,9 +771,14 @@ function addColis() {
   const company = document.getElementById('inp-company').value.trim();
   const arc     = document.getElementById('inp-arc').value.trim();
   const afs     = document.getElementById('inp-afs').value.trim().split(/[,;\s]+/).filter(Boolean);
+  const space   = ['B4','B5','B6'].includes(currentCol) ? document.getElementById('inp-space').value : '';
+  
+  if(space && !space.trim()) { showToast('Sélectionnez "Reste de la place"','⚠️'); return; }
+  
   if(!state[currentCol]) state[currentCol] = {colis:[]};
-  state[currentCol].colis.push({client, company, arc, afs, done:false, ts:Date.now()});
+  state[currentCol].colis.push({client, company, arc, afs, space, done:false, ts:Date.now()});
   ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
+  document.getElementById('inp-space').value = '';
   renderColisList(); renderRack(); scheduleSave();
   showToast(client + ' ajouté','✓');
 }
@@ -775,6 +825,16 @@ function openColis(idx) {
   document.getElementById('edit-company').value = c.company || '';
   document.getElementById('edit-arc').value     = c.arc     || '';
   document.getElementById('inp-new-afs').value  = '';
+  
+  // Afficher/masquer le champ space pour B4, B5, B6
+  const spaceSec = document.getElementById('space-edit-section');
+  if(['B4','B5','B6'].includes(currentCol)) {
+    spaceSec.style.display = 'block';
+    document.getElementById('edit-space').value = c.space || '';
+  } else {
+    spaceSec.style.display = 'none';
+  }
+  
   renderAFSList();
   showView('view-colis');
 }
@@ -794,10 +854,20 @@ function addAFS() {
   val.split(/[,;\s]+/).filter(Boolean).forEach(n => state[currentCol].colis[currentColisIdx].afs.push(n));
   document.getElementById('inp-new-afs').value = '';
   renderAFSList(); renderColisList(); scheduleSave(); showToast('AFS ajouté','✓');
+  
+  // Pour B4, B5, B6, demander la place
+  if(['B4','B5','B6'].includes(currentCol)) {
+    document.getElementById('space-edit-section').style.display = 'block';
+  }
 }
 function removeAFS(i) {
   state[currentCol].colis[currentColisIdx].afs.splice(i,1);
   renderAFSList(); renderColisList(); scheduleSave();
+  
+  // Pour B4, B5, B6, demander la place
+  if(['B4','B5','B6'].includes(currentCol)) {
+    document.getElementById('space-edit-section').style.display = 'block';
+  }
 }
 function saveColis() {
   const client = document.getElementById('edit-client').value.trim();
@@ -808,6 +878,13 @@ function saveColis() {
   c.arc     = document.getElementById('edit-arc').value.trim();
   document.getElementById('colis-title').textContent = client;
   renderColisList(); renderRack(); scheduleSave(); showToast('Modifié','✓');
+}
+function saveSpace() {
+  const space = document.getElementById('edit-space').value;
+  if(!space) { showToast('Sélectionnez une option','⚠️'); return; }
+  state[currentCol].colis[currentColisIdx].space = space;
+  renderColisList(); scheduleSave(); showToast('Place enregistrée','✓');
+  document.getElementById('space-edit-section').style.display = 'none';
 }
 function backToColonne() { renderColisList(); showView('view-colonne'); }
 
