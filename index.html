@@ -625,6 +625,25 @@ function renderRack() {
         const p = document.createElement('div'); p.className='emp-prev'; p.textContent = '+' + (active.length-2);
         prevs.appendChild(p);
       }
+      
+      // Pour B4, B5, B6 : afficher l'indicateur "reste de la place"
+      if(['B4','B5','B6'].includes(id) && active.length > 0) {
+        const lastColis = active[active.length-1];
+        if(lastColis.space) {
+          const spaceLabel = {'oui':'✅ Oui','un-peu':'⚠️ Un peu','non':'❌ Non'}[lastColis.space] || '?';
+          const spaceP = document.createElement('div'); 
+          spaceP.className='emp-prev'; 
+          spaceP.style.color = 'var(--green)';
+          spaceP.style.fontWeight = '600';
+          spaceP.textContent = 'Place: ' + spaceLabel;
+          prevs.appendChild(spaceP);
+        }
+      }
+      
+      // ANCIEN CODE QUE JE REMPLACE
+        const p = document.createElement('div'); p.className='emp-prev'; p.textContent = '+' + (active.length-2);
+        prevs.appendChild(p);
+      }
 
       card.appendChild(idDiv); card.appendChild(badge); card.appendChild(prevs);
       card.setAttribute('data-id', id);
