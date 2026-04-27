@@ -301,6 +301,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 }
 .nav-btn.active{color:var(--text);}
 .nav-icon{font-size:19px;line-height:1;}
+.sel.error{border-color:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.15);}
 </style>
 </head>
 <body>
@@ -807,6 +808,14 @@ function addColis() {
   const arc     = document.getElementById('inp-arc').value.trim();
   const afs     = document.getElementById('inp-afs').value.trim().split(/[,;\s]+/).filter(Boolean);
   const space   = SPACE_IDS.includes(currentCol) ? document.getElementById('inp-space').value : '';
+  if(SPACE_IDS.includes(currentCol) && !space) {
+    const sel = document.getElementById('inp-space');
+    sel.classList.add('error');
+    sel.focus();
+    setTimeout(() => sel.classList.remove('error'), 2000);
+    showToast('Indiquez s\'il reste de la place','⚠️');
+    return;
+  }
   if(!state[currentCol]) state[currentCol] = {colis:[]};
   state[currentCol].colis.push({client, company, arc, afs, space, done:false, ts:Date.now()});
   ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
