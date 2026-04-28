@@ -734,11 +734,6 @@ function renderRack() {
         }
       }
       
-      // ANCIEN CODE QUE JE REMPLACE
-        const p = document.createElement('div'); p.className='emp-prev'; p.textContent = '+' + (active.length-2);
-        prevs.appendChild(p);
-      }
-
       card.appendChild(idDiv); card.appendChild(badge); card.appendChild(prevs);
       card.setAttribute('data-id', id);
       card.onclick = function() { openColonne(this.getAttribute('data-id')); };
