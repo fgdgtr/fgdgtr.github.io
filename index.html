@@ -2,690 +2,1083 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AUEM | Rack renvoie colis </title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AUEM — Rack Retour</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
---bg:#f3efe9; --surface:#faf7f3; --card:#fff;
---border:#e5dfd6; --border2:#cdc6bc;
---text:#1c1814; --text2:#6e6560; --text3:#aba49d;
---hdr:#1c1814;
---d-h:#18120a; --d-a:#f59e0b; --d-t:#fef3c7;
---c-h:#0f2744; --c-a:#60a5fa; --c-t:#dbeafe;
---b-h:#052e16; --b-a:#4ade80; --b-t:#dcfce7;
---a-h:#431407; --a-a:#fb923c; --a-t:#ffedd5;
---r:14px; --rs:9px;
+  --bg:#080808; --card:#111; --card2:#181818; --card3:#1e1e1e;
+  --border:#222; --border2:#2a2a2a; --border3:#333;
+  --text:#f0f0f0; --text2:#888; --text3:#444;
+  --green:#22c55e; --green-bg:#052e16;
+  --yellow:#f59e0b; --yellow-bg:#3d1f00;
+  --red:#ef4444; --red-bg:#3d0a0a;
+  --blue:#3b82f6; --blue-bg:#0d1a35;
+  --purple:#a855f7; --purple-bg:#2e1065;
+  --r:12px; --rs:8px;
+  --ease:cubic-bezier(.4,0,.2,1);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;padding-bottom:28px;overflow-x:hidden;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;padding-bottom:72px;overflow-x:hidden;}
 ::-webkit-scrollbar{width:3px;}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+::-webkit-scrollbar-thumb{background:var(--border3);border-radius:2px;}
 
-.hdr{background:var(--hdr);padding:12px 15px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.hdr-l{display:flex;align-items:center;gap:10px;}
-.logo{width:34px;height:34px;background:var(--d-a);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:8px;font-weight:600;color:var(--hdr);letter-spacing:.8px;line-height:1.2;text-align:center;}
-.hdr-title{font-weight:800;font-size:15px;color:#f3efe9;letter-spacing:-.3px;}
-.hdr-sub{font-size:10px;color:var(--text3);margin-top:1px;}
-.hdr-r{display:flex;align-items:center;gap:7px;}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:all .4s;display:inline-block;}
-.sync-dot.ok{background:#16a34a;box-shadow:0 0 7px rgba(22,163,74,.6);}
-.sync-dot.loading{background:#d97706;animation:blink .7s ease-in-out infinite alternate;}
-.sync-dot.error{background:#dc2626;}
-@keyframes blink{to{opacity:.15;}}
-.sync-time{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
-.sync-time.ok{color:#16a34a;}
-.btn-hdr{width:34px;height:34px;border-radius:var(--rs);border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);color:#f3efe9;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;}
-.btn-hdr:active{background:rgba(255,255,255,.2);}
+/* HEADER */
+.header{
+  background:rgba(8,8,8,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);padding:11px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.header-left{display:flex;align-items:center;gap:10px;}
+.header-logo{
+  width:34px;height:34px;background:var(--text);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:9px;color:#000;letter-spacing:1px;font-family:'DM Mono',monospace;
+}
+.header-title{font-weight:700;font-size:15px;letter-spacing:-.3px;}
+.header-sub{font-size:10px;color:var(--text3);margin-top:1px;transition:color .4s;}
+.header-sub.synced{color:var(--green);}
+.header-right{display:flex;align-items:center;gap:7px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:all .4s;flex-shrink:0;}
+.sync-dot.ok{background:var(--green);box-shadow:0 0 8px rgba(34,197,94,.6);}
+.sync-dot.loading{background:var(--yellow);animation:pdot .8s ease-in-out infinite alternate;}
+.sync-dot.error{background:var(--red);}
+@keyframes pdot{to{opacity:.2;}}
+.btn-icon{
+  width:34px;height:34px;background:var(--card2);border:1px solid var(--border2);
+  border-radius:var(--rs);color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+  transition:all .15s var(--ease);
+}
+.btn-icon:active{background:var(--border2);transform:scale(.92);}
 
-.bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 14px;}
-.search-wrap{position:relative;}
-.s-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.35;pointer-events:none;}
-.s-inp{width:100%;padding:9px 11px 9px 33px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;outline:none;}
-.s-inp:focus{border-color:var(--text);}
-.s-inp::placeholder{color:var(--text3);}
+/* VIEWS */
+.view{display:none;}
+.view.active{display:block;animation:fu .2s var(--ease);}
+@keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 
-#view-rack { display:block; }
-#view-emp { display:none; }
-#view-qr { display:none; }
-#view-guide { display:none; }
+/* RACK */
+.rack-view{padding:13px;}
 
-.rack-body{padding:11px;}
-.niv-block{margin-bottom:9px;border-radius:var(--r);overflow:hidden;}
-.niv-hdr{display:flex;align-items:center;gap:10px;padding:9px 13px;}
-.nd .niv-hdr{background:var(--d-h);} .nc .niv-hdr{background:var(--c-h);} .nb .niv-hdr{background:var(--b-h);} .na .niv-hdr{background:var(--a-h);}
-.niv-letter{font-size:26px;font-weight:900;letter-spacing:-1px;line-height:1;}
-.nd .niv-letter{color:var(--d-a);} .nc .niv-letter{color:var(--c-a);} .nb .niv-letter{color:var(--b-a);} .na .niv-letter{color:var(--a-a);}
-.niv-name{font-size:12px;font-weight:700;letter-spacing:.2px;}
-.nd .niv-name{color:var(--d-t);} .nc .niv-name{color:var(--c-t);} .nb .niv-name{color:var(--b-t);} .na .niv-name{color:var(--a-t);}
-.niv-desc{font-size:10px;font-weight:400;opacity:.55;}
-.nd .niv-desc{color:var(--d-t);} .nc .niv-desc{color:var(--c-t);} .nb .niv-desc{color:var(--b-t);} .na .niv-desc{color:var(--a-t);}
-.niv-cnt{margin-left:auto;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.65);}
-.niv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;}
-.nd .niv-grid{background:rgba(245,158,11,.2);}
-.nc .niv-grid{background:rgba(96,165,250,.2);}
-.nb .niv-grid{background:rgba(74,222,128,.2);}
-.na .niv-grid{background:rgba(251,146,60,.2);}
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px 10px;text-align:center;position:relative;overflow:hidden;
+}
+.stat-card::after{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:40%;height:2px;border-radius:2px;opacity:.5;
+}
+.stat-card:nth-child(1)::after{background:var(--blue);}
+.stat-card:nth-child(2)::after{background:var(--green);}
+.stat-num{
+  font-size:28px;font-weight:700;line-height:1;
+  font-family:'DM Mono',monospace;letter-spacing:-1px;
+}
+.stat-num.b{color:var(--blue);} .stat-num.g{color:var(--green);}
+.stat-label{font-size:9px;color:var(--text3);margin-top:4px;letter-spacing:1px;text-transform:uppercase;}
 
-.ecard{background:var(--card);cursor:pointer;padding:10px;min-height:76px;display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden;}
-.ecard:active{filter:brightness(.93);}
-.ecard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-.ecard.vide::before{background:var(--border);}
-.ecard.occ::before{background:var(--text2);}
-.ecard.reserv::before{background:var(--text3);}
-.ecard.occ{background:#f7f4f0;}
-.ecard-id{font-size:10px;font-weight:700;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:.5px;}
-.ecard-ref{font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ecard.vide .ecard-ref{color:var(--text3);font-weight:400;font-size:11px;}
-.ecard.reserv .ecard-ref{color:var(--text2);font-weight:500;font-size:11px;}
-.ecard-afs{font-size:9px;color:var(--text2);font-family:'DM Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:12px;}
+.search-inp{
+  width:100%;background:var(--card);border:1px solid var(--border2);
+  border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:14px;padding:10px 36px 10px 38px;outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.search-inp:focus{border-color:var(--border3);box-shadow:0 0 0 3px rgba(255,255,255,.04);}
+.search-inp::placeholder{color:var(--text3);}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.4;}
+.search-clear{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:var(--border2);border:none;color:var(--text2);border-radius:50%;
+  width:20px;height:20px;font-size:11px;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+}
+.search-clear.show{display:flex;}
+.search-results{background:var(--card);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden;margin-bottom:12px;display:none;}
+.search-results.show{display:block;}
+.sr-item{
+  padding:11px 14px;border-bottom:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;gap:10px;
+  transition:background .15s;
+}
+.sr-item:last-child{border-bottom:none;}
+.sr-item:active{background:var(--card2);}
+.sr-loc{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--text2);min-width:28px;}
+.sr-txt{font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.search-empty{padding:16px;text-align:center;color:var(--text3);font-size:13px;}
 
-.back-hdr{background:var(--hdr);padding:11px 14px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
-.btn-back{width:36px;height:36px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--rs);color:#f3efe9;cursor:pointer;font-size:18px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;line-height:1;}
-.btn-back:active{background:rgba(255,255,255,.25);}
-.bh-title{font-size:18px;font-weight:800;color:#f3efe9;letter-spacing:-.3px;}
+/* FILTERS */
+.filter-bar{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;}
+.filter-bar::-webkit-scrollbar{display:none;}
+.filter-btn{
+  flex-shrink:0;padding:6px 13px;border-radius:20px;border:1px solid var(--border2);
+  background:var(--card);color:var(--text3);font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.filter-btn.active{background:var(--text);color:#000;border-color:var(--text);}
+.filter-btn:active{transform:scale(.95);}
+
+/* ÉTAGES */
+.etage-section{margin-bottom:20px;}
+.etage-header{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.etage-pill{
+  background:var(--card2);border:1px solid var(--border2);border-radius:20px;
+  padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.5px;font-family:'DM Mono',monospace;
+}
+.etage-desc{font-size:11px;color:var(--text3);}
+.emp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+
+/* EMP CARDS */
+.emp-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 9px 9px;cursor:pointer;min-height:78px;
+  position:relative;overflow:hidden;
+  transition:transform .15s,border-color .15s;
+}
+.emp-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:var(--r) var(--r) 0 0;
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.emp-card.has-colis::before{transform:scaleX(1);}
+.emp-card.has-colis{border-color:var(--border2);}
+.emp-card.occupied::before{background:var(--blue);}
+.emp-card:active{transform:scale(.95);}
+
+.emp-id{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:2px;letter-spacing:.5px;}
+.emp-badge{
+  display:inline-flex;align-items:center;
+  background:var(--card2);border:1px solid var(--border2);
+  border-radius:20px;padding:2px 7px;font-size:10px;color:var(--text3);
+  margin-bottom:4px;transition:all .15s;
+}
+.emp-badge.has{background:var(--blue-bg);color:var(--blue);border-color:rgba(59,130,246,.2);}
+.emp-previews{display:flex;flex-direction:column;gap:2px;}
+.emp-prev{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2);font-family:'DM Mono',monospace;}
+
+.sep-rack{display:flex;align-items:center;gap:8px;margin:10px 0 14px;}
+.sep-line{flex:1;height:1px;background:var(--border);}
+.sep-label{font-size:9px;color:var(--text3);letter-spacing:2px;white-space:nowrap;font-family:'DM Mono',monospace;}
+
+/* BACK HEADER */
+.back-header{
+  background:rgba(8,8,8,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);padding:11px 14px;
+  display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:10;
+}
+.btn-back{
+  width:34px;height:34px;background:var(--card2);border:1px solid var(--border2);
+  border-radius:var(--rs);color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+  transition:all .15s;
+}
+.btn-back:active{transform:scale(.92);}
+.bh-title{font-size:16px;font-weight:700;letter-spacing:-.3px;font-family:'DM Mono',monospace;}
 .bh-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.view-body{padding:13px;}
 
-.vbody{padding:13px;}
-.section{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:10px;}
-.slbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-family:'DM Mono',monospace;}
-.info-ref{font-size:21px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px;}
-.info-arrive{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:10px;}
+/* SECTIONS */
+.section{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:10px;}
+.section-lbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:11px;font-family:'DM Mono',monospace;}
 
-.afs-wrap{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:28px;}
-.afs-tag{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;border:1px solid #93c5fd;color:#2563eb;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;}
-.afs-x{background:none;border:none;color:#2563eb;cursor:pointer;font-size:15px;line-height:1;padding:0;margin-left:2px;opacity:.6;}
-.afs-x:active{opacity:1;color:#dc2626;}
-.afs-empty{font-size:12px;color:var(--text3);font-style:italic;padding:4px 0;display:block;}
+/* INPUTS */
+.inp{
+  width:100%;background:var(--bg);border:1px solid var(--border2);
+  border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:14px;padding:10px 12px;outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.inp:focus{border-color:var(--border3);box-shadow:0 0 0 3px rgba(255,255,255,.04);}
+.inp::placeholder{color:var(--text3);}
+.inp-row{display:flex;gap:8px;margin-bottom:8px;}
+.inp-row:last-child{margin-bottom:0;}
 
-.inp{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:10px 12px;outline:none;margin-bottom:8px;text-transform:uppercase;}
-.inp:focus{border-color:var(--text);}
-.inp::placeholder{color:var(--text3);text-transform:none;font-weight:400;}
-.inp.noup{text-transform:none;}
-.inp-row{display:flex;gap:7px;align-items:flex-start;}
-.inp-row .inp{margin-bottom:0;}
+/* SELECT */
+.sel{
+  width:100%;background:var(--bg);border:1px solid var(--border2);
+  border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:14px;padding:10px 12px;outline:none;cursor:pointer;
+  transition:border-color .15s,box-shadow .15s;
+}
+.sel:focus{border-color:var(--border3);box-shadow:0 0 0 3px rgba(255,255,255,.04);}
 
-.btn-main{width:100%;padding:12px;background:var(--text);color:var(--bg);border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;cursor:pointer;margin-top:10px;}
-.btn-main:active{opacity:.8;}
-.btn-sec{padding:10px 14px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--rs);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-.btn-sec:active{background:var(--border);}
-.btn-danger{width:100%;padding:12px;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:var(--rs);color:#dc2626;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;cursor:pointer;margin-top:6px;}
-.btn-danger:active{opacity:.7;}
-.div{height:1px;background:var(--border);margin:10px 0;}
+/* BUTTONS */
+.btn-main{
+  width:100%;background:var(--text);color:#000;border:none;
+  border-radius:var(--rs);font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:700;padding:12px;cursor:pointer;margin-top:10px;
+  transition:opacity .15s,transform .15s;
+}
+.btn-main:active{opacity:.8;transform:scale(.99);}
+.btn-sec{
+  background:var(--card2);border:1px solid var(--border2);border-radius:var(--rs);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  padding:10px 14px;cursor:pointer;white-space:nowrap;transition:all .15s;
+}
+.btn-sec:active{transform:scale(.95);}
 
-.guide-slide{animation:slideIn .3s ease;}
-.guide-title{font-size:18px;font-weight:700;margin-bottom:16px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;}
-.guide-text{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;line-height:2;font-size:14px;}
-.guide-text p{margin:0 0 8px 0;}
-.guide-text p:last-child{margin-bottom:0;}
-.btn-guide-next{width:100%;background:var(--text);color:var(--bg);border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;padding:12px;cursor:pointer;}
-.btn-guide-next:active{opacity:.8;}
-@keyframes slideIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+/* COLIS CARDS */
+.colis-card{
+  background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);
+  padding:12px;margin-bottom:7px;
+  display:flex;align-items:flex-start;gap:10px;
+  animation:slideIn .2s cubic-bezier(.34,1.4,.64,1);
+  position:relative;overflow:hidden;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:none}}
+.colis-card.done{opacity:.32;}
+.colis-stripe{width:3px;border-radius:3px;flex-shrink:0;align-self:stretch;min-height:42px;}
+.colis-body{flex:1;min-width:0;}
+.colis-client{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Mono',monospace;letter-spacing:.3px;}
+.colis-card.done .colis-client{text-decoration:line-through;color:var(--text3);}
+.colis-company{font-size:11px;color:var(--yellow);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.colis-meta{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap;}
+.colis-arc{font-size:10px;color:var(--purple);font-weight:600;font-family:'DM Mono',monospace;}
+.colis-space{font-size:10px;color:var(--green);font-weight:600;font-family:'DM Mono',monospace;}
+.badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;white-space:nowrap;font-family:'DM Mono',monospace;}
+.b-blue{background:var(--blue-bg);color:var(--blue);}
+.b-gray{background:var(--card);color:var(--text2);border:1px solid var(--border2);}
+.colis-afs{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+.colis-acts{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+.btn-circ{
+  width:28px;height:28px;border-radius:50%;border:1px solid var(--border2);
+  background:var(--card);color:var(--text3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  transition:all .15s;
+}
+.btn-circ:active{transform:scale(.85);}
+.colis-card.done .btn-circ.chk{border-color:var(--green);color:var(--green);background:var(--green-bg);}
 
-.qr-body{display:flex;flex-direction:column;align-items:center;gap:16px;padding:22px 16px;}
-.qr-frame{background:white;padding:16px;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.1);}
-.qr-lbl{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:2px;font-family:'DM Mono',monospace;}
-.qr-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:13px;width:100%;}
-.qr-ttl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-family:'DM Mono',monospace;}
-.qr-step{display:flex;align-items:flex-start;gap:9px;margin-bottom:7px;font-size:12px;color:var(--text2);line-height:1.5;}
-.qr-n{width:19px;height:19px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;}
+/* AFS */
+.afs-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);
+  margin-bottom:5px;animation:slideIn .15s ease;
+}
+.afs-num{flex:1;font-size:13px;font-weight:500;color:var(--blue);font-family:'DM Mono',monospace;}
+.btn-afs-del{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:0 4px;transition:color .15s;line-height:1;}
+.btn-afs-del:active{color:var(--red);}
 
-.modal-ov{position:fixed;inset:0;background:rgba(28,24,20,.65);backdrop-filter:blur(6px);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:16px;}
-.modal-ov.open{display:flex;}
-.modal-box{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:20px;width:100%;max-width:400px;}
-.modal-title{font-size:15px;font-weight:800;margin-bottom:5px;}
+.empty{text-align:center;padding:24px 16px;color:var(--text3);font-size:13px;line-height:2;}
+.divider{height:1px;background:var(--border);margin:11px 0;}
+
+/* PURGE BTN */
+.purge-row{display:flex;align-items:center;justify-content:space-between;padding:0 2px 8px;}
+.btn-purge{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;}
+
+/* MODAL */
+.modal-ov{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+  z-index:200;display:flex;align-items:flex-end;justify-content:center;
+  padding:16px;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.modal-ov.open{opacity:1;pointer-events:all;}
+.modal-box{
+  background:var(--card2);border:1px solid var(--border2);border-radius:16px;
+  padding:20px;width:100%;max-width:400px;
+  transform:translateY(20px);transition:transform .25s cubic-bezier(.34,1.4,.64,1);
+}
+.modal-ov.open .modal-box{transform:translateY(0);}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:6px;}
 .modal-sub{font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5;}
 .modal-acts{display:flex;gap:8px;}
-.btn-cancel{flex:1;padding:12px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--rs);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
-.btn-del{flex:1;padding:12px;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:var(--rs);color:#dc2626;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
+.btn-cancel{flex:1;padding:12px;background:var(--card3);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-del{flex:1;padding:12px;background:var(--red-bg);border:1px solid rgba(239,68,68,.3);border-radius:var(--rs);color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:var(--bg);font-size:13px;font-weight:700;padding:9px 17px;border-radius:22px;transition:transform .28s;z-index:999;white-space:nowrap;display:flex;align-items:center;gap:6px;pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);}
+/* QR */
+.qr-center{display:flex;flex-direction:column;align-items:center;gap:16px;padding:16px 0;}
+.qr-box{background:white;padding:16px;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.5);}
+.qr-name{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:2px;text-align:center;font-family:'DM Mono',monospace;}
+.qr-info{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px;width:100%;}
+.qr-ttl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:11px;font-family:'DM Mono',monospace;}
+.qr-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px;font-size:12px;color:var(--text2);line-height:1.5;}
+.qr-n{width:20px;height:20px;border-radius:50%;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;font-family:'DM Mono',monospace;}
 
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:50vh;gap:12px;}
+/* LOADING */
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:50vh;gap:12px;}
 .spinner{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--text);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.loading-txt{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;}
+.loading-text{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:.5px;}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:80px;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--card3);border:1px solid var(--border3);
+  color:var(--text);font-size:13px;font-weight:600;
+  padding:9px 16px;border-radius:22px;
+  transition:transform .3s cubic-bezier(.34,1.4,.64,1);
+  z-index:999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);
+  display:flex;align-items:center;gap:7px;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(8,8,8,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;z-index:50;padding:0 8px;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:9px 4px 10px;background:none;border:none;color:var(--text3);
+  font-family:'DM Sans',sans-serif;font-size:10px;gap:4px;cursor:pointer;
+  transition:color .15s;
+}
+.nav-btn.active{color:var(--text);}
+.nav-icon{font-size:19px;line-height:1;}
+
+/* GUIDE */
+.guide-slide{animation:slideIn .3s ease;}
+.guide-title{
+  font-size:18px;font-weight:700;margin-bottom:16px;
+  background:var(--card2);border:1px solid var(--border2);
+  border-radius:var(--r);padding:14px;
+  text-align:center;
+}
+.guide-text{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px;
+  margin-bottom:16px;line-height:2;
+  font-size:14px;
+}
+.guide-text p{margin:0 0 8px 0;}
+.guide-text p:last-child{margin-bottom:0;}
+.btn-guide-next{
+  width:100%;background:var(--text);color:#000;border:none;
+  border-radius:var(--rs);font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:700;padding:12px;cursor:pointer;
+  transition:opacity .15s,transform .15s;
+}
+.btn-guide-next:active{opacity:.8;transform:scale(.99);}
 </style>
 </head>
 <body>
 
-<div class="hdr">
-<div class="hdr-l">
-<div class="logo">AUEM</div>
-<div>
-<div class="hdr-title">Rack renvoie colis</div>
-<div class="hdr-sub">Emplacements · A·B·C·D</div>
-</div>
-</div>
-<div class="hdr-r">
-<div class="sync-dot loading" id="sync-dot"></div>
-<div class="sync-time" id="sync-time">…</div>
-<button class="btn-hdr" onclick="goGuide()">❓</button>
-<button class="btn-hdr" onclick="goQR()">📱</button>
-</div>
-</div>
-
-<div class="bar">
-<div class="search-wrap">
-<span class="s-ico">🔍</span>
-<input class="s-inp" id="s-inp" placeholder="Rechercher N° commande, AFS…" oninput="doSearch(this.value)"/>
-</div>
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">AUEM</div>
+    <div>
+      <div class="header-title">Rack Retour</div>
+      <div class="header-sub" id="sync-label">Synchronisation…</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="sync-dot loading" id="sync-dot"></div>
+    <button class="btn-icon" onclick="showGuide()">❓</button>
+    <button class="btn-icon" onclick="showQR()">⬛</button>
+  </div>
 </div>
 
 <!-- VUE RACK -->
-<div id="view-rack">
-<div class="rack-body">
-<div id="rack-grid"><div class="loading"><div class="spinner"></div><div class="loading-txt">Chargement…</div></div></div>
-</div>
+<div class="view active" id="view-rack">
+  <div class="rack-view">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num b" id="s-total">—</div><div class="stat-label">Colis total</div></div>
+      <div class="stat-card"><div class="stat-num g" id="s-locs">—</div><div class="stat-label">Emplacements</div></div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-inp" id="search-inp" placeholder="N° client, AFS, ARC, entreprise…" oninput="onSearch(this.value)" />
+      <button class="search-clear" id="search-clear" onclick="clearSearch()">×</button>
+    </div>
+    <div class="search-results" id="search-results"></div>
+    <div class="filter-bar">
+      <button class="filter-btn active" id="f-all"   onclick="setFilter('all')">Tout</button>
+      <button class="filter-btn"        id="f-occ"   onclick="setFilter('occ')">🔵 Occupé</button>
+      <button class="filter-btn"        id="f-empty" onclick="setFilter('empty')">⬜ Vide</button>
+    </div>
+    <div id="rack-grid"><div class="loading-screen"><div class="spinner"></div><div class="loading-text">Chargement…</div></div></div>
+  </div>
 </div>
 
 <!-- VUE EMPLACEMENT -->
-<div id="view-emp">
-<div class="back-hdr">
-<button class="btn-back" onclick="goRack()">&#8592;</button>
-<div>
-<div class="bh-title" id="emp-title">—</div>
-<div class="bh-sub" id="emp-sub">Emplacement</div>
+<div class="view" id="view-colonne">
+  <div class="back-header">
+    <button class="btn-back" onclick="showRack()">←</button>
+    <div><div class="bh-title" id="col-title">A1</div><div class="bh-sub" id="col-sub">Emplacement</div></div>
+  </div>
+  <div class="view-body">
+    <div class="section">
+      <div class="section-lbl">Nouveau colis</div>
+      <div class="inp-row"><input class="inp" id="inp-client"  placeholder="N° Client" /></div>
+      <div class="inp-row"><input class="inp" id="inp-company" placeholder="Entreprise" /></div>
+      <div class="inp-row"><input class="inp" id="inp-arc"     placeholder="ARC" /></div>
+      <div class="inp-row"><input class="inp" id="inp-afs"     placeholder="N° AFS — virgule ou espace si plusieurs" /></div>
+      <div class="inp-row" id="space-row" style="display:none;">
+        <select class="sel" id="inp-space">
+          <option value="">Reste de la place ?</option>
+          <option value="oui">✅ Oui</option>
+          <option value="un-peu">⚠️ Un peu</option>
+          <option value="non">❌ Non</option>
+        </select>
+      </div>
+      <button class="btn-main" onclick="addColis()">+ Ajouter ce colis</button>
+    </div>
+    <div class="purge-row">
+      <div class="section-lbl" style="padding:0;margin:0;">Colis en cours</div>
+      <button class="btn-purge" onclick="purgeDone()">Effacer retirés</button>
+    </div>
+    <div id="colis-list"></div>
+  </div>
 </div>
-</div>
-<div class="vbody">
-<div id="st-occ" style="display:none">
-<div class="section">
-<div class="slbl">Palette en place</div>
-<div class="info-ref" id="occ-ref">—</div>
-<div class="info-arrive" id="occ-arrive">—</div>
-<div class="slbl" style="margin-bottom:7px;">Numéros AFS</div>
-<div class="afs-wrap" id="afs-occ"></div>
-<div class="inp-row">
-<input class="inp noup" id="inp-afs-add" placeholder="Ajouter un AFS…" style="margin-bottom:0"/>
-<button class="btn-sec" onclick="addAFSOcc()">+</button>
-</div>
-<div class="div"></div>
-<button class="btn-danger" onclick="askDel()">📦 Marquer comme sortie</button>
-</div>
-</div>
-<div id="st-reserved" style="display:none">
-<div class="section">
-<div class="slbl">Emplacement réservé</div>
-<p style="font-size:18px;font-weight:800;margin-bottom:4px;">🔒 Réservé</p>
-<p style="font-size:14px;color:var(--text2);margin-bottom:14px;"><strong id="reserved-company">—</strong></p>
-<div class="div"></div>
-<div class="slbl" style="margin-bottom:7px;">Enregistrer une palette sur cet emplacement</div>
-<input class="inp" id="inp-ref-reserved" placeholder="N° commande / référence"/>
-<div class="slbl" style="margin-bottom:7px;margin-top:4px;">Numéros AFS</div>
-<div class="afs-wrap" id="afs-reserved"></div>
-<div class="inp-row">
-<input class="inp noup" id="inp-afs-reserved" placeholder="Ajouter un AFS…" style="margin-bottom:0"/>
-<button class="btn-sec" onclick="addAFSReserved()">+</button>
-</div>
-<button class="btn-main" onclick="addPalReserved()">✓ Valider l'entrée</button>
-<div class="div"></div>
-<button class="btn-danger" onclick="cancelReservation()">🔓 Annuler la réservation</button>
-</div>
-</div>
-<div id="st-free" style="display:none">
-<div class="section">
-<div class="slbl">Enregistrer une palette</div>
-<input class="inp" id="inp-ref" placeholder="N° commande / référence"/>
-<div class="slbl" style="margin-bottom:7px;margin-top:4px;">Numéros AFS</div>
-<div class="afs-wrap" id="afs-new"></div>
-<div class="inp-row">
-<input class="inp noup" id="inp-afs-new" placeholder="Ajouter un AFS…" style="margin-bottom:0"/>
-<button class="btn-sec" onclick="addAFSNew()">+</button>
-</div>
-<button class="btn-main" onclick="addPal()">✓ Valider l'entrée</button>
-</div>
-<div class="section">
-<div class="slbl">Réserver cet emplacement</div>
-<input class="inp noup" id="inp-company-reserve" placeholder="Nom de l'entreprise"/>
-<button class="btn-sec" style="width:100%;margin-top:4px;" onclick="reserveEmp()">🔒 Réserver pour cette entreprise</button>
-</div>
-</div>
-</div>
+
+<!-- VUE COLIS DETAIL -->
+<div class="view" id="view-colis">
+  <div class="back-header">
+    <button class="btn-back" onclick="backToColonne()">←</button>
+    <div><div class="bh-title" id="colis-title">Colis</div><div class="bh-sub" id="colis-sub">Modifier</div></div>
+  </div>
+  <div class="view-body">
+    <div class="section">
+      <div class="section-lbl">Informations</div>
+      <div class="inp-row"><input class="inp" id="edit-client"  placeholder="N° Client" /></div>
+      <div class="inp-row"><input class="inp" id="edit-company" placeholder="Entreprise" /></div>
+      <div class="inp-row"><input class="inp" id="edit-arc"     placeholder="ARC" /></div>
+      <button class="btn-main" onclick="saveColis()">✓ Enregistrer</button>
+    </div>
+    <div class="section">
+      <div class="section-lbl">Numéros AFS</div>
+      <div id="afs-list"></div>
+      <div class="divider"></div>
+      <div class="inp-row">
+        <input class="inp" id="inp-new-afs" placeholder="Ajouter un ou plusieurs N° AFS…" />
+        <button class="btn-sec" onclick="addAFS()">+</button>
+      </div>
+    </div>
+    <div class="section" id="space-edit-section" style="display:none;">
+      <div class="section-lbl">Reste de la place ?</div>
+      <div class="inp-row">
+        <select class="sel" id="edit-space">
+          <option value="">Choisir…</option>
+          <option value="oui">✅ Oui</option>
+          <option value="un-peu">⚠️ Un peu</option>
+          <option value="non">❌ Non</option>
+        </select>
+      </div>
+      <button class="btn-main" onclick="saveSpace()">✓ Enregistrer</button>
+    </div>
+  </div>
 </div>
 
 <!-- VUE GUIDE -->
-<div id="view-guide">
-<div class="back-hdr">
-<button class="btn-back" onclick="goRack()">&#8592;</button>
-<div><div class="bh-title">Guide</div><div class="bh-sub">Comment utiliser le Rack</div></div>
-</div>
-<div class="vbody">
-<div id="guide-slide-1">
-<div class="guide-title">📱 Étape 1 : Scannez le QR Code</div>
-<div class="guide-text">
-<p><strong>Où est le QR ?</strong> Il est fixé sur le montant du RACK ATTENTE.</p>
-<p style="margin-top:12px;"><strong>Comment faire :</strong></p>
-<p>1️⃣ Ouvrez l'<strong>appareil photo</strong> de votre téléphone</p>
-<p>2️⃣ Pointez vers le <strong>carré noir/blanc</strong> du QR code</p>
-<p>3️⃣ Une notification apparaît → cliquez dessus</p>
-<p>4️⃣ Vous arrivez sur cette application ! ✅</p>
-</div>
-<button class="btn-guide-next" onclick="nextGuide(1)">Suivant →</button>
-</div>
-<div id="guide-slide-2" style="display:none;">
-<div class="guide-title">📍 Étape 2 : Choisissez votre emplacement</div>
-<div class="guide-text">
-<p><strong>Vous voyez le RACK entier avec 24 emplacements :</strong></p>
-<p style="margin-top:10px;">🟡 <strong>Haut (D)</strong> → D1 à D6</p>
-<p>🔵 <strong>Milieu-haut (C)</strong> → C1 à C6</p>
-<p>🟢 <strong>Milieu (B)</strong> → B1 à B6</p>
-<p>🟠 <strong>Bas (A)</strong> → A1 à A6</p>
-<p style="margin-top:12px;"><strong>Action :</strong> Cliquez sur l'emplacement où vous mettez votre palette</p>
-</div>
-<button class="btn-guide-next" onclick="nextGuide(2)">Suivant →</button>
-</div>
-<div id="guide-slide-3" style="display:none;">
-<div class="guide-title">✏️ Étape 3 : Remplissez les infos</div>
-<div class="guide-text">
-<p><strong>🔴 N° Commande / Référence (obligatoire)</strong></p>
-<p style="font-size:12px;margin-bottom:10px;color:var(--text3);">Exemple : CMD001, REF12345…</p>
-<p><strong>🟠 Numéros AFS (optionnel)</strong></p>
-<p style="font-size:12px;margin-bottom:10px;color:var(--text3);">Plusieurs ? → Séparez par virgules ou espaces</p>
-</div>
-<button class="btn-guide-next" onclick="nextGuide(3)">Suivant →</button>
-</div>
-<div id="guide-slide-4" style="display:none;">
-<div class="guide-title">🔒 Les emplacements réservés</div>
-<div class="guide-text">
-<p><strong>Certains emplacements sont réservés à une entreprise.</strong></p>
-<p style="margin-top:10px;">Vous les reconnaissez au symbole <strong>🔒</strong> affiché sur la case.</p>
-<p style="margin-top:12px;"><strong>Que faire si vous avez une palette pour cette entreprise ?</strong></p>
-<p>1️⃣ Cliquez sur l'emplacement réservé</p>
-<p>2️⃣ Entrez le <strong>N° commande</strong> et les AFS</p>
-<p>3️⃣ Cliquez <strong>"✓ Valider l'entrée"</strong></p>
-<p style="margin-top:10px;font-size:12px;color:var(--text3);">✅ La réservation reste en place — l'emplacement est juste occupé</p>
-</div>
-<button class="btn-guide-next" onclick="nextGuide(4)">Suivant →</button>
-</div>
-<div id="guide-slide-5" style="display:none;">
-<div class="guide-title">🎉 Vous maîtrisez le RACK !</div>
-<div class="guide-text">
-<p>📱 <strong>1.</strong> Scanner le QR code au rack</p>
-<p>📍 <strong>2.</strong> Cliquer sur votre emplacement</p>
-<p>✏️ <strong>3.</strong> Entrer la N° Commande + AFS</p>
-<p>✓ <strong>4.</strong> Valider</p>
-<p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(0,0,0,.1);">🔒 <strong>Emplacement réservé ?</strong> Entrez quand même le colis directement dessus, la réservation reste.</p>
-</div>
-<button class="btn-guide-next" onclick="goRack()">← Retour au Rack</button>
-</div>
-</div>
+<div class="view" id="view-guide">
+  <div class="back-header">
+    <button class="btn-back" onclick="showRack()">←</button>
+    <div><div class="bh-title">Guide</div><div class="bh-sub">Comment utiliser le Rack</div></div>
+  </div>
+  <div class="view-body">
+    <div class="guide-slide" id="guide-slide-1">
+      <div class="guide-title">📱 Étape 1 : Scannez le QR Code</div>
+      <div class="guide-text">
+        <p><strong>Où est le QR ?</strong> Il est collé sur le montant du RACK RETOUR, près de l'emplacement.</p>
+        <p style="margin-top: 12px;"><strong>Comment faire :</strong></p>
+        <p>1️⃣ Ouvrez l'<strong>appareil photo</strong> de votre téléphone</p>
+        <p>2️⃣ Pointez vers le <strong>carré noir/blanc</strong> du QR code</p>
+        <p>3️⃣ Une notification apparaît → cliquez dessus</p>
+        <p>4️⃣ Vous arrivez sur cette application ! ✅</p>
+      </div>
+      <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
+    </div>
+
+    <div class="guide-slide" id="guide-slide-2" style="display:none;">
+      <div class="guide-title">📍 Étape 2 : Choisissez votre emplacement</div>
+      <div class="guide-text">
+        <p><strong>Vous voyez le RACK ENTIER avec tous les emplacements :</strong></p>
+        <p style="margin-top: 10px;">🔴 <strong>Haut (D)</strong> → D1, D2, D3, D4, D5, D6</p>
+        <p>🟠 <strong>Milieu-haut (C)</strong> → C1, C2, C3, C4, C5, C6</p>
+        <p>🟡 <strong>Milieu (B)</strong> → B1, B2, B3, B4, B5, B6</p>
+        <p>🟠 <strong>Bas (A)</strong> → A1, A2, A3, A4, A5, A6</p>
+        <p style="margin-top: 12px;"><strong>Action :</strong> Cliquez sur l'emplacement où vous mettez votre colis</p>
+        <p style="font-size:12px; color:var(--text3); margin-top:8px;">💡 Exemple : vous rangez sur B4 ? → Cliquez sur "B4"</p>
+      </div>
+      <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
+    </div>
+
+    <div class="guide-slide" id="guide-slide-3" style="display:none;">
+      <div class="guide-title">✏️ Étape 3 : Remplissez les informations du colis</div>
+      <div class="guide-text">
+        <p style="margin-bottom: 8px;"><strong>🔴 N° CLIENT (obligatoire !)</strong></p>
+        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Exemple : 12345, CLIENT001, etc.</p>
+        <p style="margin-bottom: 8px;"><strong>🟠 Entreprise (optionnel)</strong></p>
+        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Nom de la société qui livrera</p>
+        <p style="margin-bottom: 8px;"><strong>🟡 ARC (optionnel)</strong></p>
+        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Numéro ARC du dossier s'il existe</p>
+        <p style="margin-bottom: 8px;"><strong>🟢 N° AFS (optionnel)</strong></p>
+        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Plusieurs ? → Séparez par des virgules ou espaces</p>
+        <p style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,.1); font-weight:600; color:#ef4444;">⚠️ Pour B4, B5, B6 UNIQUEMENT</p>
+        <p style="font-size:12px; margin-top: 6px; color:var(--text3);">Vous DEVEZ indiquer s'il reste de la place : ✅ Oui · ⚠️ Un peu · ❌ Non</p>
+      </div>
+      <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
+    </div>
+
+    <div class="guide-slide" id="guide-slide-4" style="display:none;">
+      <div class="guide-title">✓ Étape 4 : Validez l'ajout</div>
+      <div class="guide-text">
+        <p><strong>Vous avez rempli les champs ?</strong> Maintenant :</p>
+        <p style="margin: 16px 0; padding: 12px; background:rgba(0,0,0,.05); border-radius:8px; font-weight:600; text-align:center;">🔘 Cliquez sur "+ Ajouter ce colis"</p>
+        <p style="font-size:13px;"><strong>✅ Succès !</strong> Votre colis apparaît immédiatement dans la liste</p>
+        <p style="font-size:13px; margin-top:8px;"><strong>📡 IMPORTANT :</strong> Tous les autres opérateurs voient la modification en temps réel</p>
+        <p style="font-size:12px; color:var(--text3); margin-top:8px;">Aucun double colis, tout est synchronisé automatiquement</p>
+      </div>
+      <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
+    </div>
+
+    <div class="guide-slide" id="guide-slide-5" style="display:none;">
+      <div class="guide-title">🎉 Vous maîtrisez le RACK !</div>
+      <div class="guide-text">
+        <p style="margin-bottom: 16px;"><strong>Résumé rapide :</strong></p>
+        <p>📱 <strong>1.</strong> Scanner le QR code au rack</p>
+        <p>📍 <strong>2.</strong> Cliquer sur votre emplacement (A1, B4, etc.)</p>
+        <p>✏️ <strong>3.</strong> Remplir au moins le N° Client</p>
+        <p>✓ <strong>4.</strong> Cliquer "+ Ajouter ce colis"</p>
+        <p style="margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,.1);"><strong>💡 Astuces :</strong></p>
+        <p style="font-size:12px; color:var(--text3); margin-top:6px;">• Vous pouvez modifier un colis → cliquez sur ✏️</p>
+        <p style="font-size:12px; color:var(--text3);">• Vous pouvez ajouter des AFS à tout moment</p>
+        <p style="font-size:12px; color:var(--text3);">• Besoin d'aide ? Demandez à un collègue ou cliquez ❓</p>
+      </div>
+      <button class="btn-guide-next" onclick="showRack()">← Retour au Rack</button>
+    </div>
+  </div>
 </div>
 
 <!-- VUE QR -->
-<div id="view-qr">
-<div class="back-hdr">
-<button class="btn-back" onclick="goRack()">&#8592;</button>
-<div><div class="bh-title">QR Code</div><div class="bh-sub">Partager l'accès</div></div>
-</div>
-<div class="vbody">
-<div class="qr-body">
-<div class="qr-frame">
-<div id="qr-c" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;"><div class="spinner"></div></div>
-</div>
-<div class="qr-lbl">RACK ATTENTE — AUEM</div>
-<div class="qr-card">
-<div class="qr-ttl">Instructions</div>
-<div class="qr-step"><div class="qr-n">1</div>Imprimez et plastifiez ce QR code</div>
-<div class="qr-step"><div class="qr-n">2</div>Fixez-le sur le rack à hauteur des yeux</div>
-<div class="qr-step"><div class="qr-n">3</div>Les opérateurs scannent et voient le même rack en temps réel</div>
-</div>
-</div>
-</div>
+<div class="view" id="view-qr">
+  <div class="back-header">
+    <button class="btn-back" onclick="showRack()">←</button>
+    <div><div class="bh-title">QR Code</div><div class="bh-sub">Scanner pour accéder au rack</div></div>
+  </div>
+  <div class="view-body">
+    <div class="qr-center">
+      <div class="qr-box"><div id="qr-container" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;"><div class="spinner"></div></div></div>
+      <div class="qr-name">RACK RETOUR — AUEM</div>
+      <div class="qr-info">
+        <div class="qr-ttl">Comment utiliser</div>
+        <div class="qr-step"><div class="qr-n">1</div>Imprimez et plastifiez ce QR code</div>
+        <div class="qr-step"><div class="qr-n">2</div>Fixez-le sur le rack à hauteur des yeux</div>
+        <div class="qr-step"><div class="qr-n">3</div>Tous les opérateurs scannent et voient le même rack en temps réel</div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="modal-ov" id="modal-del" onclick="closeModalIfBg(event)">
-<div class="modal-box">
-<div class="modal-title">Libérer l'emplacement ?</div>
-<div class="modal-sub" id="modal-sub">La palette sera retirée définitivement.</div>
-<div class="modal-acts">
-<button class="btn-cancel" onclick="closeModal()">Annuler</button>
-<button class="btn-del" onclick="confirmDel()">Sortie confirmée</button>
-</div>
-</div>
+<!-- MODAL CONFIRM -->
+<div class="modal-ov" id="modal-del">
+  <div class="modal-box">
+    <div class="modal-title">Supprimer ce colis ?</div>
+    <div class="modal-sub" id="modal-lbl">Cette action est irréversible.</div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-del"    onclick="confirmDelete()">Supprimer</button>
+    </div>
+  </div>
 </div>
 
-<div class="toast" id="toast"><span id="t-i"></span><span id="t-m"></span></div>
+<div class="toast" id="toast"><span id="t-ico"></span><span id="t-msg"></span></div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-rack" onclick="navTo('rack')"><span class="nav-icon">📦</span>Rack</button>
+  <button class="nav-btn"        id="nav-qr"   onclick="navTo('qr')"><span class="nav-icon">⬛</span>QR</button>
+</div>
 
 <script>
-var DB = "https://rac-attente-fin-delais-default-rtdb.europe-west1.firebasedatabase.app/rack.json";
-var NIVEAUX = [
-{id:"D",label:"Niveau D",desc:"Haut — gerbeur obligatoire",hcls:"nd"},
-{id:"C",label:"Niveau C",desc:"Gerbeur nécessaire",hcls:"nc"},
-{id:"B",label:"Niveau B",desc:"Accessible à la main",hcls:"nb"},
-{id:"A",label:"Niveau A",desc:"Bas — niveau sol",hcls:"na"}
-];
-var COLS=[1,2,3,4,5,6];
-var state={}, curId=null, newAFS=[], toastTm=null, currentGuideSlide=1;
+/* ══ CONFIG ══ */
+const ETAGES = ['D','C','B','A'];
+const ETAGE_INFO = {
+  'D':{name:'Étage D', desc:'Haut — gerbeur obligatoire'},
+  'C':{name:'Étage C', desc:'Gerbeur nécessaire'},
+  'B':{name:'Étage B', desc:'Accessible à la main'},
+  'A':{name:'Étage A', desc:'Bas — niveau sol'},
+};
+const COLS    = 6;
+const FIREBASE = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/retour.json';
 
-function isValidObj(v) {
-return v !== null && v !== undefined && typeof v === "object" && !Array.isArray(v);
+let state = {}, currentCol = null, currentColisIdx = null;
+let saveTimer = null, activeFilter = 'all', deleteTargetIdx = null;
+
+/* ══ STATE ══ */
+function initState() {
+  const s = {};
+  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) s[e+i] = {colis:[]}; });
+  return s;
+}
+function migrate(data) {
+  const s = data || initState();
+  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
+    const id = e+i;
+    if(!s[id]) s[id] = {colis:[]};
+    if(Array.isArray(s[id])) s[id] = {colis: s[id]};
+    if(!s[id].colis) s[id].colis = [];
+  }});
+  return s;
 }
 
-/* ── NAV ── */
-function showOnly(id) {
-["view-rack","view-emp","view-qr","view-guide"].forEach(function(v) {
-document.getElementById(v).style.display = v === id ? "block" : "none";
-});
-window.scrollTo(0,0);
+/* ══ SYNC ══ */
+function setSyncDot(st) {
+  document.getElementById('sync-dot').className = 'sync-dot ' + st;
+  const lbl = document.getElementById('sync-label');
+  if(st === 'ok') {
+    const n = new Date();
+    lbl.textContent = 'Sync ' + String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+    lbl.className = 'header-sub synced';
+    setTimeout(() => { lbl.className='header-sub'; lbl.textContent='Temps réel · tous opérateurs'; }, 3000);
+  } else if(st === 'loading') { lbl.textContent='Synchronisation…'; lbl.className='header-sub'; }
+  else { lbl.textContent='Hors-ligne'; lbl.className='header-sub'; }
 }
-function goRack() { renderRack(); showOnly("view-rack"); }
-function goEmp(id) { openEmp(id); showOnly("view-emp"); }
-function goQR() { showOnly("view-qr"); renderQR(); }
-function goGuide() { currentGuideSlide=1; updateGuideSlide(); showOnly("view-guide"); }
 
-function nextGuide(current) {
-var next = current + 1;
-if(next <= 5) { currentGuideSlide = next; updateGuideSlide(); }
+async function loadFromServer() {
+  setSyncDot('loading');
+  try {
+    const res = await fetch(FIREBASE); if(!res.ok) throw new Error();
+    state = migrate(await res.json()); setSyncDot('ok'); renderRack();
+  } catch {
+    try { state = migrate(JSON.parse(localStorage.getItem('auem_retour'))); } catch { state = initState(); }
+    setSyncDot('error'); renderRack(); showToast('Mode hors-ligne','📡');
+  }
+}
+async function saveToServer() {
+  setSyncDot('loading');
+  try {
+    await fetch(FIREBASE,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});
+    localStorage.setItem('auem_retour', JSON.stringify(state)); setSyncDot('ok');
+  } catch { localStorage.setItem('auem_retour', JSON.stringify(state)); setSyncDot('error'); }
+}
+function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveToServer, 600); }
+setInterval(() => { if(document.getElementById('view-rack').classList.contains('active')) loadFromServer(); }, 30000);
+
+/* ══ STATS ══ */
+function computeStats() {
+  let total=0, locs=0;
+  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
+    const a = (state[e+i]?.colis||[]).filter(c=>!c.done);
+    if(a.length) locs++;
+    total += a.length;
+  }});
+  return {total, locs};
+}
+function updateStats() {
+  const {total, locs} = computeStats();
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-locs').textContent  = locs + '/' + (ETAGES.length * COLS);
+}
+
+/* ══ FILTERS ══ */
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-'+f).classList.add('active');
+  renderRack();
+}
+function cardMatchesFilter(id) {
+  if(activeFilter === 'all') return true;
+  const a = (state[id]?.colis||[]).filter(c=>!c.done);
+  if(activeFilter === 'empty') return a.length === 0;
+  if(activeFilter === 'occ')   return a.length > 0;
+  return true;
+}
+
+/* ══ RENDER RACK ══ */
+function renderRack() {
+  updateStats();
+  const grid = document.getElementById('rack-grid');
+  grid.innerHTML = '';
+
+  ETAGES.forEach(etage => {
+    const info = ETAGE_INFO[etage];
+    const sec = document.createElement('div');
+    sec.className = 'etage-section';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'etage-header';
+    hdr.innerHTML = '<span class="etage-pill">' + info.name + '</span><span class="etage-desc">' + info.desc + '</span>';
+    sec.appendChild(hdr);
+
+    const g = document.createElement('div');
+    g.className = 'emp-grid';
+    let anyVisible = false;
+
+    for(let i=1; i<=COLS; i++) {
+      const id = etage + i;
+      if(!cardMatchesFilter(id)) continue;
+      anyVisible = true;
+      const active = (state[id]?.colis||[]).filter(c=>!c.done);
+      const hasC = active.length > 0;
+
+      const card = document.createElement('div');
+      card.className = 'emp-card' + (hasC ? ' has-colis occupied' : '');
+
+      const idDiv  = document.createElement('div'); idDiv.className='emp-id'; idDiv.textContent = id;
+      const badge  = document.createElement('div'); badge.className='emp-badge'+(hasC?' has':''); badge.textContent = active.length || 'Vide';
+      const prevs  = document.createElement('div'); prevs.className='emp-previews';
+
+      active.slice(0,2).forEach(c => {
+        const p = document.createElement('div'); p.className='emp-prev'; p.textContent = c.client || '—';
+        prevs.appendChild(p);
+      });
+      if(active.length > 2) {
+        const p = document.createElement('div'); p.className='emp-prev'; p.textContent = '+' + (active.length-2);
+        prevs.appendChild(p);
+      }
+      
+      // Pour B4, B5, B6 : afficher l'indicateur "reste de la place"
+      if(['B4','B5','B6'].includes(id) && active.length > 0) {
+        const lastColis = active[active.length-1];
+        if(lastColis.space) {
+          const spaceLabel = {'oui':'✅ Oui','un-peu':'⚠️ Un peu','non':'❌ Non'}[lastColis.space] || '?';
+          const spaceP = document.createElement('div'); 
+          spaceP.className='emp-prev'; 
+          spaceP.style.color = 'var(--green)';
+          spaceP.style.fontWeight = '600';
+          spaceP.textContent = 'Place: ' + spaceLabel;
+          prevs.appendChild(spaceP);
+        }
+      }
+      
+      card.appendChild(idDiv); card.appendChild(badge); card.appendChild(prevs);
+      card.setAttribute('data-id', id);
+      card.onclick = function() { openColonne(this.getAttribute('data-id')); };
+      g.appendChild(card);
+    }
+
+    if(!anyVisible) {
+      const e = document.createElement('div');
+      e.style.cssText = 'grid-column:1/-1;text-align:center;padding:12px;color:var(--text3);font-size:13px;';
+      e.textContent = 'Aucun emplacement';
+      g.appendChild(e);
+    }
+
+    sec.appendChild(g);
+    if(etage === 'B') {
+      const sep = document.createElement('div'); sep.className='sep-rack';
+      sep.innerHTML = '<div class="sep-line"></div><div class="sep-label">HAUTEUR D\'HOMME</div><div class="sep-line"></div>';
+      sec.appendChild(sep);
+    }
+    grid.appendChild(sec);
+  });
+}
+
+/* ══ SEARCH ══ */
+function onSearch(q) {
+  q = q.trim();
+  document.getElementById('search-clear').classList.toggle('show', q.length > 0);
+  const results = document.getElementById('search-results');
+  if(!q) { results.classList.remove('show'); return; }
+  const hits = [];
+  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
+    const id = e+i;
+    (state[id]?.colis||[]).filter(c=>!c.done).forEach(c => {
+      const txt = ((c.client||'') + ' ' + (c.company||'') + ' ' + (c.arc||'') + ' ' + (c.afs||[]).join(' ')).toLowerCase();
+      if(txt.includes(q.toLowerCase())) hits.push({id, colis:c});
+    });
+  }});
+  results.classList.add('show');
+  if(!hits.length) { results.innerHTML = '<div class="search-empty">Aucun résultat pour « ' + q + ' »</div>'; return; }
+  results.innerHTML = hits.slice(0,7).map(h =>
+    '<div class="sr-item" onclick="clearSearch();openColonne(\'' + h.id + '\')">' +
+    '<span class="sr-loc">' + h.id + '</span>' +
+    '<span class="sr-txt">' + (h.colis.client||'') + (h.colis.company ? ' · ' + h.colis.company : '') + '</span>' +
+    '</div>'
+  ).join('');
+}
+function clearSearch() {
+  document.getElementById('search-inp').value = '';
+  document.getElementById('search-clear').classList.remove('show');
+  document.getElementById('search-results').classList.remove('show');
+}
+
+/* ══ EMPLACEMENT ══ */
+function openColonne(id) {
+  currentCol = id;
+  const info = ETAGE_INFO[id[0]];
+  document.getElementById('col-title').textContent = id;
+  document.getElementById('col-sub').textContent   = info.name + ' — ' + info.desc;
+  ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
+  
+  // Afficher/masquer le champ "reste de la place" pour B4, B5, B6
+  const spaceRow = document.getElementById('space-row');
+  if(['B4','B5','B6'].includes(id)) {
+    spaceRow.style.display = 'flex';
+    document.getElementById('inp-space').value = '';
+  } else {
+    spaceRow.style.display = 'none';
+  }
+  
+  renderColisList();
+  showView('view-colonne');
+}
+
+function renderColisList() {
+  const list = document.getElementById('colis-list');
+  const all  = state[currentCol]?.colis || [];
+  if(!all.length) { list.innerHTML='<div class="empty">Aucun colis sur cet emplacement<br>Ajoutez-en un ci-dessus ↑</div>'; return; }
+  list.innerHTML = '';
+  [...all.filter(c=>!c.done), ...all.filter(c=>c.done)].forEach(colis => {
+    const idx  = all.indexOf(colis);
+    const card = document.createElement('div');
+    card.className = 'colis-card' + (colis.done ? ' done' : '');
+
+    const stripe = document.createElement('div');
+    stripe.className = 'colis-stripe';
+    stripe.style.background = colis.done ? '#252525' : 'var(--blue)';
+
+    const body = document.createElement('div');
+    body.className = 'colis-body';
+
+    const clientEl = document.createElement('div'); clientEl.className='colis-client'; clientEl.textContent = colis.client || '—';
+    const compEl   = document.createElement('div'); compEl.className='colis-company';
+    compEl.textContent = colis.company ? '🏭 ' + colis.company : '';
+    if(!colis.company) compEl.style.display='none';
+
+    const meta = document.createElement('div'); meta.className='colis-meta';
+    if(colis.done) {
+      const b = document.createElement('span'); b.className='badge b-gray'; b.textContent='Retiré'; meta.appendChild(b);
+    }
+    if(colis.arc) {
+      const a = document.createElement('span'); a.className='colis-arc'; a.textContent='ARC: ' + colis.arc; meta.appendChild(a);
+    }
+    
+    // Afficher l'info "reste de la place" si présente
+    if(colis.space) {
+      const spaceLabel = {'oui':'✅ Oui','un-peu':'⚠️ Un peu','non':'❌ Non'}[colis.space] || colis.space;
+      const s = document.createElement('span'); s.className='colis-space'; s.textContent='Place: ' + spaceLabel; meta.appendChild(s);
+    }
+
+    body.appendChild(clientEl); body.appendChild(compEl); body.appendChild(meta);
+
+    if(colis.afs && colis.afs.length) {
+      const afsWrap = document.createElement('div'); afsWrap.className='colis-afs';
+      colis.afs.forEach(a => {
+        const b = document.createElement('span'); b.className='badge b-blue'; b.textContent='AFS ' + a;
+        afsWrap.appendChild(b);
+      });
+      body.appendChild(afsWrap);
+    }
+
+    const acts = document.createElement('div'); acts.className='colis-acts';
+    const btnEdit = document.createElement('button'); btnEdit.className='btn-circ'; btnEdit.textContent='✏️';
+    btnEdit.setAttribute('data-idx', idx);
+    btnEdit.onclick = function() { openColis(parseInt(this.getAttribute('data-idx'))); };
+
+    const btnChk = document.createElement('button'); btnChk.className='btn-circ chk'; btnChk.textContent = colis.done ? '↩' : '✓';
+    btnChk.setAttribute('data-idx', idx);
+    btnChk.onclick = function() { toggleDone(parseInt(this.getAttribute('data-idx'))); };
+
+    const btnDel = document.createElement('button'); btnDel.className='btn-circ del'; btnDel.textContent='✕';
+    btnDel.setAttribute('data-idx', idx);
+    btnDel.onclick = function() { askDelete(parseInt(this.getAttribute('data-idx'))); };
+
+    acts.appendChild(btnEdit); acts.appendChild(btnChk); acts.appendChild(btnDel);
+    card.appendChild(stripe); card.appendChild(body); card.appendChild(acts);
+    list.appendChild(card);
+  });
+}
+
+function addColis() {
+  const client = document.getElementById('inp-client').value.trim();
+  if(!client) { showToast('Entrez un N° client','⚠️'); return; }
+  const company = document.getElementById('inp-company').value.trim();
+  const arc     = document.getElementById('inp-arc').value.trim();
+  const afs     = document.getElementById('inp-afs').value.trim().split(/[,;\s]+/).filter(Boolean);
+  const space   = ['B4','B5','B6'].includes(currentCol) ? document.getElementById('inp-space').value : '';
+  
+  if(space && !space.trim()) { showToast('Sélectionnez "Reste de la place"','⚠️'); return; }
+  
+  if(!state[currentCol]) state[currentCol] = {colis:[]};
+  state[currentCol].colis.push({client, company, arc, afs, space, done:false, ts:Date.now()});
+  ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
+  document.getElementById('inp-space').value = '';
+  renderColisList(); renderRack(); scheduleSave();
+  showToast(client + ' ajouté','✓');
+}
+
+function toggleDone(idx) {
+  const c = state[currentCol].colis[idx];
+  c.done = !c.done;
+  renderColisList(); renderRack(); scheduleSave();
+  showToast(c.done ? 'Colis retiré' : 'Restauré', c.done ? '📦' : '↩');
+}
+
+function askDelete(idx) {
+  deleteTargetIdx = idx;
+  const ref = state[currentCol].colis[idx].client || 'ce colis';
+  document.getElementById('modal-lbl').textContent = 'Supprimer "' + ref + '" définitivement ?';
+  document.getElementById('modal-del').classList.add('open');
+}
+function closeModal()   { document.getElementById('modal-del').classList.remove('open'); deleteTargetIdx=null; }
+function confirmDelete() {
+  if(deleteTargetIdx===null) return;
+  state[currentCol].colis.splice(deleteTargetIdx, 1);
+  renderColisList(); renderRack(); scheduleSave();
+  closeModal(); showToast('Supprimé','🗑');
+}
+document.getElementById('modal-del').addEventListener('click', function(e) { if(e.target===this) closeModal(); });
+
+function purgeDone() {
+  if(!state[currentCol]) return;
+  const before = state[currentCol].colis.length;
+  state[currentCol].colis = state[currentCol].colis.filter(c=>!c.done);
+  const removed = before - state[currentCol].colis.length;
+  if(!removed) { showToast('Aucun retiré','ℹ️'); return; }
+  renderColisList(); renderRack(); scheduleSave();
+  showToast(removed + ' supprimé' + (removed>1?'s':''),'🗑');
+}
+
+/* ══ COLIS DÉTAIL ══ */
+function openColis(idx) {
+  currentColisIdx = idx;
+  const c = state[currentCol].colis[idx];
+  document.getElementById('colis-title').textContent = c.client || '—';
+  document.getElementById('colis-sub').textContent   = currentCol;
+  document.getElementById('edit-client').value  = c.client  || '';
+  document.getElementById('edit-company').value = c.company || '';
+  document.getElementById('edit-arc').value     = c.arc     || '';
+  document.getElementById('inp-new-afs').value  = '';
+  
+  // Afficher/masquer le champ space pour B4, B5, B6
+  const spaceSec = document.getElementById('space-edit-section');
+  if(['B4','B5','B6'].includes(currentCol)) {
+    spaceSec.style.display = 'block';
+    document.getElementById('edit-space').value = c.space || '';
+  } else {
+    spaceSec.style.display = 'none';
+  }
+  
+  renderAFSList();
+  showView('view-colis');
+}
+function renderAFSList() {
+  const afs = state[currentCol].colis[currentColisIdx].afs || [];
+  const el  = document.getElementById('afs-list');
+  if(!afs.length) { el.innerHTML='<div class="empty" style="padding:8px 0 4px;text-align:left;font-size:12px;">Aucun AFS</div>'; return; }
+  el.innerHTML = afs.map((a,i) =>
+    '<div class="afs-item"><span class="afs-num">AFS ' + a + '</span>' +
+    '<button class="btn-afs-del" onclick="removeAFS(' + i + ')">×</button></div>'
+  ).join('');
+}
+function addAFS() {
+  const val = document.getElementById('inp-new-afs').value.trim();
+  if(!val) return;
+  if(!state[currentCol].colis[currentColisIdx].afs) state[currentCol].colis[currentColisIdx].afs = [];
+  val.split(/[,;\s]+/).filter(Boolean).forEach(n => state[currentCol].colis[currentColisIdx].afs.push(n));
+  document.getElementById('inp-new-afs').value = '';
+  renderAFSList(); renderColisList(); scheduleSave(); showToast('AFS ajouté','✓');
+  
+  // Pour B4, B5, B6, demander la place
+  if(['B4','B5','B6'].includes(currentCol)) {
+    document.getElementById('space-edit-section').style.display = 'block';
+  }
+}
+function removeAFS(i) {
+  state[currentCol].colis[currentColisIdx].afs.splice(i,1);
+  renderAFSList(); renderColisList(); scheduleSave();
+  
+  // Pour B4, B5, B6, demander la place
+  if(['B4','B5','B6'].includes(currentCol)) {
+    document.getElementById('space-edit-section').style.display = 'block';
+  }
+}
+function saveColis() {
+  const client = document.getElementById('edit-client').value.trim();
+  if(!client) { showToast('Entrez un N° client','⚠️'); return; }
+  const c = state[currentCol].colis[currentColisIdx];
+  c.client  = client;
+  c.company = document.getElementById('edit-company').value.trim();
+  c.arc     = document.getElementById('edit-arc').value.trim();
+  document.getElementById('colis-title').textContent = client;
+  renderColisList(); renderRack(); scheduleSave(); showToast('Modifié','✓');
+}
+function saveSpace() {
+  const space = document.getElementById('edit-space').value;
+  if(!space) { showToast('Sélectionnez une option','⚠️'); return; }
+  state[currentCol].colis[currentColisIdx].space = space;
+  renderColisList(); scheduleSave(); showToast('Place enregistrée','✓');
+  document.getElementById('space-edit-section').style.display = 'none';
+}
+function backToColonne() { renderColisList(); showView('view-colonne'); }
+
+/* ══ QR ══ */
+function showQR() {
+  const url = window.location.href.split('?')[0];
+  const c   = document.getElementById('qr-container');
+  const img = new Image();
+  img.style.cssText='display:block;width:200px;height:200px;border-radius:4px;';
+  img.onload = () => { c.innerHTML=''; c.appendChild(img); };
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url) + '&bgcolor=ffffff&color=080808&margin=12';
+  showView('view-qr');
+}
+
+/* ══ NAV ══ */
+function navTo(p) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if(p==='rack') { document.getElementById('nav-rack').classList.add('active'); showRack(); }
+  else if(p==='qr') { document.getElementById('nav-qr').classList.add('active'); showQR(); }
+}
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function showRack() { renderRack(); showView('view-rack'); }
+
+/* ══ GUIDE ══ */
+let currentGuideSlide = 1;
+function showGuide() {
+  currentGuideSlide = 1;
+  updateGuideSlide();
+  showView('view-guide');
+}
+function nextGuide() {
+  if(currentGuideSlide < 5) {
+    currentGuideSlide++;
+    updateGuideSlide();
+  }
 }
 function updateGuideSlide() {
-for(var i=1; i<=5; i++) {
-var el = document.getElementById("guide-slide-"+i);
-if(el) el.style.display = (i === currentGuideSlide) ? "block" : "none";
-}
-window.scrollTo(0,0);
-}
-
-/* ── SYNC ── */
-function setDot(s) {
-document.getElementById("sync-dot").className = "sync-dot " + s;
-var t = document.getElementById("sync-time");
-if(s === "ok") {
-var n = new Date();
-t.textContent = pad(n.getHours())+":"+pad(n.getMinutes());
-t.className = "sync-time ok";
-setTimeout(function(){ t.className="sync-time"; t.textContent="sync"; }, 3000);
-} else if(s === "loading") {
-t.textContent="…"; t.className="sync-time";
-} else {
-t.textContent="off"; t.className="sync-time";
-}
-}
-function pad(n){ return n<10?"0"+n:""+n; }
-
-function refresh() {
-setDot("loading");
-var xhr = new XMLHttpRequest();
-xhr.open("GET", DB, true);
-xhr.onreadystatechange = function() {
-if(xhr.readyState !== 4) return;
-if(xhr.status === 200) {
-try {
-var raw = JSON.parse(xhr.responseText);
-state = isValidObj(raw) ? raw : {};
-setDot("ok");
-} catch(e) { state={}; setDot("error"); }
-} else {
-loadLocal(); setDot("error"); showToast("Hors-ligne","📡");
-}
-renderRack();
-};
-xhr.onerror = function(){ loadLocal(); setDot("error"); showToast("Hors-ligne","📡"); renderRack(); };
-xhr.send();
-}
-function loadLocal(){ try{ state=JSON.parse(localStorage.getItem("att_bck")||"{}"); }catch(e){ state={}; } }
-function saveData() {
-setDot("loading");
-var body = JSON.stringify(state);
-var xhr = new XMLHttpRequest();
-xhr.open("PUT", DB, true);
-xhr.setRequestHeader("Content-Type","application/json");
-xhr.onreadystatechange = function() {
-if(xhr.readyState !== 4) return;
-localStorage.setItem("att_bck", body);
-setDot(xhr.status === 200 ? "ok" : "error");
-};
-xhr.onerror = function(){ localStorage.setItem("att_bck",body); setDot("error"); };
-xhr.send(body);
-}
-setInterval(function(){ if(document.getElementById("view-rack").style.display!=="none") refresh(); }, 20000);
-
-/* ── RENDER RACK ── */
-function renderRack() {
-var wrap = document.getElementById("rack-grid");
-wrap.innerHTML = "";
-
-for(var ni=0; ni<NIVEAUX.length; ni++) {
-var niv = NIVEAUX[ni];
-var occ = 0;
-for(var ci=0; ci<COLS.length; ci++) {
-var raw = state[niv.id+COLS[ci]];
-if(isValidObj(raw) && raw.ref) occ++;
+  for(let i=1;i<=5;i++) {
+    const slide = document.getElementById('guide-slide-' + i);
+    if(i === currentGuideSlide) {
+      slide.style.display = 'block';
+    } else {
+      slide.style.display = 'none';
+    }
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
-var block = document.createElement("div");
-block.className = "niv-block " + niv.hcls;
-
-var hdr = document.createElement("div"); hdr.className = "niv-hdr";
-var letter = document.createElement("div"); letter.className = "niv-letter"; letter.textContent = niv.id;
-var info = document.createElement("div"); info.className = "niv-info";
-var name = document.createElement("div"); name.className = "niv-name"; name.textContent = niv.label;
-var desc = document.createElement("div"); desc.className = "niv-desc"; desc.textContent = niv.desc;
-var cnt = document.createElement("div"); cnt.className = "niv-cnt"; cnt.textContent = occ+"/"+COLS.length;
-info.appendChild(name); info.appendChild(desc);
-hdr.appendChild(letter); hdr.appendChild(info); hdr.appendChild(cnt);
-block.appendChild(hdr);
-
-var grid = document.createElement("div"); grid.className = "niv-grid";
-
-for(var ci2=0; ci2<COLS.length; ci2++) {
-var col = COLS[ci2], id = niv.id+col;
-var raw2 = state[id];
-var data = isValidObj(raw2) ? raw2 : null;
-
-var cardCls = "vide";
-if(data && data.ref) {
-cardCls = "occ";
-} else if(data && data.reserved) {
-cardCls = "reserv";
+/* ══ TOAST ══ */
+let toastTimer;
+function showToast(msg, icon='') {
+  document.getElementById('t-ico').textContent = icon;
+  document.getElementById('t-msg').textContent = msg;
+  const t = document.getElementById('toast'); t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
 }
 
-var card = document.createElement("div"); card.className = "ecard " + cardCls;
-var idEl = document.createElement("div"); idEl.className = "ecard-id"; idEl.textContent = id;
-var refEl = document.createElement("div"); refEl.className = "ecard-ref";
-
-if(data && data.ref) {
-refEl.textContent = data.ref;
-} else if(data && data.reserved) {
-refEl.textContent = "🔒 " + data.reserved;
-} else {
-refEl.textContent = "Libre";
-}
-
-card.appendChild(idEl); card.appendChild(refEl);
-
-if(data && data.afs && data.afs.length > 0) {
-var afsEl = document.createElement("div"); afsEl.className = "ecard-afs";
-var shown = data.afs.slice(0,3), txt = "";
-for(var ai=0; ai<shown.length; ai++) txt += (ai>0?" · ":"")+"AFS "+shown[ai];
-if(data.afs.length>3) txt += " +"+(data.afs.length-3);
-afsEl.textContent = txt; card.appendChild(afsEl);
-}
-
-card.setAttribute("data-empid", id);
-card.onclick = function(){ goEmp(this.getAttribute("data-empid")); };
-grid.appendChild(card);
-}
-block.appendChild(grid);
-wrap.appendChild(block);
-}
-}
-
-/* ── SEARCH ── */
-function doSearch(q) {
-q = q.trim().toLowerCase();
-document.querySelectorAll(".ecard").forEach(function(c) {
-c.style.display = (!q||(c.textContent||"").toLowerCase().indexOf(q)>=0) ? "flex" : "none";
+/* ══ KEYBOARD ══ */
+['inp-client','inp-company','inp-arc','inp-afs'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') addColis(); });
 });
-}
-
-/* ── OPEN EMP ── */
-function openEmp(id) {
-curId = id;
-var niv = null;
-for(var i=0; i<NIVEAUX.length; i++){ if(NIVEAUX[i].id===id[0]){ niv=NIVEAUX[i]; break; } }
-document.getElementById("emp-title").textContent = id;
-document.getElementById("emp-sub").textContent = niv ? niv.label+" — "+niv.desc : "";
-
-var raw = state[id];
-var data = isValidObj(raw) ? raw : null;
-
-document.getElementById("st-occ").style.display = "none";
-document.getElementById("st-reserved").style.display = "none";
-document.getElementById("st-free").style.display = "none";
-
-if(data && data.ref) {
-document.getElementById("st-occ").style.display = "block";
-document.getElementById("occ-ref").textContent = data.ref || "—";
-var dA = new Date(data.date);
-document.getElementById("occ-arrive").textContent =
-"Arrivée le "+dA.toLocaleDateString("fr-FR")+" à "+dA.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-document.getElementById("modal-sub").textContent = "Libérer l'emplacement "+id+" — \""+( data.ref||"")+"\" ?";
-renderAFSOcc(data.afs||[]);
-document.getElementById("inp-afs-add").value = "";
-} else if(data && data.reserved) {
-document.getElementById("st-reserved").style.display = "block";
-document.getElementById("reserved-company").textContent = data.reserved;
-} else {
-document.getElementById("st-free").style.display = "block";
-document.getElementById("inp-ref").value = "";
-document.getElementById("inp-afs-new").value = "";
-document.getElementById("inp-company-reserve").value = "";
-newAFS = []; renderAFSNew();
-}
-}
-
-/* ── AFS OCC ── */
-function renderAFSOcc(list) {
-var wrap = document.getElementById("afs-occ"); wrap.innerHTML = "";
-if(!list||list.length===0){ var e=document.createElement("span"); e.className="afs-empty"; e.textContent="Aucun AFS"; wrap.appendChild(e); return; }
-list.forEach(function(val,idx) {
-var tag=document.createElement("span"); tag.className="afs-tag";
-var txt=document.createElement("span"); txt.textContent="AFS "+val;
-var x=document.createElement("button"); x.className="afs-x"; x.textContent="×";
-x.onclick=function(e){ e.stopPropagation(); removeAFSOcc(idx); };
-tag.appendChild(txt); tag.appendChild(x); wrap.appendChild(tag);
+['edit-client','edit-company','edit-arc'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') saveColis(); });
 });
-}
-function addAFSOcc() {
-var inp=document.getElementById("inp-afs-add"), raw=inp.value.trim(); if(!raw) return;
-if(!state[curId]||!isValidObj(state[curId])) return;
-if(!state[curId].afs) state[curId].afs=[];
-raw.split(/[,;\s]+/).forEach(function(v){ if(v&&state[curId].afs.indexOf(v)<0) state[curId].afs.push(v); });
-inp.value=""; renderAFSOcc(state[curId].afs); renderRack(); saveData(); showToast("AFS ajouté","✓");
-}
-function removeAFSOcc(idx) {
-if(!state[curId]||!state[curId].afs) return;
-state[curId].afs.splice(idx,1); renderAFSOcc(state[curId].afs); renderRack(); saveData();
-}
-
-/* ── AFS RESERVED ── */
-var reservedAFS = [];
-function renderAFSReserved() {
-var wrap=document.getElementById("afs-reserved"); wrap.innerHTML="";
-if(reservedAFS.length===0){ var e=document.createElement("span"); e.className="afs-empty"; e.textContent="Aucun AFS ajouté"; wrap.appendChild(e); return; }
-reservedAFS.forEach(function(val,idx) {
-var tag=document.createElement("span"); tag.className="afs-tag";
-var txt=document.createElement("span"); txt.textContent="AFS "+val;
-var x=document.createElement("button"); x.className="afs-x"; x.textContent="×";
-x.onclick=function(e){ e.stopPropagation(); reservedAFS.splice(idx,1); renderAFSReserved(); };
-tag.appendChild(txt); tag.appendChild(x); wrap.appendChild(tag);
+document.getElementById('inp-new-afs').addEventListener('keydown', e => { if(e.key==='Enter') addAFS(); });
+document.addEventListener('click', e => {
+  if(!e.target.closest('.search-wrap') && !e.target.closest('.search-results')) clearSearch();
 });
-}
-function addAFSReserved() {
-var inp=document.getElementById("inp-afs-reserved"), raw=inp.value.trim(); if(!raw) return;
-raw.split(/[,;\s]+/).forEach(function(v){ if(v&&reservedAFS.indexOf(v)<0) reservedAFS.push(v); });
-inp.value=""; renderAFSReserved();
-}
-function addPalReserved() {
-var ref=document.getElementById("inp-ref-reserved").value.trim().toUpperCase();
-if(!ref){ showToast("Entrez une référence","⚠️"); return; }
-var reserved = state[curId] && state[curId].reserved ? state[curId].reserved : "";
-state[curId]={ref:ref,afs:reservedAFS.slice(),date:new Date().toISOString(),reserved:reserved};
-showToast(ref+" enregistrée","✓");
-if(navigator.vibrate) navigator.vibrate(10);
-reservedAFS=[]; saveData(); goRack();
-}
 
-/* ── AFS NEW ── */
-function renderAFSNew() {
-var wrap=document.getElementById("afs-new"); wrap.innerHTML="";
-if(newAFS.length===0){ var e=document.createElement("span"); e.className="afs-empty"; e.textContent="Aucun AFS ajouté"; wrap.appendChild(e); return; }
-newAFS.forEach(function(val,idx) {
-var tag=document.createElement("span"); tag.className="afs-tag";
-var txt=document.createElement("span"); txt.textContent="AFS "+val;
-var x=document.createElement("button"); x.className="afs-x"; x.textContent="×";
-x.onclick=function(e){ e.stopPropagation(); newAFS.splice(idx,1); renderAFSNew(); };
-tag.appendChild(txt); tag.appendChild(x); wrap.appendChild(tag);
-});
-}
-function addAFSNew() {
-var inp=document.getElementById("inp-afs-new"), raw=inp.value.trim(); if(!raw) return;
-raw.split(/[,;\s]+/).forEach(function(v){ if(v&&newAFS.indexOf(v)<0) newAFS.push(v); });
-inp.value=""; renderAFSNew();
-}
-
-/* ── ADD / DELETE ── */
-function addPal() {
-var ref=document.getElementById("inp-ref").value.trim().toUpperCase();
-if(!ref){ showToast("Entrez une référence","⚠️"); return; }
-state[curId]={ref:ref,afs:newAFS.slice(),date:new Date().toISOString()};
-showToast(ref+" enregistrée","✓");
-if(navigator.vibrate) navigator.vibrate(10);
-saveData(); goRack();
-}
-function reserveEmp() {
-var company=document.getElementById("inp-company-reserve").value.trim();
-if(!company){ showToast("Entrez un nom d'entreprise","⚠️"); return; }
-state[curId]={reserved:company};
-showToast(company+" — réservé","🔒");
-if(navigator.vibrate) navigator.vibrate(10);
-saveData(); goRack();
-}
-function cancelReservation() {
-delete state[curId];
-showToast("Réservation annulée","🔓");
-if(navigator.vibrate) navigator.vibrate(10);
-saveData(); goRack();
-}
-function askDel(){ document.getElementById("modal-del").classList.add("open"); }
-function closeModal(){ document.getElementById("modal-del").classList.remove("open"); }
-function closeModalIfBg(e){ if(e.target===document.getElementById("modal-del")) closeModal(); }
-function confirmDel() {
-var ref=(state[curId]&&state[curId].ref)?state[curId].ref:curId;
-delete state[curId]; closeModal(); saveData();
-showToast(ref+" sortie","📦");
-if(navigator.vibrate) navigator.vibrate(25);
-goRack();
-}
-
-/* ── QR ── */
-function renderQR() {
-var url=window.location.href.split("?")[0];
-var c=document.getElementById("qr-c");
-var img=new Image();
-img.style.cssText="display:block;width:200px;height:200px;border-radius:4px;";
-img.onload=function(){ c.innerHTML=""; c.appendChild(img); };
-img.src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(url)+"&bgcolor=ffffff&color=1c1814&margin=12";
-}
-
-/* ── TOAST ── */
-function showToast(msg,ico) {
-document.getElementById("t-i").textContent=ico||"";
-document.getElementById("t-m").textContent=msg;
-var el=document.getElementById("toast"); el.classList.add("show");
-clearTimeout(toastTm); toastTm=setTimeout(function(){ el.classList.remove("show"); },2200);
-}
-
-/* ── KEYBOARD ── */
-document.getElementById("inp-ref").onkeydown=function(e){ if(e.key==="Enter") addPal(); };
-document.getElementById("inp-afs-new").onkeydown=function(e){ if(e.key==="Enter") addAFSNew(); };
-document.getElementById("inp-afs-add").onkeydown=function(e){ if(e.key==="Enter") addAFSOcc(); };
-
-showOnly("view-rack");
-refresh();
+loadFromServer();
 </script>
 </body>
 </html>
