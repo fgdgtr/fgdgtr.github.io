@@ -25,6 +25,17 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-thumb{background:var(--border3);border-radius:2px;}
 
+/* CLASSES DYNAMIQUE DELAIS */
+.sg { color: var(--green); border-color: var(--green) !important; }
+.sb { color: var(--blue); border-color: var(--blue) !important; }
+.sy { color: var(--yellow); border-color: var(--yellow) !important; }
+.sr { color: var(--red); border-color: var(--red) !important; }
+
+.bg-sg { background: var(--green-bg); color: var(--green); }
+.bg-sb { background: var(--blue-bg); color: var(--blue); }
+.bg-sy { background: var(--yellow-bg); color: var(--yellow); }
+.bg-sr { background: var(--red-bg); color: var(--red); }
+
 /* HEADER */
 .header{
   background:rgba(8,8,8,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
@@ -337,35 +348,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 }
 .nav-btn.active{color:var(--text);}
 .nav-icon{font-size:19px;line-height:1;}
-
-/* GUIDE */
-.guide-slide{animation:slideIn .3s ease;}
-.guide-title{
-  font-size:18px;font-weight:700;margin-bottom:16px;
-  background:var(--card2);border:1px solid var(--border2);
-  border-radius:var(--r);padding:14px;
-  text-align:center;
-}
-.guide-text{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:var(--r);padding:16px;
-  margin-bottom:16px;line-height:2;
-  font-size:14px;
-}
-.guide-text p{margin:0 0 8px 0;}
-.guide-text p:last-child{margin-bottom:0;}
-.btn-guide-next{
-  width:100%;background:var(--text);color:#000;border:none;
-  border-radius:var(--rs);font-family:'DM Sans',sans-serif;
-  font-size:13px;font-weight:700;padding:12px;cursor:pointer;
-  transition:opacity .15s,transform .15s;
-}
-.btn-guide-next:active{opacity:.8;transform:scale(.99);}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="header-left">
     <div class="header-logo">AUEM</div>
@@ -381,7 +367,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   </div>
 </div>
 
-<!-- VUE RACK -->
 <div class="view active" id="view-rack">
   <div class="rack-view">
     <div class="stats-row">
@@ -403,7 +388,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   </div>
 </div>
 
-<!-- VUE EMPLACEMENT -->
 <div class="view" id="view-colonne">
   <div class="back-header">
     <button class="btn-back" onclick="showRack()">←</button>
@@ -434,7 +418,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   </div>
 </div>
 
-<!-- VUE COLIS DETAIL -->
 <div class="view" id="view-colis">
   <div class="back-header">
     <button class="btn-back" onclick="backToColonne()">←</button>
@@ -472,88 +455,15 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   </div>
 </div>
 
-<!-- VUE GUIDE -->
 <div class="view" id="view-guide">
   <div class="back-header">
     <button class="btn-back" onclick="showRack()">←</button>
     <div><div class="bh-title">Guide</div><div class="bh-sub">Comment utiliser le Rack</div></div>
   </div>
-  <div class="view-body">
-    <div class="guide-slide" id="guide-slide-1">
-      <div class="guide-title">📱 Étape 1 : Scannez le QR Code</div>
-      <div class="guide-text">
-        <p><strong>Où est le QR ?</strong> Il est collé sur le montant du RACK RETOUR, près de l'emplacement.</p>
-        <p style="margin-top: 12px;"><strong>Comment faire :</strong></p>
-        <p>1️⃣ Ouvrez l'<strong>appareil photo</strong> de votre téléphone</p>
-        <p>2️⃣ Pointez vers le <strong>carré noir/blanc</strong> du QR code</p>
-        <p>3️⃣ Une notification apparaît → cliquez dessus</p>
-        <p>4️⃣ Vous arrivez sur cette application ! ✅</p>
-      </div>
-      <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
+  <div class="view-body" id="guide-container">
     </div>
-
-    <div class="guide-slide" id="guide-slide-2" style="display:none;">
-      <div class="guide-title">📍 Étape 2 : Choisissez votre emplacement</div>
-      <div class="guide-text">
-        <p><strong>Vous voyez le RACK ENTIER avec tous les emplacements :</strong></p>
-        <p style="margin-top: 10px;">🔴 <strong>Haut (D)</strong> → D1, D2, D3, D4, D5, D6</p>
-        <p>🟠 <strong>Milieu-haut (C)</strong> → C1, C2, C3, C4, C5, C6</p>
-        <p>🟡 <strong>Milieu (B)</strong> → B1, B2, B3, B4, B5, B6</p>
-        <p>🟠 <strong>Bas (A)</strong> → A1, A2, A3, A4, A5, A6</p>
-        <p style="margin-top: 12px;"><strong>Action :</strong> Cliquez sur l'emplacement où vous mettez votre colis</p>
-        <p style="font-size:12px; color:var(--text3); margin-top:8px;">💡 Exemple : vous rangez sur B4 ? → Cliquez sur "B4"</p>
-      </div>
-      <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
-    </div>
-
-    <div class="guide-slide" id="guide-slide-3" style="display:none;">
-      <div class="guide-title">✏️ Étape 3 : Remplissez les informations du colis</div>
-      <div class="guide-text">
-        <p style="margin-bottom: 8px;"><strong>🔴 N° CLIENT (obligatoire !)</strong></p>
-        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Exemple : 12345, CLIENT001, etc.</p>
-        <p style="margin-bottom: 8px;"><strong>🟠 Entreprise (optionnel)</strong></p>
-        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Nom de la société qui livrera</p>
-        <p style="margin-bottom: 8px;"><strong>🟡 ARC (optionnel)</strong></p>
-        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Numéro ARC du dossier s'il existe</p>
-        <p style="margin-bottom: 8px;"><strong>🟢 N° AFS (optionnel)</strong></p>
-        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Plusieurs ? → Séparez par des virgules ou espaces</p>
-        <p style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,.1); font-weight:600; color:#ef4444;">⚠️ Pour B4, B5, B6 UNIQUEMENT</p>
-        <p style="font-size:12px; margin-top: 6px; color:var(--text3);">Vous DEVEZ indiquer s'il reste de la place : ✅ Oui · ⚠️ Un peu · ❌ Non</p>
-      </div>
-      <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
-    </div>
-
-    <div class="guide-slide" id="guide-slide-4" style="display:none;">
-      <div class="guide-title">✓ Étape 4 : Validez l'ajout</div>
-      <div class="guide-text">
-        <p><strong>Vous avez rempli les champs ?</strong> Maintenant :</p>
-        <p style="margin: 16px 0; padding: 12px; background:rgba(0,0,0,.05); border-radius:8px; font-weight:600; text-align:center;">🔘 Cliquez sur "+ Ajouter ce colis"</p>
-        <p style="font-size:13px;"><strong>✅ Succès !</strong> Votre colis apparaît immédiatement dans la liste</p>
-        <p style="font-size:13px; margin-top:8px;"><strong>📡 IMPORTANT :</strong> Tous les autres opérateurs voient la modification en temps réel</p>
-        <p style="font-size:12px; color:var(--text3); margin-top:8px;">Aucun double colis, tout est synchronisé automatiquement</p>
-      </div>
-      <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
-    </div>
-
-    <div class="guide-slide" id="guide-slide-5" style="display:none;">
-      <div class="guide-title">🎉 Vous maîtrisez le RACK !</div>
-      <div class="guide-text">
-        <p style="margin-bottom: 16px;"><strong>Résumé rapide :</strong></p>
-        <p>📱 <strong>1.</strong> Scanner le QR code au rack</p>
-        <p>📍 <strong>2.</strong> Cliquer sur votre emplacement (A1, B4, etc.)</p>
-        <p>✏️ <strong>3.</strong> Remplir au moins le N° Client</p>
-        <p>✓ <strong>4.</strong> Cliquer "+ Ajouter ce colis"</p>
-        <p style="margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,.1);"><strong>💡 Astuces :</strong></p>
-        <p style="font-size:12px; color:var(--text3); margin-top:6px;">• Vous pouvez modifier un colis → cliquez sur ✏️</p>
-        <p style="font-size:12px; color:var(--text3);">• Vous pouvez ajouter des AFS à tout moment</p>
-        <p style="font-size:12px; color:var(--text3);">• Besoin d'aide ? Demandez à un collègue ou cliquez ❓</p>
-      </div>
-      <button class="btn-guide-next" onclick="showRack()">← Retour au Rack</button>
-    </div>
-  </div>
 </div>
 
-<!-- VUE QR -->
 <div class="view" id="view-qr">
   <div class="back-header">
     <button class="btn-back" onclick="showRack()">←</button>
@@ -561,19 +471,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   </div>
   <div class="view-body">
     <div class="qr-center">
-      <div class="qr-box"><div id="qr-container" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;"><div class="spinner"></div></div></div>
+      <div class="qr-box"><div id="qr-container"></div></div>
       <div class="qr-name">RACK RETOUR — AUEM</div>
-      <div class="qr-info">
-        <div class="qr-ttl">Comment utiliser</div>
-        <div class="qr-step"><div class="qr-n">1</div>Imprimez et plastifiez ce QR code</div>
-        <div class="qr-step"><div class="qr-n">2</div>Fixez-le sur le rack à hauteur des yeux</div>
-        <div class="qr-step"><div class="qr-n">3</div>Tous les opérateurs scannent et voient le même rack en temps réel</div>
-      </div>
     </div>
   </div>
 </div>
 
-<!-- MODAL CONFIRM -->
 <div class="modal-ov" id="modal-del">
   <div class="modal-box">
     <div class="modal-title">Supprimer ce colis ?</div>
@@ -587,498 +490,244 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 
 <div class="toast" id="toast"><span id="t-ico"></span><span id="t-msg"></span></div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button class="nav-btn active" id="nav-rack" onclick="navTo('rack')"><span class="nav-icon">📦</span>Rack</button>
   <button class="nav-btn"        id="nav-qr"   onclick="navTo('qr')"><span class="nav-icon">⬛</span>QR</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 /* ══ CONFIG ══ */
 const ETAGES = ['D','C','B','A'];
-const ETAGE_INFO = {
-  'D':{name:'Étage D', desc:'Haut — gerbeur obligatoire'},
-  'C':{name:'Étage C', desc:'Gerbeur nécessaire'},
-  'B':{name:'Étage B', desc:'Accessible à la main'},
-  'A':{name:'Étage A', desc:'Bas — niveau sol'},
-};
 const COLS    = 6;
 const FIREBASE = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/retour.json';
 
 let state = {}, currentCol = null, currentColisIdx = null;
-let saveTimer = null, activeFilter = 'all', deleteTargetIdx = null;
+let activeFilter = 'all';
 
-/* ══ STATE ══ */
-function initState() {
-  const s = {};
-  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) s[e+i] = {colis:[]}; });
-  return s;
+/* --- LOGIQUE DE DELAIS --- */
+function getStatus(date) {
+  if(!date) return {cls:"", bg:""};
+  const diff = Math.floor((Date.now() - new Date(date).getTime()) / 86400000);
+  if(diff >= 28) return {cls:"sr", bg:"bg-sr", txt:"+28j"};
+  if(diff >= 21) return {cls:"sy", bg:"bg-sy", txt:"21j+"};
+  if(diff >= 15) return {cls:"sb", bg:"bg-sb", txt:"15j+"};
+  return {cls:"sg", bg:"bg-sg", txt:"OK"};
 }
-function migrate(data) {
-  const s = data || initState();
-  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
-    const id = e+i;
-    if(!s[id]) s[id] = {colis:[]};
-    if(Array.isArray(s[id])) s[id] = {colis: s[id]};
-    if(!s[id].colis) s[id].colis = [];
-  }});
-  return s;
+
+function daysLeft(date){ 
+  return Math.ceil((new Date(date).getTime() + 90 * 86400000 - Date.now()) / 86400000); 
 }
 
 /* ══ SYNC ══ */
 function setSyncDot(st) {
-  document.getElementById('sync-dot').className = 'sync-dot ' + st;
-  const lbl = document.getElementById('sync-label');
-  if(st === 'ok') {
-    const n = new Date();
-    lbl.textContent = 'Sync ' + String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
-    lbl.className = 'header-sub synced';
-    setTimeout(() => { lbl.className='header-sub'; lbl.textContent='Temps réel · tous opérateurs'; }, 3000);
-  } else if(st === 'loading') { lbl.textContent='Synchronisation…'; lbl.className='header-sub'; }
-  else { lbl.textContent='Hors-ligne'; lbl.className='header-sub'; }
+  const dot = document.getElementById('sync-dot');
+  if(dot) dot.className = 'sync-dot ' + st;
 }
 
 async function loadFromServer() {
   setSyncDot('loading');
   try {
-    const res = await fetch(FIREBASE); if(!res.ok) throw new Error();
-    state = migrate(await res.json()); setSyncDot('ok'); renderRack();
-  } catch {
-    try { state = migrate(JSON.parse(localStorage.getItem('auem_retour'))); } catch { state = initState(); }
-    setSyncDot('error'); renderRack(); showToast('Mode hors-ligne','📡');
+    const res = await fetch(FIREBASE);
+    const data = await res.json();
+    state = data || {};
+    // Initialiser les emplacements vides si besoin
+    ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) { if(!state[e+i]) state[e+i]={colis:[]}; }});
+    setSyncDot('ok');
+    renderRack();
+  } catch(e) {
+    setSyncDot('error');
   }
 }
+
 async function saveToServer() {
   setSyncDot('loading');
   try {
-    await fetch(FIREBASE,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});
-    localStorage.setItem('auem_retour', JSON.stringify(state)); setSyncDot('ok');
-  } catch { localStorage.setItem('auem_retour', JSON.stringify(state)); setSyncDot('error'); }
-}
-function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveToServer, 600); }
-setInterval(() => { if(document.getElementById('view-rack').classList.contains('active')) loadFromServer(); }, 30000);
-
-/* ══ STATS ══ */
-function computeStats() {
-  let total=0, locs=0;
-  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
-    const a = (state[e+i]?.colis||[]).filter(c=>!c.done);
-    if(a.length) locs++;
-    total += a.length;
-  }});
-  return {total, locs};
-}
-function updateStats() {
-  const {total, locs} = computeStats();
-  document.getElementById('s-total').textContent = total;
-  document.getElementById('s-locs').textContent  = locs + '/' + (ETAGES.length * COLS);
+    await fetch(FIREBASE, {method:'PUT', body: JSON.stringify(state)});
+    setSyncDot('ok');
+  } catch(e) { setSyncDot('error'); }
 }
 
-/* ══ FILTERS ══ */
-function setFilter(f) {
-  activeFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('f-'+f).classList.add('active');
-  renderRack();
-}
-function cardMatchesFilter(id) {
-  if(activeFilter === 'all') return true;
-  const a = (state[id]?.colis||[]).filter(c=>!c.done);
-  if(activeFilter === 'empty') return a.length === 0;
-  if(activeFilter === 'occ')   return a.length > 0;
-  return true;
-}
-
-/* ══ RENDER RACK ══ */
+/* ══ RENDU RACK ══ */
 function renderRack() {
-  updateStats();
   const grid = document.getElementById('rack-grid');
+  if(!grid) return;
   grid.innerHTML = '';
+  let totalColis = 0;
+  let occupiedLocs = 0;
 
-  ETAGES.forEach(etage => {
-    const info = ETAGE_INFO[etage];
-    const sec = document.createElement('div');
-    sec.className = 'etage-section';
-
-    const hdr = document.createElement('div');
-    hdr.className = 'etage-header';
-    hdr.innerHTML = '<span class="etage-pill">' + info.name + '</span><span class="etage-desc">' + info.desc + '</span>';
-    sec.appendChild(hdr);
-
-    const g = document.createElement('div');
-    g.className = 'emp-grid';
-    let anyVisible = false;
+  ETAGES.forEach(et => {
+    const sect = document.createElement('div');
+    sect.className = 'etage-section';
+    sect.innerHTML = `<div class="etage-header"><div class="etage-pill">${et}</div></div>`;
+    
+    const row = document.createElement('div');
+    row.className = 'emp-grid';
 
     for(let i=1; i<=COLS; i++) {
-      const id = etage + i;
-      if(!cardMatchesFilter(id)) continue;
-      anyVisible = true;
-      const active = (state[id]?.colis||[]).filter(c=>!c.done);
-      const hasC = active.length > 0;
+      const id = et + i;
+      const data = state[id] || {colis:[]};
+      const hasColis = data.colis && data.colis.length > 0;
+      
+      // Filtrage
+      if(activeFilter === 'occ' && !hasColis) continue;
+      if(activeFilter === 'empty' && hasColis) continue;
+
+      if(hasColis) {
+        totalColis += data.colis.length;
+        occupiedLocs++;
+      }
+
+      // Couleur de la barre si retard
+      let worstStatus = "";
+      if(hasColis) {
+        data.colis.forEach(c => {
+          const s = getStatus(c.date);
+          if(s.cls === "sr") worstStatus = "sr";
+          else if(s.cls === "sy" && worstStatus !== "sr") worstStatus = "sy";
+        });
+      }
 
       const card = document.createElement('div');
-      card.className = 'emp-card' + (hasC ? ' has-colis occupied' : '');
-
-      const idDiv  = document.createElement('div'); idDiv.className='emp-id'; idDiv.textContent = id;
-      const badge  = document.createElement('div'); badge.className='emp-badge'+(hasC?' has':''); badge.textContent = active.length || 'Vide';
-      const prevs  = document.createElement('div'); prevs.className='emp-previews';
-
-      active.slice(0,2).forEach(c => {
-        const p = document.createElement('div'); p.className='emp-prev'; p.textContent = c.client || '—';
-        prevs.appendChild(p);
-      });
-      if(active.length > 2) {
-        const p = document.createElement('div'); p.className='emp-prev'; p.textContent = '+' + (active.length-2);
-        prevs.appendChild(p);
-      }
-      
-      // Pour B4, B5, B6 : afficher l'indicateur "reste de la place"
-      if(['B4','B5','B6'].includes(id) && active.length > 0) {
-        const lastColis = active[active.length-1];
-        if(lastColis.space) {
-          const spaceLabel = {'oui':'✅ Oui','un-peu':'⚠️ Un peu','non':'❌ Non'}[lastColis.space] || '?';
-          const spaceP = document.createElement('div'); 
-          spaceP.className='emp-prev'; 
-          spaceP.style.color = 'var(--green)';
-          spaceP.style.fontWeight = '600';
-          spaceP.textContent = 'Place: ' + spaceLabel;
-          prevs.appendChild(spaceP);
-        }
-      }
-      
-      card.appendChild(idDiv); card.appendChild(badge); card.appendChild(prevs);
-      card.setAttribute('data-id', id);
-      card.onclick = function() { openColonne(this.getAttribute('data-id')); };
-      g.appendChild(card);
+      card.className = `emp-card ${hasColis ? 'occupied ' + worstStatus : ''}`;
+      card.onclick = () => openColonne(id);
+      card.innerHTML = `
+        <div class="emp-id">${id}</div>
+        <div class="emp-badge ${hasColis ? 'has' : ''}">${data.colis.length} colis</div>
+      `;
+      row.appendChild(card);
     }
-
-    if(!anyVisible) {
-      const e = document.createElement('div');
-      e.style.cssText = 'grid-column:1/-1;text-align:center;padding:12px;color:var(--text3);font-size:13px;';
-      e.textContent = 'Aucun emplacement';
-      g.appendChild(e);
-    }
-
-    sec.appendChild(g);
-    if(etage === 'B') {
-      const sep = document.createElement('div'); sep.className='sep-rack';
-      sep.innerHTML = '<div class="sep-line"></div><div class="sep-label">HAUTEUR D\'HOMME</div><div class="sep-line"></div>';
-      sec.appendChild(sep);
-    }
-    grid.appendChild(sec);
+    sect.appendChild(row);
+    grid.appendChild(sect);
   });
-}
 
-/* ══ SEARCH ══ */
-function onSearch(q) {
-  q = q.trim();
-  document.getElementById('search-clear').classList.toggle('show', q.length > 0);
-  const results = document.getElementById('search-results');
-  if(!q) { results.classList.remove('show'); return; }
-  const hits = [];
-  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
-    const id = e+i;
-    (state[id]?.colis||[]).filter(c=>!c.done).forEach(c => {
-      const txt = ((c.client||'') + ' ' + (c.company||'') + ' ' + (c.arc||'') + ' ' + (c.afs||[]).join(' ')).toLowerCase();
-      if(txt.includes(q.toLowerCase())) hits.push({id, colis:c});
-    });
-  }});
-  results.classList.add('show');
-  if(!hits.length) { results.innerHTML = '<div class="search-empty">Aucun résultat pour « ' + q + ' »</div>'; return; }
-  results.innerHTML = hits.slice(0,7).map(h =>
-    '<div class="sr-item" onclick="clearSearch();openColonne(\'' + h.id + '\')">' +
-    '<span class="sr-loc">' + h.id + '</span>' +
-    '<span class="sr-txt">' + (h.colis.client||'') + (h.colis.company ? ' · ' + h.colis.company : '') + '</span>' +
-    '</div>'
-  ).join('');
-}
-function clearSearch() {
-  document.getElementById('search-inp').value = '';
-  document.getElementById('search-clear').classList.remove('show');
-  document.getElementById('search-results').classList.remove('show');
+  document.getElementById('s-total').textContent = totalColis;
+  document.getElementById('s-locs').textContent = occupiedLocs;
 }
 
 /* ══ EMPLACEMENT ══ */
 function openColonne(id) {
   currentCol = id;
-  const info = ETAGE_INFO[id[0]];
   document.getElementById('col-title').textContent = id;
-  document.getElementById('col-sub').textContent   = info.name + ' — ' + info.desc;
-  ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
+  showView('view-colonne');
   
-  // Afficher/masquer le champ "reste de la place" pour B4, B5, B6
-  const spaceRow = document.getElementById('space-row');
-  if(['B4','B5','B6'].includes(id)) {
-    spaceRow.style.display = 'flex';
-    document.getElementById('inp-space').value = '';
-  } else {
-    spaceRow.style.display = 'none';
-  }
+  // Afficher champ "Place" si B4, B5, B6
+  const isSpecial = ['B4','B5','B6'].includes(id);
+  document.getElementById('space-row').style.display = isSpecial ? 'block' : 'none';
   
   renderColisList();
-  showView('view-colonne');
 }
 
 function renderColisList() {
   const list = document.getElementById('colis-list');
-  const all  = state[currentCol]?.colis || [];
-  if(!all.length) { list.innerHTML='<div class="empty">Aucun colis sur cet emplacement<br>Ajoutez-en un ci-dessus ↑</div>'; return; }
   list.innerHTML = '';
-  [...all.filter(c=>!c.done), ...all.filter(c=>c.done)].forEach(colis => {
-    const idx  = all.indexOf(colis);
+  const data = state[currentCol] || {colis:[]};
+
+  if(data.colis.length === 0) {
+    list.innerHTML = '<div class="empty">Aucun colis ici.</div>';
+    return;
+  }
+
+  data.colis.forEach((c, idx) => {
+    const st = getStatus(c.date);
+    const dLeft = daysLeft(c.date);
+    const dt = new Date(c.date);
+    const timeStr = dt.toLocaleDateString('fr-FR') + " à " + dt.getHours() + ":" + String(dt.getMinutes()).padStart(2,'0');
+
     const card = document.createElement('div');
-    card.className = 'colis-card' + (colis.done ? ' done' : '');
-
-    const stripe = document.createElement('div');
-    stripe.className = 'colis-stripe';
-    stripe.style.background = colis.done ? '#252525' : 'var(--blue)';
-
-    const body = document.createElement('div');
-    body.className = 'colis-body';
-
-    const clientEl = document.createElement('div'); clientEl.className='colis-client'; clientEl.textContent = colis.client || '—';
-    const compEl   = document.createElement('div'); compEl.className='colis-company';
-    compEl.textContent = colis.company ? '🏭 ' + colis.company : '';
-    if(!colis.company) compEl.style.display='none';
-
-    const meta = document.createElement('div'); meta.className='colis-meta';
-    if(colis.done) {
-      const b = document.createElement('span'); b.className='badge b-gray'; b.textContent='Retiré'; meta.appendChild(b);
-    }
-    if(colis.arc) {
-      const a = document.createElement('span'); a.className='colis-arc'; a.textContent='ARC: ' + colis.arc; meta.appendChild(a);
-    }
-    
-    // Afficher l'info "reste de la place" si présente
-    if(colis.space) {
-      const spaceLabel = {'oui':'✅ Oui','un-peu':'⚠️ Un peu','non':'❌ Non'}[colis.space] || colis.space;
-      const s = document.createElement('span'); s.className='colis-space'; s.textContent='Place: ' + spaceLabel; meta.appendChild(s);
-    }
-
-    body.appendChild(clientEl); body.appendChild(compEl); body.appendChild(meta);
-
-    if(colis.afs && colis.afs.length) {
-      const afsWrap = document.createElement('div'); afsWrap.className='colis-afs';
-      colis.afs.forEach(a => {
-        const b = document.createElement('span'); b.className='badge b-blue'; b.textContent='AFS ' + a;
-        afsWrap.appendChild(b);
-      });
-      body.appendChild(afsWrap);
-    }
-
-    const acts = document.createElement('div'); acts.className='colis-acts';
-    const btnEdit = document.createElement('button'); btnEdit.className='btn-circ'; btnEdit.textContent='✏️';
-    btnEdit.setAttribute('data-idx', idx);
-    btnEdit.onclick = function() { openColis(parseInt(this.getAttribute('data-idx'))); };
-
-    const btnChk = document.createElement('button'); btnChk.className='btn-circ chk'; btnChk.textContent = colis.done ? '↩' : '✓';
-    btnChk.setAttribute('data-idx', idx);
-    btnChk.onclick = function() { toggleDone(parseInt(this.getAttribute('data-idx'))); };
-
-    const btnDel = document.createElement('button'); btnDel.className='btn-circ del'; btnDel.textContent='✕';
-    btnDel.setAttribute('data-idx', idx);
-    btnDel.onclick = function() { askDelete(parseInt(this.getAttribute('data-idx'))); };
-
-    acts.appendChild(btnEdit); acts.appendChild(btnChk); acts.appendChild(btnDel);
-    card.appendChild(stripe); card.appendChild(body); card.appendChild(acts);
+    card.className = `colis-card ${c.done ? 'done' : ''}`;
+    card.innerHTML = `
+      <div class="colis-stripe ${st.bg || 'b-blue'}"></div>
+      <div class="colis-body">
+        <div class="colis-client">${c.client}</div>
+        <div class="colis-company" style="font-size:10px; color:var(--text3)">Entrée : ${timeStr}</div>
+        <div class="colis-company">${c.company || ''}</div>
+        <div class="colis-meta">
+          ${c.arc ? `<span class="colis-arc">ARC: ${c.arc}</span>` : ''}
+          ${st.txt ? `<span class="badge ${st.bg}">${st.txt}</span>` : ''}
+          <span class="badge b-gray">${dLeft}j restants</span>
+        </div>
+      </div>
+      <div class="colis-acts">
+        <button class="btn-circ chk" onclick="toggleDone(${idx})">✓</button>
+        <button class="btn-circ" onclick="editColis(${idx})">✏️</button>
+      </div>
+    `;
     list.appendChild(card);
   });
 }
 
 function addColis() {
   const client = document.getElementById('inp-client').value.trim();
-  if(!client) { showToast('Entrez un N° client','⚠️'); return; }
-  const company = document.getElementById('inp-company').value.trim();
-  const arc     = document.getElementById('inp-arc').value.trim();
-  const afs     = document.getElementById('inp-afs').value.trim().split(/[,;\s]+/).filter(Boolean);
-  const space   = ['B4','B5','B6'].includes(currentCol) ? document.getElementById('inp-space').value : '';
+  if(!client) return;
   
-  if(space && !space.trim()) { showToast('Sélectionnez "Reste de la place"','⚠️'); return; }
-  
+  const newColis = {
+    client: client,
+    company: document.getElementById('inp-company').value,
+    arc: document.getElementById('inp-arc').value,
+    afs: document.getElementById('inp-afs').value.split(/[, ]+/).filter(x => x),
+    date: new Date().toISOString(),
+    done: false
+  };
+
   if(!state[currentCol]) state[currentCol] = {colis:[]};
-  state[currentCol].colis.push({client, company, arc, afs, space, done:false, ts:Date.now()});
-  ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
-  document.getElementById('inp-space').value = '';
-  renderColisList(); renderRack(); scheduleSave();
-  showToast(client + ' ajouté','✓');
+  state[currentCol].colis.push(newColis);
+  
+  saveToServer();
+  renderColisList();
+  
+  // Reset
+  document.getElementById('inp-client').value = '';
+  document.getElementById('inp-company').value = '';
+  document.getElementById('inp-arc').value = '';
+  document.getElementById('inp-afs').value = '';
 }
 
 function toggleDone(idx) {
-  const c = state[currentCol].colis[idx];
-  c.done = !c.done;
-  renderColisList(); renderRack(); scheduleSave();
-  showToast(c.done ? 'Colis retiré' : 'Restauré', c.done ? '📦' : '↩');
+  state[currentCol].colis[idx].done = !state[currentCol].colis[idx].done;
+  saveToServer();
+  renderColisList();
 }
-
-function askDelete(idx) {
-  deleteTargetIdx = idx;
-  const ref = state[currentCol].colis[idx].client || 'ce colis';
-  document.getElementById('modal-lbl').textContent = 'Supprimer "' + ref + '" définitivement ?';
-  document.getElementById('modal-del').classList.add('open');
-}
-function closeModal()   { document.getElementById('modal-del').classList.remove('open'); deleteTargetIdx=null; }
-function confirmDelete() {
-  if(deleteTargetIdx===null) return;
-  state[currentCol].colis.splice(deleteTargetIdx, 1);
-  renderColisList(); renderRack(); scheduleSave();
-  closeModal(); showToast('Supprimé','🗑');
-}
-document.getElementById('modal-del').addEventListener('click', function(e) { if(e.target===this) closeModal(); });
 
 function purgeDone() {
   if(!state[currentCol]) return;
-  const before = state[currentCol].colis.length;
-  state[currentCol].colis = state[currentCol].colis.filter(c=>!c.done);
-  const removed = before - state[currentCol].colis.length;
-  if(!removed) { showToast('Aucun retiré','ℹ️'); return; }
-  renderColisList(); renderRack(); scheduleSave();
-  showToast(removed + ' supprimé' + (removed>1?'s':''),'🗑');
+  state[currentCol].colis = state[currentCol].colis.filter(c => !c.done);
+  saveToServer();
+  renderColisList();
 }
 
-/* ══ COLIS DÉTAIL ══ */
-function openColis(idx) {
-  currentColisIdx = idx;
-  const c = state[currentCol].colis[idx];
-  document.getElementById('colis-title').textContent = c.client || '—';
-  document.getElementById('colis-sub').textContent   = currentCol;
-  document.getElementById('edit-client').value  = c.client  || '';
-  document.getElementById('edit-company').value = c.company || '';
-  document.getElementById('edit-arc').value     = c.arc     || '';
-  document.getElementById('inp-new-afs').value  = '';
-  
-  // Afficher/masquer le champ space pour B4, B5, B6
-  const spaceSec = document.getElementById('space-edit-section');
-  if(['B4','B5','B6'].includes(currentCol)) {
-    spaceSec.style.display = 'block';
-    document.getElementById('edit-space').value = c.space || '';
-  } else {
-    spaceSec.style.display = 'none';
-  }
-  
-  renderAFSList();
-  showView('view-colis');
-}
-function renderAFSList() {
-  const afs = state[currentCol].colis[currentColisIdx].afs || [];
-  const el  = document.getElementById('afs-list');
-  if(!afs.length) { el.innerHTML='<div class="empty" style="padding:8px 0 4px;text-align:left;font-size:12px;">Aucun AFS</div>'; return; }
-  el.innerHTML = afs.map((a,i) =>
-    '<div class="afs-item"><span class="afs-num">AFS ' + a + '</span>' +
-    '<button class="btn-afs-del" onclick="removeAFS(' + i + ')">×</button></div>'
-  ).join('');
-}
-function addAFS() {
-  const val = document.getElementById('inp-new-afs').value.trim();
-  if(!val) return;
-  if(!state[currentCol].colis[currentColisIdx].afs) state[currentCol].colis[currentColisIdx].afs = [];
-  val.split(/[,;\s]+/).filter(Boolean).forEach(n => state[currentCol].colis[currentColisIdx].afs.push(n));
-  document.getElementById('inp-new-afs').value = '';
-  renderAFSList(); renderColisList(); scheduleSave(); showToast('AFS ajouté','✓');
-  
-  // Pour B4, B5, B6, demander la place
-  if(['B4','B5','B6'].includes(currentCol)) {
-    document.getElementById('space-edit-section').style.display = 'block';
-  }
-}
-function removeAFS(i) {
-  state[currentCol].colis[currentColisIdx].afs.splice(i,1);
-  renderAFSList(); renderColisList(); scheduleSave();
-  
-  // Pour B4, B5, B6, demander la place
-  if(['B4','B5','B6'].includes(currentCol)) {
-    document.getElementById('space-edit-section').style.display = 'block';
-  }
-}
-function saveColis() {
-  const client = document.getElementById('edit-client').value.trim();
-  if(!client) { showToast('Entrez un N° client','⚠️'); return; }
-  const c = state[currentCol].colis[currentColisIdx];
-  c.client  = client;
-  c.company = document.getElementById('edit-company').value.trim();
-  c.arc     = document.getElementById('edit-arc').value.trim();
-  document.getElementById('colis-title').textContent = client;
-  renderColisList(); renderRack(); scheduleSave(); showToast('Modifié','✓');
-}
-function saveSpace() {
-  const space = document.getElementById('edit-space').value;
-  if(!space) { showToast('Sélectionnez une option','⚠️'); return; }
-  state[currentCol].colis[currentColisIdx].space = space;
-  renderColisList(); scheduleSave(); showToast('Place enregistrée','✓');
-  document.getElementById('space-edit-section').style.display = 'none';
-}
-function backToColonne() { renderColisList(); showView('view-colonne'); }
-
-/* ══ QR ══ */
-function showQR() {
-  const url = window.location.href.split('?')[0];
-  const c   = document.getElementById('qr-container');
-  const img = new Image();
-  img.style.cssText='display:block;width:200px;height:200px;border-radius:4px;';
-  img.onload = () => { c.innerHTML=''; c.appendChild(img); };
-  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url) + '&bgcolor=ffffff&color=080808&margin=12';
-  showView('view-qr');
-}
-
-/* ══ NAV ══ */
-function navTo(p) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  if(p==='rack') { document.getElementById('nav-rack').classList.add('active'); showRack(); }
-  else if(p==='qr') { document.getElementById('nav-qr').classList.add('active'); showQR(); }
-}
+/* ══ NAVIGATION & UI ══ */
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-function showRack() { renderRack(); showView('view-rack'); }
-
-/* ══ GUIDE ══ */
-let currentGuideSlide = 1;
-function showGuide() {
-  currentGuideSlide = 1;
-  updateGuideSlide();
-  showView('view-guide');
-}
-function nextGuide() {
-  if(currentGuideSlide < 5) {
-    currentGuideSlide++;
-    updateGuideSlide();
-  }
-}
-function updateGuideSlide() {
-  for(let i=1;i<=5;i++) {
-    const slide = document.getElementById('guide-slide-' + i);
-    if(i === currentGuideSlide) {
-      slide.style.display = 'block';
-    } else {
-      slide.style.display = 'none';
-    }
-  }
-  window.scrollTo({top:0, behavior:'smooth'});
 }
 
-/* ══ TOAST ══ */
-let toastTimer;
-function showToast(msg, icon='') {
-  document.getElementById('t-ico').textContent = icon;
-  document.getElementById('t-msg').textContent = msg;
-  const t = document.getElementById('toast'); t.classList.add('show');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+function showRack() { showView('view-rack'); loadFromServer(); }
+
+function navTo(page) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-'+page).classList.add('active');
+  if(page === 'rack') showRack();
+  if(page === 'qr') showQR();
 }
 
-/* ══ KEYBOARD ══ */
-['inp-client','inp-company','inp-arc','inp-afs'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') addColis(); });
-});
-['edit-client','edit-company','edit-arc'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') saveColis(); });
-});
-document.getElementById('inp-new-afs').addEventListener('keydown', e => { if(e.key==='Enter') addAFS(); });
-document.addEventListener('click', e => {
-  if(!e.target.closest('.search-wrap') && !e.target.closest('.search-results')) clearSearch();
-});
+function showQR() {
+  showView('view-qr');
+  const cont = document.getElementById('qr-container');
+  cont.innerHTML = '';
+  new QRCode(cont, { text: window.location.href, width: 200, height: 200 });
+}
 
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-'+f).classList.add('active');
+  renderRack();
+}
+
+// Init
 loadFromServer();
+setInterval(loadFromServer, 30000); // Sync toutes les 30s
 </script>
 </body>
 </html>
