@@ -482,59 +482,71 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <div class="guide-slide" id="guide-slide-1">
       <div class="guide-title">📱 Étape 1 : Scannez le QR Code</div>
       <div class="guide-text">
-        <p>Sur le rack, vous verrez un <strong>QR code blanc/noir</strong>.</p>
-        <p>Avec votre téléphone :</p>
-        <p>📷 <strong>Ouvrez l'appareil photo</strong></p>
-        <p>Pointez vers le QR code → Cliquez sur le lien</p>
-        <p>Vous arrivez ici ! ✅</p>
+        <p><strong>Où est le QR ?</strong> Il est collé sur le montant du RACK RETOUR, près de l'emplacement.</p>
+        <p style="margin-top: 12px;"><strong>Comment faire :</strong></p>
+        <p>1️⃣ Ouvrez l'<strong>appareil photo</strong> de votre téléphone</p>
+        <p>2️⃣ Pointez vers le <strong>carré noir/blanc</strong> du QR code</p>
+        <p>3️⃣ Une notification apparaît → cliquez dessus</p>
+        <p>4️⃣ Vous arrivez sur cette application ! ✅</p>
       </div>
       <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
     </div>
 
     <div class="guide-slide" id="guide-slide-2" style="display:none;">
-      <div class="guide-title">📦 Étape 2 : Choisissez votre emplacement</div>
+      <div class="guide-title">📍 Étape 2 : Choisissez votre emplacement</div>
       <div class="guide-text">
-        <p>Vous voyez le <strong>RACK avec tous les emplacements</strong> :</p>
-        <p><strong>A1, A2, A3...</strong> en bas</p>
-        <p><strong>D1, D2, D3...</strong> en haut</p>
-        <p style="margin-top: 12px;"><strong>Cliquez sur l'emplacement</strong> où vous mettez votre colis</p>
-        <p style="font-size:12px; color:var(--text3); margin-top:8px;">Exemple : vous mettez sur B4 ? → Cliquez sur B4</p>
+        <p><strong>Vous voyez le RACK ENTIER avec tous les emplacements :</strong></p>
+        <p style="margin-top: 10px;">🔴 <strong>Haut (D)</strong> → D1, D2, D3, D4, D5, D6</p>
+        <p>🟠 <strong>Milieu-haut (C)</strong> → C1, C2, C3, C4, C5, C6</p>
+        <p>🟡 <strong>Milieu (B)</strong> → B1, B2, B3, B4, B5, B6</p>
+        <p>🟠 <strong>Bas (A)</strong> → A1, A2, A3, A4, A5, A6</p>
+        <p style="margin-top: 12px;"><strong>Action :</strong> Cliquez sur l'emplacement où vous mettez votre colis</p>
+        <p style="font-size:12px; color:var(--text3); margin-top:8px;">💡 Exemple : vous rangez sur B4 ? → Cliquez sur "B4"</p>
       </div>
       <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
     </div>
 
     <div class="guide-slide" id="guide-slide-3" style="display:none;">
-      <div class="guide-title">✏️ Étape 3 : Remplissez les infos</div>
+      <div class="guide-title">✏️ Étape 3 : Remplissez les informations du colis</div>
       <div class="guide-text">
-        <p><strong>N° Client</strong> → Numéro du client (obligatoire !)</p>
-        <p><strong>Entreprise</strong> → Nom de l'entreprise (optionnel)</p>
-        <p><strong>ARC</strong> → Si le colis a un ARC (optionnel)</p>
-        <p><strong>N° AFS</strong> → Tous les numéros AFS, séparés par des virgules (optionnel)</p>
-        <p style="margin-top: 12px; font-size:12px; color:var(--text3);">⚠️ Pour B4, B5, B6 : vous devez aussi dire s'il reste de la place !</p>
+        <p style="margin-bottom: 8px;"><strong>🔴 N° CLIENT (obligatoire !)</strong></p>
+        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Exemple : 12345, CLIENT001, etc.</p>
+        <p style="margin-bottom: 8px;"><strong>🟠 Entreprise (optionnel)</strong></p>
+        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Nom de la société qui livrera</p>
+        <p style="margin-bottom: 8px;"><strong>🟡 ARC (optionnel)</strong></p>
+        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Numéro ARC du dossier s'il existe</p>
+        <p style="margin-bottom: 8px;"><strong>🟢 N° AFS (optionnel)</strong></p>
+        <p style="font-size:12px; margin-bottom: 10px; color:var(--text3);">Plusieurs ? → Séparez par des virgules ou espaces</p>
+        <p style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,.1); font-weight:600; color:#ef4444;">⚠️ Pour B4, B5, B6 UNIQUEMENT</p>
+        <p style="font-size:12px; margin-top: 6px; color:var(--text3);">Vous DEVEZ indiquer s'il reste de la place : ✅ Oui · ⚠️ Un peu · ❌ Non</p>
       </div>
       <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
     </div>
 
     <div class="guide-slide" id="guide-slide-4" style="display:none;">
-      <div class="guide-title">✓ Étape 4 : Cliquez sur "Ajouter"</div>
+      <div class="guide-title">✓ Étape 4 : Validez l'ajout</div>
       <div class="guide-text">
-        <p>Une fois que vous avez rempli au moins le <strong>N° Client</strong> :</p>
-        <p style="margin: 16px 0;">🔘 <strong>Appuyez sur "+ Ajouter ce colis"</strong></p>
-        <p style="font-size:13px;">✅ Votre colis apparaît dans la liste</p>
-        <p style="font-size:13px;">📡 Tous les autres opérateurs voient le changement en direct</p>
+        <p><strong>Vous avez rempli les champs ?</strong> Maintenant :</p>
+        <p style="margin: 16px 0; padding: 12px; background:rgba(0,0,0,.05); border-radius:8px; font-weight:600; text-align:center;">🔘 Cliquez sur "+ Ajouter ce colis"</p>
+        <p style="font-size:13px;"><strong>✅ Succès !</strong> Votre colis apparaît immédiatement dans la liste</p>
+        <p style="font-size:13px; margin-top:8px;"><strong>📡 IMPORTANT :</strong> Tous les autres opérateurs voient la modification en temps réel</p>
+        <p style="font-size:12px; color:var(--text3); margin-top:8px;">Aucun double colis, tout est synchronisé automatiquement</p>
       </div>
       <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
     </div>
 
     <div class="guide-slide" id="guide-slide-5" style="display:none;">
-      <div class="guide-title">🎉 Vous savez tout !</div>
+      <div class="guide-title">🎉 Vous maîtrisez le RACK !</div>
       <div class="guide-text">
-        <p style="margin-bottom: 16px;">C'est simple :</p>
-        <p><strong>1.</strong> Scannez le QR</p>
-        <p><strong>2.</strong> Cliquez sur l'emplacement</p>
-        <p><strong>3.</strong> Remplissez N° Client (et autres infos)</p>
-        <p><strong>4.</strong> Cliquez "Ajouter"</p>
-        <p style="margin-top: 16px; font-size:12px; color:var(--text3);">💡 Besoin d'aide ? Demandez à un collègue ou cliquez sur le ❓ ici</p>
+        <p style="margin-bottom: 16px;"><strong>Résumé rapide :</strong></p>
+        <p>📱 <strong>1.</strong> Scanner le QR code au rack</p>
+        <p>📍 <strong>2.</strong> Cliquer sur votre emplacement (A1, B4, etc.)</p>
+        <p>✏️ <strong>3.</strong> Remplir au moins le N° Client</p>
+        <p>✓ <strong>4.</strong> Cliquer "+ Ajouter ce colis"</p>
+        <p style="margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,.1);"><strong>💡 Astuces :</strong></p>
+        <p style="font-size:12px; color:var(--text3); margin-top:6px;">• Vous pouvez modifier un colis → cliquez sur ✏️</p>
+        <p style="font-size:12px; color:var(--text3);">• Vous pouvez ajouter des AFS à tout moment</p>
+        <p style="font-size:12px; color:var(--text3);">• Besoin d'aide ? Demandez à un collègue ou cliquez ❓</p>
       </div>
       <button class="btn-guide-next" onclick="showRack()">← Retour au Rack</button>
     </div>
