@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>AUEM — Rack attente delais </title>
+<title>AUEM — Rack attente delais</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -92,11 +92,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .emp-card.c-sb::before{background:var(--blue);}
 .emp-card.c-sy::before{background:var(--yellow);}
 .emp-card.c-sr::before{background:var(--red);}
+.emp-card.c-hp::before{background:var(--purple);}
 .emp-card:active{transform:scale(.95);}
 
 .emp-id{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:2px;letter-spacing:.5px;}
 .emp-badge{display:inline-flex;align-items:center;background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:2px 7px;font-size:10px;color:var(--text3);margin-bottom:4px;}
 .emp-badge.has{background:var(--blue-bg);color:var(--blue);border-color:rgba(59,130,246,.2);}
+.emp-badge.has-hp{background:var(--purple-bg);color:var(--purple);border-color:rgba(168,85,247,.2);}
 .emp-previews{display:flex;flex-direction:column;gap:2px;}
 .emp-prev{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2);font-family:'DM Mono',monospace;}
 .emp-delay{font-size:9px;font-weight:700;font-family:'DM Mono',monospace;}
@@ -104,6 +106,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .emp-delay.sb{color:var(--blue);}
 .emp-delay.sy{color:var(--yellow);}
 .emp-delay.sr{color:var(--red);}
+.emp-hp-tag{font-size:8px;font-weight:700;font-family:'DM Mono',monospace;color:var(--purple);letter-spacing:.5px;}
 
 .sep-rack{display:flex;align-items:center;gap:8px;margin:10px 0 14px;}
 .sep-line{flex:1;height:1px;background:var(--border);}
@@ -125,8 +128,20 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .inp-row{display:flex;gap:8px;margin-bottom:8px;}
 .inp-row:last-child{margin-bottom:0;}
 
-.sel{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 12px;outline:none;cursor:pointer;}
-.sel:focus{border-color:var(--border3);}
+/* ── HP TOGGLE ── */
+.hp-toggle-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--rs);margin-bottom:8px;cursor:pointer;user-select:none;}
+.hp-toggle-row:active{opacity:.8;}
+.hp-toggle-label{flex:1;font-size:13px;font-weight:600;color:var(--text2);}
+.hp-toggle-label span{font-size:11px;color:var(--text3);display:block;margin-top:1px;font-weight:400;}
+.hp-toggle{width:38px;height:22px;border-radius:11px;background:var(--border2);position:relative;transition:background .2s;flex-shrink:0;}
+.hp-toggle.on{background:var(--purple);}
+.hp-toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;}
+.hp-toggle.on::after{transform:translateX(16px);}
+
+.hp-desc-row{display:none;margin-bottom:8px;}
+.hp-desc-row.show{display:flex;}
+.hp-desc-inp{border-color:rgba(168,85,247,.4)!important;}
+.hp-desc-inp:focus{border-color:var(--purple)!important;}
 
 .btn-main{width:100%;background:var(--text);color:#000;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;padding:12px;cursor:pointer;margin-top:10px;transition:opacity .15s;}
 .btn-main:active{opacity:.8;}
@@ -136,16 +151,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .colis-card{background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:12px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;animation:slideIn .2s cubic-bezier(.34,1.4,.64,1);position:relative;overflow:hidden;}
 @keyframes slideIn{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:none}}
 .colis-card.done{opacity:.32;}
+.colis-card.hp-card{border-color:rgba(168,85,247,.25);background:#130d1e;}
 .colis-stripe{width:3px;border-radius:3px;flex-shrink:0;align-self:stretch;min-height:42px;}
 .stripe-sg{background:var(--green);}
 .stripe-sb{background:var(--blue);}
 .stripe-sy{background:var(--yellow);}
 .stripe-sr{background:var(--red);}
+.stripe-hp{background:var(--purple);}
 .stripe-done{background:#252525;}
 .colis-body{flex:1;min-width:0;}
 .colis-client{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Mono',monospace;letter-spacing:.3px;}
 .colis-card.done .colis-client{text-decoration:line-through;color:var(--text3);}
 .colis-company{font-size:11px;color:var(--yellow);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.colis-hp-desc{font-size:11px;color:var(--purple);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .colis-meta{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap;}
 .colis-arc{font-size:10px;color:var(--purple);font-weight:600;font-family:'DM Mono',monospace;}
 .colis-delay{font-size:10px;font-weight:700;font-family:'DM Mono',monospace;}
@@ -156,6 +174,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;white-space:nowrap;font-family:'DM Mono',monospace;}
 .b-blue{background:var(--blue-bg);color:var(--blue);}
 .b-gray{background:var(--card);color:var(--text2);border:1px solid var(--border2);}
+.b-purple{background:var(--purple-bg);color:var(--purple);}
 .colis-afs{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
 .colis-acts{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
 .btn-circ{width:28px;height:28px;border-radius:50%;border:1px solid var(--border2);background:var(--card);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;}
@@ -166,6 +185,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .afs-num{flex:1;font-size:13px;font-weight:500;color:var(--blue);font-family:'DM Mono',monospace;}
 .btn-afs-del{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:0 4px;transition:color .15s;line-height:1;}
 .btn-afs-del:active{color:var(--red);}
+
+/* ── HP EDIT SECTION ── */
+.hp-edit-section{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.2);border-radius:var(--r);padding:13px;margin-bottom:10px;}
+.hp-edit-lbl{font-size:10px;font-weight:700;color:var(--purple);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-family:'DM Mono',monospace;}
+.hp-toggle-row-edit{display:flex;align-items:center;gap:10px;margin-bottom:0;}
+.hp-toggle-label-edit{flex:1;font-size:13px;font-weight:600;color:var(--text2);}
 
 .empty{text-align:center;padding:24px 16px;color:var(--text3);font-size:13px;line-height:2;}
 .divider{height:1px;background:var(--border);margin:11px 0;}
@@ -219,7 +244,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="header-left">
 <div class="header-logo">AUEM</div>
 <div>
-<div class="header-title">Rack attente delais </div>
+<div class="header-title">Rack attente delais</div>
 <div class="header-sub" id="sync-label">Synchronisation…</div>
 </div>
 </div>
@@ -243,6 +268,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="leg"><div class="leg-dot" style="background:var(--blue)"></div>Bleu 15-21j</div>
 <div class="leg"><div class="leg-dot" style="background:var(--yellow)"></div>Jaune 21-28j</div>
 <div class="leg"><div class="leg-dot" style="background:var(--red)"></div>Rouge +28j</div>
+<div class="leg"><div class="leg-dot" style="background:var(--purple)"></div>Hors prod.</div>
 </div>
 <div class="search-wrap">
 <span class="search-icon">🔍</span>
@@ -255,11 +281,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <button class="filter-btn" id="f-occ" onclick="setFilter('occ')">🔵 Occupé</button>
 <button class="filter-btn" id="f-empty" onclick="setFilter('empty')">⬜ Vide</button>
 <button class="filter-btn" id="f-sr" onclick="setFilter('sr')">🔴 Urgent</button>
+<button class="filter-btn" id="f-hp" onclick="setFilter('hp')">🟣 Hors prod.</button>
 </div>
 <div id="rack-grid"><div class="loading-screen"><div class="spinner"></div><div class="loading-text">Chargement…</div></div></div>
 </div>
 </div>
 
+<!-- VUE EMPLACEMENT -->
 <div class="view" id="view-colonne">
 <div class="back-header">
 <button class="btn-back" onclick="showRack()">←</button>
@@ -272,6 +300,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="inp-row"><input class="inp" id="inp-company" placeholder="Entreprise" /></div>
 <div class="inp-row"><input class="inp" id="inp-arc" placeholder="ARC" /></div>
 <div class="inp-row"><input class="inp" id="inp-afs" placeholder="N° AFS — virgule ou espace si plusieurs" /></div>
+
+<!-- Toggle Hors Production -->
+<div class="hp-toggle-row" id="hp-toggle-row" onclick="toggleHP()">
+<div class="hp-toggle-label">
+  Hors production ?
+  <span>Pas de délai appliqué sur cet élément</span>
+</div>
+<div class="hp-toggle" id="hp-toggle"></div>
+</div>
+<div class="hp-desc-row inp-row" id="hp-desc-row">
+  <input class="inp hp-desc-inp" id="inp-hp-desc" placeholder="Description de l'élément hors prod…" />
+</div>
+
 <button class="btn-main" onclick="addColis()">+ Ajouter ce colis</button>
 </div>
 <div class="purge-row">
@@ -282,6 +323,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 </div>
 </div>
 
+<!-- VUE ÉDITION COLIS -->
 <div class="view" id="view-colis">
 <div class="back-header">
 <button class="btn-back" onclick="backToColonne()">←</button>
@@ -304,9 +346,22 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <button class="btn-sec" onclick="addAFS()">+</button>
 </div>
 </div>
+<!-- Section hors production en édition -->
+<div class="hp-edit-section">
+<div class="hp-edit-lbl">🟣 Hors production</div>
+<div class="hp-toggle-row-edit">
+<div class="hp-toggle-label-edit" id="edit-hp-status">Non</div>
+<div class="hp-toggle" id="edit-hp-toggle" onclick="toggleEditHP()" style="cursor:pointer;"></div>
+</div>
+<div class="hp-desc-row inp-row" id="edit-hp-desc-row" style="margin-top:8px;">
+  <input class="inp hp-desc-inp" id="edit-hp-desc" placeholder="Description hors prod…" />
+</div>
+<button class="btn-sec" style="width:100%;margin-top:8px;" onclick="saveHP()">✓ Enregistrer statut HP</button>
+</div>
 </div>
 </div>
 
+<!-- VUE GUIDE -->
 <div class="view" id="view-guide">
 <div class="back-header">
 <button class="btn-back" onclick="showRack()">←</button>
@@ -317,7 +372,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="guide-slide" id="guide-slide-1">
 <div class="guide-title">📱 Étape 1 : Scannez le QR Code</div>
 <div class="guide-text">
-<p><strong>Où est le QR ?</strong> Il est collé sur le montant du RACK RETOUR.</p>
+<p><strong>Où est le QR ?</strong> Il est collé sur le montant du RACK ATTENTE.</p>
 <p style="margin-top:12px;"><strong>Comment faire :</strong></p>
 <p>1️⃣ Ouvrez l'<strong>appareil photo</strong> de votre téléphone</p>
 <p>2️⃣ Pointez vers le <strong>carré noir/blanc</strong> du QR code</p>
@@ -345,23 +400,23 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="guide-text">
 <p><strong>🔴 N° CLIENT (obligatoire)</strong></p>
 <p style="font-size:12px;margin-bottom:10px;color:var(--text3);">Exemple : 12345, CLIENT001…</p>
-<p><strong>🟠 Entreprise, ARC, AFS </strong></p>
+<p><strong>🟠 Entreprise, ARC, AFS</strong></p>
 <p style="font-size:12px;margin-bottom:10px;color:var(--text3);">Plusieurs AFS ? Séparez par virgules ou espaces</p>
-<p style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);"><strong>📊 Couleurs automatiques selon l'âge du colis :</strong></p>
+<p style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);"><strong>📊 Couleurs automatiques selon l'âge :</strong></p>
 <p style="font-size:12px;color:var(--text3);">🟢 0-15j · 🔵 15-21j · 🟡 21-28j · 🔴 +28j</p>
 </div>
 <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
 </div>
 
 <div class="guide-slide" id="guide-slide-4" style="display:none;">
-<div class="guide-title">✓ Étape 4 : Validez</div>
+<div class="guide-title">🟣 Hors Production</div>
 <div class="guide-text">
-<p>Cliquez sur <strong>"+ Ajouter ce colis"</strong></p>
-<p style="margin-top:10px;">✅ Le colis apparaît avec sa couleur (délai auto)</p>
-<p style="margin-top:10px;">📡 Tous les opérateurs voient la modification en temps réel</p>
-<p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">La <strong>couleur change AUTOMATIQUEMENT</strong> chaque jour :</p>
-<p style="font-size:12px;color:var(--text3);margin-top:6px;">Plus ça reste longtemps → Plus ça devient rouge 🔴</p>
-<p style="font-size:12px;color:var(--red);">🔴 Rouge = +28j → Traiter en PRIORITÉ !</p>
+<p><strong>Cet élément n'a pas de délai ?</strong></p>
+<p style="margin-top:8px;">Activez le toggle <strong>"Hors production"</strong> lors de l'ajout.</p>
+<p style="margin-top:10px;">Entrez une description de l'élément.</p>
+<p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">✅ L'élément apparaît en <strong style="color:var(--purple);">violet</strong> — sans couleur de délai</p>
+<p style="font-size:12px;color:var(--text3);margin-top:6px;">Modifiable à tout moment via le bouton ✏️</p>
+<p style="font-size:12px;color:var(--text3);">Filtre 🟣 <strong>Hors prod.</strong> disponible sur la grille</p>
 </div>
 <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
 </div>
@@ -373,9 +428,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <p>📍 <strong>2.</strong> Cliquer sur votre emplacement</p>
 <p>✏️ <strong>3.</strong> Entrer le N° Client + infos</p>
 <p>✓ <strong>4.</strong> Cliquer "+ Ajouter ce colis"</p>
-<p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">💡 Vous pouvez modifier un colis → cliquez sur ✏️</p>
-<p style="font-size:12px;color:var(--text3);margin-top:6px;">• Marquer un colis retiré → ✓ sur la carte</p>
-<p style="font-size:12px;color:var(--text3);">• Supprimer définitivement → ✕</p>
+<p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">💡 Modifier un colis → cliquez sur ✏️</p>
+<p style="font-size:12px;color:var(--text3);margin-top:6px;">• Marquer retiré → ✓ · Supprimer → ✕</p>
+<p style="font-size:12px;color:var(--purple);margin-top:4px;">• Hors prod. → toggle violet, pas de délai</p>
 </div>
 <button class="btn-guide-next" onclick="showRack()">← Retour au Rack</button>
 </div>
@@ -391,13 +446,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="view-body">
 <div class="qr-center">
 <div class="qr-box"><div id="qr-container" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;"><div class="spinner"></div></div></div>
-<div class="qr-name">RACK attente delais — AUEM</div>
+<div class="qr-name">RACK ATTENTE DELAIS — AUEM</div>
 <div class="qr-info">
 <div class="qr-ttl">Légende délais</div>
 <div class="qr-step"><div class="qr-n">●</div>🟢 Vert — 0 à 15 jours</div>
 <div class="qr-step"><div class="qr-n">●</div>🔵 Bleu — 15 à 21 jours</div>
 <div class="qr-step"><div class="qr-n">●</div>🟡 Jaune — 21 à 28 jours</div>
 <div class="qr-step"><div class="qr-n">●</div>🔴 Rouge — plus de 28 jours</div>
+<div class="qr-step"><div class="qr-n">●</div>🟣 Violet — Hors production (sans délai)</div>
 </div>
 </div>
 </div>
@@ -429,464 +485,545 @@ const FIREBASE = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.ap
 
 let state = {}, currentCol = null, currentColisIdx = null;
 let saveTimer = null, activeFilter = 'all', deleteTargetIdx = null, currentGuideSlide = 1;
+let addHPActive = false, editHPActive = false;
+
+/* ── HP TOGGLE (ajout) ── */
+function toggleHP() {
+  addHPActive = !addHPActive;
+  document.getElementById('hp-toggle').classList.toggle('on', addHPActive);
+  const descRow = document.getElementById('hp-desc-row');
+  descRow.classList.toggle('show', addHPActive);
+  if(addHPActive) document.getElementById('inp-hp-desc').focus();
+  else document.getElementById('inp-hp-desc').value = '';
+}
+
+/* ── HP TOGGLE (édition) ── */
+function toggleEditHP() {
+  editHPActive = !editHPActive;
+  document.getElementById('edit-hp-toggle').classList.toggle('on', editHPActive);
+  document.getElementById('edit-hp-status').textContent = editHPActive ? 'Oui — hors production' : 'Non';
+  const descRow = document.getElementById('edit-hp-desc-row');
+  descRow.classList.toggle('show', editHPActive);
+  if(editHPActive) document.getElementById('edit-hp-desc').focus();
+}
+
+function saveHP() {
+  const c = state[currentCol].colis[currentColisIdx];
+  c.hors_prod = editHPActive;
+  c.hp_desc = editHPActive ? document.getElementById('edit-hp-desc').value.trim() : '';
+  if(editHPActive && !c.hp_desc) { showToast('Entrez une description HP','⚠️'); return; }
+  renderColisList(); renderRack(); scheduleSave();
+  showToast(editHPActive ? 'Hors prod. activé' : 'Hors prod. désactivé', '🟣');
+}
 
 function getDelayClass(ts) {
-if(!ts) return null;
-const j = Math.floor((Date.now() - ts) / 86400000);
-if(j >= 28) return 'sr';
-if(j >= 21) return 'sy';
-if(j >= 15) return 'sb';
-return 'sg';
+  if(!ts) return null;
+  const j = Math.floor((Date.now() - ts) / 86400000);
+  if(j >= 28) return 'sr';
+  if(j >= 21) return 'sy';
+  if(j >= 15) return 'sb';
+  return 'sg';
 }
 
 function getDelayLabel(ts) {
-if(!ts) return '';
-const j = Math.floor((Date.now() - ts) / 86400000);
-if(j === 0) return "Aujourd'hui";
-if(j === 1) return '1 jour';
-return j + ' jours';
+  if(!ts) return '';
+  const j = Math.floor((Date.now() - ts) / 86400000);
+  if(j === 0) return "Aujourd'hui";
+  if(j === 1) return '1 jour';
+  return j + ' jours';
 }
 
 function initState() {
-const s = {};
-ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) s[e+i] = {colis:[]}; });
-return s;
+  const s = {};
+  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) s[e+i] = {colis:[]}; });
+  return s;
 }
 
 function migrate(data) {
-const s = data || initState();
-ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
-const id = e+i;
-if(!s[id]) s[id] = {colis:[]};
-if(Array.isArray(s[id])) s[id] = {colis: s[id]};
-if(!s[id].colis) s[id].colis = [];
-}});
-return s;
+  const s = data || initState();
+  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
+    const id = e+i;
+    if(!s[id]) s[id] = {colis:[]};
+    if(Array.isArray(s[id])) s[id] = {colis: s[id]};
+    if(!s[id].colis) s[id].colis = [];
+  }});
+  return s;
 }
 
 function setSyncDot(st) {
-document.getElementById('sync-dot').className = 'sync-dot ' + st;
-const lbl = document.getElementById('sync-label');
-if(st === 'ok') {
-const n = new Date();
-lbl.textContent = 'Sync ' + String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
-lbl.className = 'header-sub synced';
-setTimeout(() => { lbl.className='header-sub'; lbl.textContent='Temps réel · tous opérateurs'; }, 3000);
-} else if(st === 'loading') { lbl.textContent='Synchronisation…'; lbl.className='header-sub'; }
-else { lbl.textContent='Hors-ligne'; lbl.className='header-sub'; }
+  document.getElementById('sync-dot').className = 'sync-dot ' + st;
+  const lbl = document.getElementById('sync-label');
+  if(st === 'ok') {
+    const n = new Date();
+    lbl.textContent = 'Sync ' + String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+    lbl.className = 'header-sub synced';
+    setTimeout(() => { lbl.className='header-sub'; lbl.textContent='Temps réel · tous opérateurs'; }, 3000);
+  } else if(st === 'loading') { lbl.textContent='Synchronisation…'; lbl.className='header-sub'; }
+  else { lbl.textContent='Hors-ligne'; lbl.className='header-sub'; }
 }
 
 async function loadFromServer() {
-setSyncDot('loading');
-try {
-const res = await fetch(FIREBASE); if(!res.ok) throw new Error();
-state = migrate(await res.json()); setSyncDot('ok'); renderRack();
-} catch {
-try { state = migrate(JSON.parse(localStorage.getItem('auem_retour'))); } catch { state = initState(); }
-setSyncDot('error'); renderRack(); showToast('Mode hors-ligne','📡');
-}
+  setSyncDot('loading');
+  try {
+    const res = await fetch(FIREBASE); if(!res.ok) throw new Error();
+    state = migrate(await res.json()); setSyncDot('ok'); renderRack();
+  } catch {
+    try { state = migrate(JSON.parse(localStorage.getItem('auem_retour'))); } catch { state = initState(); }
+    setSyncDot('error'); renderRack(); showToast('Mode hors-ligne','📡');
+  }
 }
 
 async function saveToServer() {
-setSyncDot('loading');
-try {
-await fetch(FIREBASE,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});
-localStorage.setItem('auem_retour', JSON.stringify(state)); setSyncDot('ok');
-} catch { localStorage.setItem('auem_retour', JSON.stringify(state)); setSyncDot('error'); }
+  setSyncDot('loading');
+  try {
+    await fetch(FIREBASE,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});
+    localStorage.setItem('auem_retour', JSON.stringify(state)); setSyncDot('ok');
+  } catch { localStorage.setItem('auem_retour', JSON.stringify(state)); setSyncDot('error'); }
 }
 
 function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveToServer, 600); }
 setInterval(() => { if(document.getElementById('view-rack').classList.contains('active')) loadFromServer(); }, 30000);
 
 function updateStats() {
-let sg=0, sb=0, sy=0, sr=0;
-ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
-(state[e+i]?.colis||[]).filter(c=>!c.done && c.ts).forEach(c => {
-const cl = getDelayClass(c.ts);
-if(cl==='sg') sg++;
-else if(cl==='sb') sb++;
-else if(cl==='sy') sy++;
-else if(cl==='sr') sr++;
-});
-}});
-document.getElementById('s-sg').textContent = sg;
-document.getElementById('s-sb').textContent = sb;
-document.getElementById('s-sy').textContent = sy;
-document.getElementById('s-sr').textContent = sr;
+  let sg=0, sb=0, sy=0, sr=0;
+  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
+    (state[e+i]?.colis||[]).filter(c=>!c.done && c.ts && !c.hors_prod).forEach(c => {
+      const cl = getDelayClass(c.ts);
+      if(cl==='sg') sg++;
+      else if(cl==='sb') sb++;
+      else if(cl==='sy') sy++;
+      else if(cl==='sr') sr++;
+    });
+  }});
+  document.getElementById('s-sg').textContent = sg;
+  document.getElementById('s-sb').textContent = sb;
+  document.getElementById('s-sy').textContent = sy;
+  document.getElementById('s-sr').textContent = sr;
 }
 
 function setFilter(f) {
-activeFilter = f;
-document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-document.getElementById('f-'+f).classList.add('active');
-renderRack();
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-'+f).classList.add('active');
+  renderRack();
 }
 
 function cardMatchesFilter(id) {
-if(activeFilter === 'all') return true;
-const a = (state[id]?.colis||[]).filter(c=>!c.done);
-if(activeFilter === 'empty') return a.length === 0;
-if(activeFilter === 'occ') return a.length > 0;
-if(activeFilter === 'sr') return a.some(c => getDelayClass(c.ts) === 'sr');
-return true;
+  if(activeFilter === 'all') return true;
+  const a = (state[id]?.colis||[]).filter(c=>!c.done);
+  if(activeFilter === 'empty') return a.length === 0;
+  if(activeFilter === 'occ') return a.length > 0;
+  if(activeFilter === 'sr') return a.some(c => !c.hors_prod && getDelayClass(c.ts) === 'sr');
+  if(activeFilter === 'hp') return a.some(c => c.hors_prod);
+  return true;
 }
 
 function renderRack() {
-updateStats();
-const grid = document.getElementById('rack-grid');
-grid.innerHTML = '';
+  updateStats();
+  const grid = document.getElementById('rack-grid');
+  grid.innerHTML = '';
 
-ETAGES.forEach(etage => {
-const info = ETAGE_INFO[etage];
-const sec = document.createElement('div');
-sec.className = 'etage-section';
+  ETAGES.forEach(etage => {
+    const info = ETAGE_INFO[etage];
+    const sec = document.createElement('div');
+    sec.className = 'etage-section';
 
-const hdr = document.createElement('div');
-hdr.className = 'etage-header';
-hdr.innerHTML = '<span class="etage-pill">' + info.name + '</span><span class="etage-desc">' + info.desc + '</span>';
-sec.appendChild(hdr);
+    const hdr = document.createElement('div');
+    hdr.className = 'etage-header';
+    hdr.innerHTML = '<span class="etage-pill">' + info.name + '</span><span class="etage-desc">' + info.desc + '</span>';
+    sec.appendChild(hdr);
 
-const g = document.createElement('div');
-g.className = 'emp-grid';
-let anyVisible = false;
+    const g = document.createElement('div');
+    g.className = 'emp-grid';
+    let anyVisible = false;
 
-for(let i=1; i<=COLS; i++) {
-const id = etage + i;
-if(!cardMatchesFilter(id)) continue;
-anyVisible = true;
-const active = (state[id]?.colis||[]).filter(c=>!c.done);
-const hasC = active.length > 0;
+    for(let i=1; i<=COLS; i++) {
+      const id = etage + i;
+      if(!cardMatchesFilter(id)) continue;
+      anyVisible = true;
+      const active = (state[id]?.colis||[]).filter(c=>!c.done);
+      const hasC = active.length > 0;
+      const hpOnly = hasC && active.every(c => c.hors_prod);
+      const hasHP = active.some(c => c.hors_prod);
+      const hasNormal = active.some(c => !c.hors_prod);
 
-let dominantCls = null;
-if(hasC) {
-const priority = ['sr','sy','sb','sg'];
-for(const p of priority) {
-if(active.some(c => getDelayClass(c.ts) === p)) { dominantCls = p; break; }
-}
-}
+      let dominantCls = null;
+      if(hasNormal) {
+        const priority = ['sr','sy','sb','sg'];
+        for(const p of priority) {
+          if(active.some(c => !c.hors_prod && getDelayClass(c.ts) === p)) { dominantCls = p; break; }
+        }
+      } else if(hpOnly) {
+        dominantCls = 'hp';
+      }
 
-const card = document.createElement('div');
-card.className = 'emp-card' + (dominantCls ? ' c-' + dominantCls : '');
+      const card = document.createElement('div');
+      card.className = 'emp-card' + (dominantCls ? ' c-' + dominantCls : '');
 
-const idDiv = document.createElement('div'); idDiv.className='emp-id'; idDiv.textContent = id;
-const badge = document.createElement('div'); badge.className='emp-badge'+(hasC?' has':''); badge.textContent = active.length || 'Vide';
-const prevs = document.createElement('div'); prevs.className='emp-previews';
+      const idDiv = document.createElement('div'); idDiv.className='emp-id'; idDiv.textContent = id;
 
-active.slice(0,2).forEach(c => {
-const p = document.createElement('div'); p.className='emp-prev'; p.textContent = c.client || '—';
-prevs.appendChild(p);
-});
+      const badge = document.createElement('div');
+      badge.className = 'emp-badge' + (hasC ? (hpOnly ? ' has-hp' : ' has') : '');
+      badge.textContent = active.length || 'Vide';
 
-if(active.length > 2) {
-const p = document.createElement('div'); p.className='emp-prev'; p.textContent = '+' + (active.length-2);
-prevs.appendChild(p);
-}
+      const prevs = document.createElement('div'); prevs.className='emp-previews';
 
-if(hasC) {
-const oldest = active.reduce((a,b) => (a.ts||Infinity) < (b.ts||Infinity) ? a : b);
-if(oldest.ts) {
-const cl = getDelayClass(oldest.ts);
-const dl = document.createElement('div');
-dl.className = 'emp-delay ' + cl;
-dl.textContent = getDelayLabel(oldest.ts);
-prevs.appendChild(dl);
-}
-}
+      active.slice(0,2).forEach(c => {
+        const p = document.createElement('div'); p.className='emp-prev';
+        p.textContent = (c.hors_prod ? '🟣 ' : '') + (c.client || '—');
+        prevs.appendChild(p);
+      });
 
-card.appendChild(idDiv); card.appendChild(badge); card.appendChild(prevs);
-card.setAttribute('data-id', id);
-card.onclick = function() { openColonne(this.getAttribute('data-id')); };
-g.appendChild(card);
-}
+      if(active.length > 2) {
+        const p = document.createElement('div'); p.className='emp-prev'; p.textContent = '+' + (active.length-2);
+        prevs.appendChild(p);
+      }
 
-if(!anyVisible) {
-const e = document.createElement('div');
-e.style.cssText = 'grid-column:1/-1;text-align:center;padding:12px;color:var(--text3);font-size:13px;';
-e.textContent = 'Aucun emplacement';
-g.appendChild(e);
-}
+      if(hasNormal) {
+        const oldest = active.filter(c=>!c.hors_prod).reduce((a,b) => (a.ts||Infinity) < (b.ts||Infinity) ? a : b);
+        if(oldest.ts) {
+          const cl = getDelayClass(oldest.ts);
+          const dl = document.createElement('div');
+          dl.className = 'emp-delay ' + cl;
+          dl.textContent = getDelayLabel(oldest.ts);
+          prevs.appendChild(dl);
+        }
+      }
 
-sec.appendChild(g);
-if(etage === 'B') {
-const sep = document.createElement('div'); sep.className='sep-rack';
-sep.innerHTML = '<div class="sep-line"></div><div class="sep-label">HAUTEUR D\'HOMME</div><div class="sep-line"></div>';
-sec.appendChild(sep);
-}
-grid.appendChild(sec);
-});
+      if(hpOnly) {
+        const hp = document.createElement('div'); hp.className='emp-hp-tag'; hp.textContent='HORS PROD.';
+        prevs.appendChild(hp);
+      }
+
+      card.appendChild(idDiv); card.appendChild(badge); card.appendChild(prevs);
+      card.setAttribute('data-id', id);
+      card.onclick = function() { openColonne(this.getAttribute('data-id')); };
+      g.appendChild(card);
+    }
+
+    if(!anyVisible) {
+      const e = document.createElement('div');
+      e.style.cssText = 'grid-column:1/-1;text-align:center;padding:12px;color:var(--text3);font-size:13px;';
+      e.textContent = 'Aucun emplacement';
+      g.appendChild(e);
+    }
+
+    sec.appendChild(g);
+    if(etage === 'B') {
+      const sep = document.createElement('div'); sep.className='sep-rack';
+      sep.innerHTML = '<div class="sep-line"></div><div class="sep-label">HAUTEUR D\'HOMME</div><div class="sep-line"></div>';
+      sec.appendChild(sep);
+    }
+    grid.appendChild(sec);
+  });
 }
 
 function onSearch(q) {
-q = q.trim();
-document.getElementById('search-clear').classList.toggle('show', q.length > 0);
-const results = document.getElementById('search-results');
-if(!q) { results.classList.remove('show'); return; }
-const hits = [];
-ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
-const id = e+i;
-(state[id]?.colis||[]).filter(c=>!c.done).forEach(c => {
-const txt = ((c.client||'') + ' ' + (c.company||'') + ' ' + (c.arc||'') + ' ' + (c.afs||[]).join(' ')).toLowerCase();
-if(txt.includes(q.toLowerCase())) hits.push({id, colis:c});
-});
-}});
-results.classList.add('show');
-if(!hits.length) { results.innerHTML = '<div class="search-empty">Aucun résultat pour « ' + q + ' »</div>'; return; }
-results.innerHTML = hits.slice(0,7).map(h =>
-'<div class="sr-item" onclick="clearSearch();openColonne(\'' + h.id + '\')">' +
-'<span class="sr-loc">' + h.id + '</span>' +
-'<span class="sr-txt">' + (h.colis.client||'') + (h.colis.company ? ' · ' + h.colis.company : '') + '</span>' +
-'</div>'
-).join('');
+  q = q.trim();
+  document.getElementById('search-clear').classList.toggle('show', q.length > 0);
+  const results = document.getElementById('search-results');
+  if(!q) { results.classList.remove('show'); return; }
+  const hits = [];
+  ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
+    const id = e+i;
+    (state[id]?.colis||[]).filter(c=>!c.done).forEach(c => {
+      const txt = ((c.client||'') + ' ' + (c.company||'') + ' ' + (c.arc||'') + ' ' + (c.afs||[]).join(' ') + ' ' + (c.hp_desc||'')).toLowerCase();
+      if(txt.includes(q.toLowerCase())) hits.push({id, colis:c});
+    });
+  }});
+  results.classList.add('show');
+  if(!hits.length) { results.innerHTML = '<div class="search-empty">Aucun résultat pour « ' + q + ' »</div>'; return; }
+  results.innerHTML = hits.slice(0,7).map(h =>
+    '<div class="sr-item" onclick="clearSearch();openColonne(\'' + h.id + '\')">' +
+    '<span class="sr-loc">' + h.id + '</span>' +
+    '<span class="sr-txt">' + (h.colis.hors_prod ? '🟣 ' : '') + (h.colis.client||'') + (h.colis.company ? ' · ' + h.colis.company : '') + '</span>' +
+    '</div>'
+  ).join('');
 }
 
 function clearSearch() {
-document.getElementById('search-inp').value = '';
-document.getElementById('search-clear').classList.remove('show');
-document.getElementById('search-results').classList.remove('show');
+  document.getElementById('search-inp').value = '';
+  document.getElementById('search-clear').classList.remove('show');
+  document.getElementById('search-results').classList.remove('show');
 }
 
 function openColonne(id) {
-currentCol = id;
-const info = ETAGE_INFO[id[0]];
-document.getElementById('col-title').textContent = id;
-document.getElementById('col-sub').textContent = info.name + ' — ' + info.desc;
-['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
-renderColisList();
-showView('view-colonne');
+  currentCol = id;
+  const info = ETAGE_INFO[id[0]];
+  document.getElementById('col-title').textContent = id;
+  document.getElementById('col-sub').textContent = info.name + ' — ' + info.desc;
+  ['inp-client','inp-company','inp-arc','inp-afs','inp-hp-desc'].forEach(x => document.getElementById(x).value='');
+  // reset HP toggle
+  addHPActive = false;
+  document.getElementById('hp-toggle').classList.remove('on');
+  document.getElementById('hp-desc-row').classList.remove('show');
+  renderColisList();
+  showView('view-colonne');
 }
 
 function renderColisList() {
-const list = document.getElementById('colis-list');
-const all = state[currentCol]?.colis || [];
-if(!all.length) { list.innerHTML='<div class="empty">Aucun colis sur cet emplacement<br>Ajoutez-en un ci-dessus ↑</div>'; return; }
-list.innerHTML = '';
+  const list = document.getElementById('colis-list');
+  const all = state[currentCol]?.colis || [];
+  if(!all.length) { list.innerHTML='<div class="empty">Aucun colis sur cet emplacement<br>Ajoutez-en un ci-dessus ↑</div>'; return; }
+  list.innerHTML = '';
 
-[...all.filter(c=>!c.done), ...all.filter(c=>c.done)].forEach(colis => {
-const idx = all.indexOf(colis);
-const card = document.createElement('div');
-card.className = 'colis-card' + (colis.done ? ' done' : '');
+  [...all.filter(c=>!c.done), ...all.filter(c=>c.done)].forEach(colis => {
+    const idx = all.indexOf(colis);
+    const isHP = !!colis.hors_prod;
+    const card = document.createElement('div');
+    card.className = 'colis-card' + (colis.done ? ' done' : '') + (isHP && !colis.done ? ' hp-card' : '');
 
-const delayCls = colis.done ? null : getDelayClass(colis.ts);
+    const delayCls = (colis.done || isHP) ? null : getDelayClass(colis.ts);
 
-const stripe = document.createElement('div');
-stripe.className = 'colis-stripe';
-if(colis.done) stripe.classList.add('stripe-done');
-else if(delayCls) stripe.classList.add('stripe-' + delayCls);
-else stripe.classList.add('stripe-sg');
+    const stripe = document.createElement('div');
+    stripe.className = 'colis-stripe';
+    if(colis.done) stripe.classList.add('stripe-done');
+    else if(isHP) stripe.classList.add('stripe-hp');
+    else if(delayCls) stripe.classList.add('stripe-' + delayCls);
+    else stripe.classList.add('stripe-sg');
 
-const body = document.createElement('div');
-body.className = 'colis-body';
+    const body = document.createElement('div');
+    body.className = 'colis-body';
 
-const clientEl = document.createElement('div'); clientEl.className='colis-client'; clientEl.textContent = colis.client || '—';
-const compEl = document.createElement('div'); compEl.className='colis-company';
-compEl.textContent = colis.company ? '🏭 ' + colis.company : '';
-if(!colis.company) compEl.style.display='none';
+    const clientEl = document.createElement('div'); clientEl.className='colis-client'; clientEl.textContent = colis.client || '—';
+    const compEl = document.createElement('div'); compEl.className='colis-company';
+    compEl.textContent = colis.company ? '🏭 ' + colis.company : '';
+    if(!colis.company) compEl.style.display='none';
 
-const meta = document.createElement('div'); meta.className='colis-meta';
-if(colis.done) {
-const b = document.createElement('span'); b.className='badge b-gray'; b.textContent='Retiré'; meta.appendChild(b);
-}
+    const meta = document.createElement('div'); meta.className='colis-meta';
+    if(colis.done) {
+      const b = document.createElement('span'); b.className='badge b-gray'; b.textContent='Retiré'; meta.appendChild(b);
+    }
 
-if(!colis.done && colis.ts && delayCls) {
-const d = document.createElement('span');
-d.className = 'colis-delay ' + delayCls;
-d.textContent = getDelayLabel(colis.ts);
-meta.appendChild(d);
-}
+    if(isHP && !colis.done) {
+      const b = document.createElement('span'); b.className='badge b-purple'; b.textContent='🟣 Hors prod.'; meta.appendChild(b);
+    }
 
-if(colis.arc) {
-const a = document.createElement('span'); a.className='colis-arc'; a.textContent='ARC: ' + colis.arc; meta.appendChild(a);
-}
+    if(!colis.done && !isHP && colis.ts && delayCls) {
+      const d = document.createElement('span');
+      d.className = 'colis-delay ' + delayCls;
+      d.textContent = getDelayLabel(colis.ts);
+      meta.appendChild(d);
+    }
 
-body.appendChild(clientEl); body.appendChild(compEl); body.appendChild(meta);
+    if(colis.arc) {
+      const a = document.createElement('span'); a.className='colis-arc'; a.textContent='ARC: ' + colis.arc; meta.appendChild(a);
+    }
 
-if(colis.afs && colis.afs.length) {
-const afsWrap = document.createElement('div'); afsWrap.className='colis-afs';
-colis.afs.forEach(a => {
-const b = document.createElement('span'); b.className='badge b-blue'; b.textContent='AFS ' + a;
-afsWrap.appendChild(b);
-});
-body.appendChild(afsWrap);
-}
+    body.appendChild(clientEl); body.appendChild(compEl);
 
-const acts = document.createElement('div'); acts.className='colis-acts';
-const btnEdit = document.createElement('button'); btnEdit.className='btn-circ'; btnEdit.textContent='✏️';
-btnEdit.setAttribute('data-idx', idx);
-btnEdit.onclick = function() { openColis(parseInt(this.getAttribute('data-idx'))); };
+    if(isHP && colis.hp_desc) {
+      const hpD = document.createElement('div'); hpD.className='colis-hp-desc'; hpD.textContent='📝 ' + colis.hp_desc;
+      body.appendChild(hpD);
+    }
 
-const btnChk = document.createElement('button'); btnChk.className='btn-circ chk'; btnChk.textContent = colis.done ? '↩' : '✓';
-btnChk.setAttribute('data-idx', idx);
-btnChk.onclick = function() { toggleDone(parseInt(this.getAttribute('data-idx'))); };
+    body.appendChild(meta);
 
-const btnDel = document.createElement('button'); btnDel.className='btn-circ del'; btnDel.textContent='✕';
-btnDel.setAttribute('data-idx', idx);
-btnDel.onclick = function() { askDelete(parseInt(this.getAttribute('data-idx'))); };
+    if(colis.afs && colis.afs.length) {
+      const afsWrap = document.createElement('div'); afsWrap.className='colis-afs';
+      colis.afs.forEach(a => {
+        const b = document.createElement('span'); b.className='badge b-blue'; b.textContent='AFS ' + a;
+        afsWrap.appendChild(b);
+      });
+      body.appendChild(afsWrap);
+    }
 
-acts.appendChild(btnEdit); acts.appendChild(btnChk); acts.appendChild(btnDel);
-card.appendChild(stripe); card.appendChild(body); card.appendChild(acts);
-list.appendChild(card);
-});
+    const acts = document.createElement('div'); acts.className='colis-acts';
+    const btnEdit = document.createElement('button'); btnEdit.className='btn-circ'; btnEdit.textContent='✏️';
+    btnEdit.setAttribute('data-idx', idx);
+    btnEdit.onclick = function() { openColis(parseInt(this.getAttribute('data-idx'))); };
+
+    const btnChk = document.createElement('button'); btnChk.className='btn-circ chk'; btnChk.textContent = colis.done ? '↩' : '✓';
+    btnChk.setAttribute('data-idx', idx);
+    btnChk.onclick = function() { toggleDone(parseInt(this.getAttribute('data-idx'))); };
+
+    const btnDel = document.createElement('button'); btnDel.className='btn-circ del'; btnDel.textContent='✕';
+    btnDel.setAttribute('data-idx', idx);
+    btnDel.onclick = function() { askDelete(parseInt(this.getAttribute('data-idx'))); };
+
+    acts.appendChild(btnEdit); acts.appendChild(btnChk); acts.appendChild(btnDel);
+    card.appendChild(stripe); card.appendChild(body); card.appendChild(acts);
+    list.appendChild(card);
+  });
 }
 
 function addColis() {
-const client = document.getElementById('inp-client').value.trim();
-if(!client) { showToast('Entrez un N° client','⚠️'); return; }
-const company = document.getElementById('inp-company').value.trim();
-const arc = document.getElementById('inp-arc').value.trim();
-const afs = document.getElementById('inp-afs').value.trim().split(/[,;\s]+/).filter(Boolean);
-if(!state[currentCol]) state[currentCol] = {colis:[]};
-state[currentCol].colis.push({client, company, arc, afs, done:false, ts:Date.now()});
-['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
-renderColisList(); renderRack(); scheduleSave();
-showToast(client + ' ajouté','✓');
+  const client = document.getElementById('inp-client').value.trim();
+  if(!client) { showToast('Entrez un N° client','⚠️'); return; }
+  if(addHPActive && !document.getElementById('inp-hp-desc').value.trim()) {
+    showToast('Entrez une description hors prod.','⚠️'); return;
+  }
+  const company = document.getElementById('inp-company').value.trim();
+  const arc = document.getElementById('inp-arc').value.trim();
+  const afs = document.getElementById('inp-afs').value.trim().split(/[,;\s]+/).filter(Boolean);
+  const hors_prod = addHPActive;
+  const hp_desc = addHPActive ? document.getElementById('inp-hp-desc').value.trim() : '';
+
+  if(!state[currentCol]) state[currentCol] = {colis:[]};
+  state[currentCol].colis.push({client, company, arc, afs, hors_prod, hp_desc, done:false, ts:Date.now()});
+  ['inp-client','inp-company','inp-arc','inp-afs','inp-hp-desc'].forEach(x => document.getElementById(x).value='');
+  addHPActive = false;
+  document.getElementById('hp-toggle').classList.remove('on');
+  document.getElementById('hp-desc-row').classList.remove('show');
+  renderColisList(); renderRack(); scheduleSave();
+  showToast(client + ' ajouté' + (hors_prod ? ' (HP)' : ''), hors_prod ? '🟣' : '✓');
 }
 
 function toggleDone(idx) {
-const c = state[currentCol].colis[idx];
-c.done = !c.done;
-renderColisList(); renderRack(); scheduleSave();
-showToast(c.done ? 'Colis retiré' : 'Restauré', c.done ? '📦' : '↩');
+  const c = state[currentCol].colis[idx];
+  c.done = !c.done;
+  renderColisList(); renderRack(); scheduleSave();
+  showToast(c.done ? 'Colis retiré' : 'Restauré', c.done ? '📦' : '↩');
 }
 
 function askDelete(idx) {
-deleteTargetIdx = idx;
-const ref = state[currentCol].colis[idx].client || 'ce colis';
-document.getElementById('modal-lbl').textContent = 'Supprimer "' + ref + '" définitivement ?';
-document.getElementById('modal-del').classList.add('open');
+  deleteTargetIdx = idx;
+  const ref = state[currentCol].colis[idx].client || 'ce colis';
+  document.getElementById('modal-lbl').textContent = 'Supprimer "' + ref + '" définitivement ?';
+  document.getElementById('modal-del').classList.add('open');
 }
 
 function closeModal() { document.getElementById('modal-del').classList.remove('open'); deleteTargetIdx=null; }
 
 function confirmDelete() {
-if(deleteTargetIdx===null) return;
-state[currentCol].colis.splice(deleteTargetIdx, 1);
-renderColisList(); renderRack(); scheduleSave();
-closeModal(); showToast('Supprimé','🗑');
+  if(deleteTargetIdx===null) return;
+  state[currentCol].colis.splice(deleteTargetIdx, 1);
+  renderColisList(); renderRack(); scheduleSave();
+  closeModal(); showToast('Supprimé','🗑');
 }
 
 document.getElementById('modal-del').addEventListener('click', function(e) { if(e.target===this) closeModal(); });
 
 function purgeDone() {
-if(!state[currentCol]) return;
-const before = state[currentCol].colis.length;
-state[currentCol].colis = state[currentCol].colis.filter(c=>!c.done);
-const removed = before - state[currentCol].colis.length;
-if(!removed) { showToast('Aucun retiré','ℹ️'); return; }
-renderColisList(); renderRack(); scheduleSave();
-showToast(removed + ' supprimé' + (removed>1?'s':''),'🗑');
+  if(!state[currentCol]) return;
+  const before = state[currentCol].colis.length;
+  state[currentCol].colis = state[currentCol].colis.filter(c=>!c.done);
+  const removed = before - state[currentCol].colis.length;
+  if(!removed) { showToast('Aucun retiré','ℹ️'); return; }
+  renderColisList(); renderRack(); scheduleSave();
+  showToast(removed + ' supprimé' + (removed>1?'s':''),'🗑');
 }
 
 function openColis(idx) {
-currentColisIdx = idx;
-const c = state[currentCol].colis[idx];
-document.getElementById('colis-title').textContent = c.client || '—';
-document.getElementById('colis-sub').textContent = currentCol;
-document.getElementById('edit-client').value = c.client || '';
-document.getElementById('edit-company').value = c.company || '';
-document.getElementById('edit-arc').value = c.arc || '';
-document.getElementById('inp-new-afs').value = '';
-renderAFSList();
-showView('view-colis');
+  currentColisIdx = idx;
+  const c = state[currentCol].colis[idx];
+  document.getElementById('colis-title').textContent = c.client || '—';
+  document.getElementById('colis-sub').textContent = currentCol;
+  document.getElementById('edit-client').value = c.client || '';
+  document.getElementById('edit-company').value = c.company || '';
+  document.getElementById('edit-arc').value = c.arc || '';
+  document.getElementById('inp-new-afs').value = '';
+
+  // Init HP edit state
+  editHPActive = !!c.hors_prod;
+  document.getElementById('edit-hp-toggle').classList.toggle('on', editHPActive);
+  document.getElementById('edit-hp-status').textContent = editHPActive ? 'Oui — hors production' : 'Non';
+  document.getElementById('edit-hp-desc').value = c.hp_desc || '';
+  const editDescRow = document.getElementById('edit-hp-desc-row');
+  editDescRow.classList.toggle('show', editHPActive);
+
+  renderAFSList();
+  showView('view-colis');
 }
 
 function renderAFSList() {
-const afs = state[currentCol].colis[currentColisIdx].afs || [];
-const el = document.getElementById('afs-list');
-if(!afs.length) { el.innerHTML='<div class="empty" style="padding:8px 0 4px;text-align:left;font-size:12px;">Aucun AFS</div>'; return; }
-el.innerHTML = afs.map((a,i) =>
-'<div class="afs-item"><span class="afs-num">AFS ' + a + '</span>' +
-'<button class="btn-afs-del" onclick="removeAFS(' + i + ')">×</button></div>'
-).join('');
+  const afs = state[currentCol].colis[currentColisIdx].afs || [];
+  const el = document.getElementById('afs-list');
+  if(!afs.length) { el.innerHTML='<div class="empty" style="padding:8px 0 4px;text-align:left;font-size:12px;">Aucun AFS</div>'; return; }
+  el.innerHTML = afs.map((a,i) =>
+    '<div class="afs-item"><span class="afs-num">AFS ' + a + '</span>' +
+    '<button class="btn-afs-del" onclick="removeAFS(' + i + ')">×</button></div>'
+  ).join('');
 }
 
 function addAFS() {
-const val = document.getElementById('inp-new-afs').value.trim();
-if(!val) return;
-if(!state[currentCol].colis[currentColisIdx].afs) state[currentCol].colis[currentColisIdx].afs = [];
-val.split(/[,;\s]+/).filter(Boolean).forEach(n => state[currentCol].colis[currentColisIdx].afs.push(n));
-document.getElementById('inp-new-afs').value = '';
-renderAFSList(); renderColisList(); scheduleSave(); showToast('AFS ajouté','✓');
+  const val = document.getElementById('inp-new-afs').value.trim();
+  if(!val) return;
+  if(!state[currentCol].colis[currentColisIdx].afs) state[currentCol].colis[currentColisIdx].afs = [];
+  val.split(/[,;\s]+/).filter(Boolean).forEach(n => state[currentCol].colis[currentColisIdx].afs.push(n));
+  document.getElementById('inp-new-afs').value = '';
+  renderAFSList(); renderColisList(); scheduleSave(); showToast('AFS ajouté','✓');
 }
 
 function removeAFS(i) {
-state[currentCol].colis[currentColisIdx].afs.splice(i,1);
-renderAFSList(); renderColisList(); scheduleSave();
+  state[currentCol].colis[currentColisIdx].afs.splice(i,1);
+  renderAFSList(); renderColisList(); scheduleSave();
 }
 
 function saveColis() {
-const client = document.getElementById('edit-client').value.trim();
-if(!client) { showToast('Entrez un N° client','⚠️'); return; }
-const c = state[currentCol].colis[currentColisIdx];
-c.client = client;
-c.company = document.getElementById('edit-company').value.trim();
-c.arc = document.getElementById('edit-arc').value.trim();
-document.getElementById('colis-title').textContent = client;
-renderColisList(); renderRack(); scheduleSave(); showToast('Modifié','✓');
+  const client = document.getElementById('edit-client').value.trim();
+  if(!client) { showToast('Entrez un N° client','⚠️'); return; }
+  const c = state[currentCol].colis[currentColisIdx];
+  c.client = client;
+  c.company = document.getElementById('edit-company').value.trim();
+  c.arc = document.getElementById('edit-arc').value.trim();
+  document.getElementById('colis-title').textContent = client;
+  renderColisList(); renderRack(); scheduleSave(); showToast('Modifié','✓');
 }
 
 function backToColonne() { renderColisList(); showView('view-colonne'); }
 
 function showQR() {
-const url = window.location.href.split('?')[0];
-const c = document.getElementById('qr-container');
-const img = new Image();
-img.style.cssText='display:block;width:200px;height:200px;border-radius:4px;';
-img.onload = () => { c.innerHTML=''; c.appendChild(img); };
-img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url) + '&bgcolor=ffffff&color=080808&margin=12';
-showView('view-qr');
+  const url = window.location.href.split('?')[0];
+  const c = document.getElementById('qr-container');
+  const img = new Image();
+  img.style.cssText='display:block;width:200px;height:200px;border-radius:4px;';
+  img.onload = () => { c.innerHTML=''; c.appendChild(img); };
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url) + '&bgcolor=ffffff&color=080808&margin=12';
+  showView('view-qr');
 }
 
 function navTo(p) {
-document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-if(p==='rack') { document.getElementById('nav-rack').classList.add('active'); showRack(); }
-else if(p==='qr') { document.getElementById('nav-qr').classList.add('active'); showQR(); }
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if(p==='rack') { document.getElementById('nav-rack').classList.add('active'); showRack(); }
+  else if(p==='qr') { document.getElementById('nav-qr').classList.add('active'); showQR(); }
 }
 
 function showView(id) {
-document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-document.getElementById(id).classList.add('active');
-window.scrollTo({top:0, behavior:'smooth'});
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function showRack() { renderRack(); showView('view-rack'); }
 
 function showGuide() {
-currentGuideSlide = 1;
-updateGuideSlide();
-showView('view-guide');
+  currentGuideSlide = 1;
+  updateGuideSlide();
+  showView('view-guide');
 }
 
 function nextGuide() {
-if(currentGuideSlide < 5) { currentGuideSlide++; updateGuideSlide(); }
+  if(currentGuideSlide < 5) { currentGuideSlide++; updateGuideSlide(); }
 }
 
 function updateGuideSlide() {
-for(let i=1;i<=5;i++) {
-document.getElementById('guide-slide-' + i).style.display = (i===currentGuideSlide) ? 'block' : 'none';
-}
-window.scrollTo({top:0, behavior:'smooth'});
+  for(let i=1;i<=5;i++) {
+    document.getElementById('guide-slide-' + i).style.display = (i===currentGuideSlide) ? 'block' : 'none';
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 let toastTimer;
 function showToast(msg, icon='') {
-document.getElementById('t-ico').textContent = icon;
-document.getElementById('t-msg').textContent = msg;
-const t = document.getElementById('toast'); t.classList.add('show');
-clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+  document.getElementById('t-ico').textContent = icon;
+  document.getElementById('t-msg').textContent = msg;
+  const t = document.getElementById('toast'); t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
 }
 
 ['inp-client','inp-company','inp-arc','inp-afs'].forEach(id => {
-document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') addColis(); });
+  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') addColis(); });
 });
 
 ['edit-client','edit-company','edit-arc'].forEach(id => {
-document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') saveColis(); });
+  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') saveColis(); });
 });
 
 document.getElementById('inp-new-afs').addEventListener('keydown', e => { if(e.key==='Enter') addAFS(); });
 
 document.addEventListener('click', e => {
-if(!e.target.closest('.search-wrap') && !e.target.closest('.search-results')) clearSearch();
+  if(!e.target.closest('.search-wrap') && !e.target.closest('.search-results')) clearSearch();
 });
 
 loadFromServer();
