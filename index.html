@@ -148,7 +148,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .colis-company{font-size:11px;color:var(--yellow);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .colis-meta{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap;}
 .colis-arc{font-size:10px;color:var(--purple);font-weight:600;font-family:'DM Mono',monospace;}
-.colis-space{font-size:10px;color:var(--green);font-weight:600;font-family:'DM Mono',monospace;}
 .colis-delay{font-size:10px;font-weight:700;font-family:'DM Mono',monospace;}
 .colis-delay.sg{color:var(--green);}
 .colis-delay.sb{color:var(--blue);}
@@ -273,14 +272,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="inp-row"><input class="inp" id="inp-company" placeholder="Entreprise" /></div>
 <div class="inp-row"><input class="inp" id="inp-arc" placeholder="ARC" /></div>
 <div class="inp-row"><input class="inp" id="inp-afs" placeholder="N° AFS — virgule ou espace si plusieurs" /></div>
-<div class="inp-row" id="space-row" style="display:none;">
-<select class="sel" id="inp-space">
-<option value="">Reste de la place ?</option>
-<option value="oui">✅ Oui</option>
-<option value="un-peu">⚠️ Un peu</option>
-<option value="non">❌ Non</option>
-</select>
-</div>
 <button class="btn-main" onclick="addColis()">+ Ajouter ce colis</button>
 </div>
 <div class="purge-row">
@@ -312,18 +303,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <input class="inp" id="inp-new-afs" placeholder="Ajouter un ou plusieurs N° AFS…" />
 <button class="btn-sec" onclick="addAFS()">+</button>
 </div>
-</div>
-<div class="section" id="space-edit-section" style="display:none;">
-<div class="section-lbl">Reste de la place ?</div>
-<div class="inp-row">
-<select class="sel" id="edit-space">
-<option value="">Choisir…</option>
-<option value="oui">✅ Oui</option>
-<option value="un-peu">⚠️ Un peu</option>
-<option value="non">❌ Non</option>
-</select>
-</div>
-<button class="btn-main" onclick="saveSpace()">✓ Enregistrer</button>
 </div>
 </div>
 </div>
@@ -370,7 +349,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <p style="font-size:12px;margin-bottom:10px;color:var(--text3);">Plusieurs AFS ? Séparez par virgules ou espaces</p>
 <p style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);"><strong>📊 Couleurs automatiques selon l'âge du colis :</strong></p>
 <p style="font-size:12px;color:var(--text3);">🟢 0-15j · 🔵 15-21j · 🟡 21-28j · 🔴 +28j</p>
-<p style="font-size:12px;color:var(--text3);margin-top:8px;">⚠️ Pour B4, B5, B6 : indiquer "reste de la place" !</p>
 </div>
 <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
 </div>
@@ -615,19 +593,6 @@ prevs.appendChild(dl);
 }
 }
 
-if(['B4','B5','B6'].includes(id) && active.length > 0) {
-const lastColis = active[active.length-1];
-if(lastColis.space) {
-const spaceLabel = {'oui':'✅ Oui','un-peu':'⚠️ Un peu','non':'❌ Non'}[lastColis.space] || '?';
-const spaceP = document.createElement('div');
-spaceP.className='emp-prev';
-spaceP.style.color = 'var(--green)';
-spaceP.style.fontWeight = '600';
-spaceP.textContent = 'Place: ' + spaceLabel;
-prevs.appendChild(spaceP);
-}
-}
-
 card.appendChild(idDiv); card.appendChild(badge); card.appendChild(prevs);
 card.setAttribute('data-id', id);
 card.onclick = function() { openColonne(this.getAttribute('data-id')); };
@@ -686,13 +651,6 @@ const info = ETAGE_INFO[id[0]];
 document.getElementById('col-title').textContent = id;
 document.getElementById('col-sub').textContent = info.name + ' — ' + info.desc;
 ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
-const spaceRow = document.getElementById('space-row');
-if(['B4','B5','B6'].includes(id)) {
-spaceRow.style.display = 'flex';
-document.getElementById('inp-space').value = '';
-} else {
-spaceRow.style.display = 'none';
-}
 renderColisList();
 showView('view-colonne');
 }
@@ -740,11 +698,6 @@ if(colis.arc) {
 const a = document.createElement('span'); a.className='colis-arc'; a.textContent='ARC: ' + colis.arc; meta.appendChild(a);
 }
 
-if(colis.space) {
-const spaceLabel = {'oui':'✅ Oui','un-peu':'⚠️ Un peu','non':'❌ Non'}[colis.space] || colis.space;
-const s = document.createElement('span'); s.className='colis-space'; s.textContent='Place: ' + spaceLabel; meta.appendChild(s);
-}
-
 body.appendChild(clientEl); body.appendChild(compEl); body.appendChild(meta);
 
 if(colis.afs && colis.afs.length) {
@@ -781,11 +734,9 @@ if(!client) { showToast('Entrez un N° client','⚠️'); return; }
 const company = document.getElementById('inp-company').value.trim();
 const arc = document.getElementById('inp-arc').value.trim();
 const afs = document.getElementById('inp-afs').value.trim().split(/[,;\s]+/).filter(Boolean);
-const space = ['B4','B5','B6'].includes(currentCol) ? document.getElementById('inp-space').value : '';
 if(!state[currentCol]) state[currentCol] = {colis:[]};
-state[currentCol].colis.push({client, company, arc, afs, space, done:false, ts:Date.now()});
+state[currentCol].colis.push({client, company, arc, afs, done:false, ts:Date.now()});
 ['inp-client','inp-company','inp-arc','inp-afs'].forEach(x => document.getElementById(x).value='');
-document.getElementById('inp-space').value = '';
 renderColisList(); renderRack(); scheduleSave();
 showToast(client + ' ajouté','✓');
 }
@@ -834,13 +785,6 @@ document.getElementById('edit-client').value = c.client || '';
 document.getElementById('edit-company').value = c.company || '';
 document.getElementById('edit-arc').value = c.arc || '';
 document.getElementById('inp-new-afs').value = '';
-const spaceSec = document.getElementById('space-edit-section');
-if(['B4','B5','B6'].includes(currentCol)) {
-spaceSec.style.display = 'block';
-document.getElementById('edit-space').value = c.space || '';
-} else {
-spaceSec.style.display = 'none';
-}
 renderAFSList();
 showView('view-colis');
 }
@@ -878,14 +822,6 @@ c.company = document.getElementById('edit-company').value.trim();
 c.arc = document.getElementById('edit-arc').value.trim();
 document.getElementById('colis-title').textContent = client;
 renderColisList(); renderRack(); scheduleSave(); showToast('Modifié','✓');
-}
-
-function saveSpace() {
-const space = document.getElementById('edit-space').value;
-if(!space) { showToast('Sélectionnez une option','⚠️'); return; }
-state[currentCol].colis[currentColisIdx].space = space;
-renderColisList(); scheduleSave(); showToast('Place enregistrée','✓');
-document.getElementById('space-edit-section').style.display = 'none';
 }
 
 function backToColonne() { renderColisList(); showView('view-colonne'); }
