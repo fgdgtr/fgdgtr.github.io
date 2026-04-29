@@ -106,6 +106,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .emp-delay.sb{color:var(--blue);}
 .emp-delay.sy{color:var(--yellow);}
 .emp-delay.sr{color:var(--red);}
+.emp-remaining{font-size:8px;font-weight:700;color:var(--yellow);font-family:'DM Mono',monospace;margin-top:1px;}
 .emp-hp-tag{font-size:8px;font-weight:700;font-family:'DM Mono',monospace;color:var(--purple);letter-spacing:.5px;}
 
 .sep-rack{display:flex;align-items:center;gap:8px;margin:10px 0 14px;}
@@ -128,7 +129,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .inp-row{display:flex;gap:8px;margin-bottom:8px;}
 .inp-row:last-child{margin-bottom:0;}
 
-/* label optionnel sur le champ client */
 .inp-label-wrap{position:relative;width:100%;}
 .inp-optional{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;pointer-events:none;transition:opacity .2s;}
 
@@ -183,6 +183,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .btn-circ{width:28px;height:28px;border-radius:50%;border:1px solid var(--border2);background:var(--card);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;}
 .btn-circ:active{transform:scale(.85);}
 .colis-card.done .btn-circ.chk{border-color:var(--green);color:var(--green);background:var(--green-bg);}
+
+.countdown-box{margin-top:12px;padding:10px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);font-size:11px;font-weight:600;color:var(--yellow);font-family:'DM Mono',monospace;text-align:center;}
+.countdown-box.warning{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:var(--red);}
 
 .afs-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:5px;animation:slideIn .15s ease;}
 .afs-num{flex:1;font-size:13px;font-weight:500;color:var(--blue);font-family:'DM Mono',monospace;}
@@ -411,13 +414,14 @@ Hors production ?
 <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
 </div>
 <div class="guide-slide" id="guide-slide-4" style="display:none;">
-<div class="guide-title">🟣 Hors Production</div>
+<div class="guide-title">⏱ Compte à rebours 90 jours</div>
 <div class="guide-text">
-<p><strong>Cet élément n'a pas de délai ?</strong></p>
-<p style="margin-top:8px;">Activez le toggle <strong>"Hors production"</strong> lors de l'ajout.</p>
-<p style="margin-top:8px;">Le N° client devient <strong>optionnel</strong> — entrez une description à la place.</p>
-<p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">✅ L'élément apparaît en <strong style="color:var(--purple);">violet</strong> — sans couleur de délai</p>
-<p style="font-size:12px;color:var(--text3);margin-top:6px;">Modifiable à tout moment via le bouton ✏️</p>
+<p><strong>Chaque colis a un délai maximal de 90 jours.</strong></p>
+<p style="margin-top:8px;">En bas de chaque colis, vous verrez combien de <strong>jours restent</strong> avant les 90 jours.</p>
+<p style="margin-top:12px;"><strong>Exemple :</strong></p>
+<p style="font-size:12px;color:var(--text3);">• Si 60 jours ont passé → "30 jours restants avant 90j"</p>
+<p style="font-size:12px;color:var(--text3);">• Si 85 jours ont passé → "5 jours restants ⚠️"</p>
+<p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:var(--red);">🔴 Les Hors production n'ont pas de compte à rebours</p>
 </div>
 <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
 </div>
@@ -428,8 +432,8 @@ Hors production ?
 <p>📍 <strong>2.</strong> Cliquer sur votre emplacement</p>
 <p>✏️ <strong>3.</strong> Entrer le N° Client + infos</p>
 <p>✓ <strong>4.</strong> Cliquer "+ Ajouter ce colis"</p>
-<p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">💡 Modifier un colis → cliquez sur ✏️</p>
-<p style="font-size:12px;color:var(--text3);margin-top:6px;">• Marquer retiré → ✓ · Supprimer → ✕</p>
+<p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">💡 Chaque colis affiche ses jours restants avant 90j</p>
+<p style="font-size:12px;color:var(--text3);margin-top:6px;">• Modifier un colis → ✏️ · Supprimer → ✕</p>
 <p style="font-size:12px;color:var(--purple);margin-top:4px;">• Hors prod. → toggle violet, N° client optionnel</p>
 </div>
 <button class="btn-guide-next" onclick="showRack()">← Retour au Rack</button>
@@ -453,6 +457,7 @@ Hors production ?
 <div class="qr-step"><div class="qr-n">●</div>🟡 Jaune — 21 à 28 jours</div>
 <div class="qr-step"><div class="qr-n">●</div>🔴 Rouge — plus de 28 jours</div>
 <div class="qr-step"><div class="qr-n">●</div>🟣 Violet — Hors production (sans délai)</div>
+<div class="qr-step" style="margin-top:8px;"><strong>⏱ Chaque colis compte 90 jours max</strong></div>
 </div>
 </div>
 </div>
@@ -481,10 +486,42 @@ const ETAGES = ['D','C','B','A'];
 const ETAGE_INFO = {'D':{name:'Étage D', desc:'Haut — gerbeur obligatoire'},'C':{name:'Étage C', desc:'Gerbeur nécessaire'},'B':{name:'Étage B', desc:'Accessible à la main'},'A':{name:'Étage A', desc:'Bas — niveau sol'}};
 const COLS = 6;
 const FIREBASE = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/retour.json';
+const DELAY_MAX = 90; // Délai maximum en jours
 
 let state = {}, currentCol = null, currentColisIdx = null;
 let saveTimer = null, activeFilter = 'all', deleteTargetIdx = null, currentGuideSlide = 1;
 let addHPActive = false, editHPActive = false;
+
+/* ── DÉLAIS ET COMPTE À REBOURS ── */
+function getDelayClass(ts) {
+if(!ts) return null;
+const j = Math.floor((Date.now() - ts) / 86400000);
+if(j >= 28) return 'sr';
+if(j >= 21) return 'sy';
+if(j >= 15) return 'sb';
+return 'sg';
+}
+
+function getDelayLabel(ts) {
+if(!ts) return '';
+const j = Math.floor((Date.now() - ts) / 86400000);
+if(j === 0) return "Aujourd'hui";
+if(j === 1) return '1 jour';
+return j + ' jours';
+}
+
+function getDaysRemaining(ts) {
+if(!ts) return null;
+const elapsed = Math.floor((Date.now() - ts) / 86400000);
+const remaining = Math.max(0, DELAY_MAX - elapsed);
+return remaining;
+}
+
+function getRemainingLabel(remaining) {
+if(remaining === 0) return "⏱ Délai 90j atteint !";
+if(remaining === 1) return "⏱ 1 jour avant 90j";
+return "⏱ " + remaining + " jours avant 90j";
+}
 
 /* ── HP TOGGLE (ajout) ── */
 function toggleHP() {
@@ -494,7 +531,6 @@ const descRow = document.getElementById('hp-desc-row');
 descRow.classList.toggle('show', addHPActive);
 if(addHPActive) document.getElementById('inp-hp-desc').focus();
 else document.getElementById('inp-hp-desc').value = '';
-// Mettre à jour le placeholder et le label optionnel du champ client
 updateClientFieldState();
 }
 
@@ -528,23 +564,7 @@ renderColisList(); renderRack(); scheduleSave();
 showToast(editHPActive ? 'Hors prod. activé' : 'Hors prod. désactivé', '🟣');
 }
 
-function getDelayClass(ts) {
-if(!ts) return null;
-const j = Math.floor((Date.now() - ts) / 86400000);
-if(j >= 28) return 'sr';
-if(j >= 21) return 'sy';
-if(j >= 15) return 'sb';
-return 'sg';
-}
-
-function getDelayLabel(ts) {
-if(!ts) return '';
-const j = Math.floor((Date.now() - ts) / 86400000);
-if(j === 0) return "Aujourd'hui";
-if(j === 1) return '1 jour';
-return j + ' jours';
-}
-
+/* ── STATE ── */
 function initState() {
 const s = {};
 ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) s[e+i] = {colis:[]}; });
@@ -562,6 +582,7 @@ if(!s[id].colis) s[id].colis = [];
 return s;
 }
 
+/* ── SYNC ── */
 function setSyncDot(st) {
 document.getElementById('sync-dot').className = 'sync-dot ' + st;
 const lbl = document.getElementById('sync-label');
@@ -596,6 +617,7 @@ localStorage.setItem('auem_retour', JSON.stringify(state)); setSyncDot('ok');
 function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveToServer, 600); }
 setInterval(() => { if(document.getElementById('view-rack').classList.contains('active')) loadFromServer(); }, 30000);
 
+/* ── STATS ── */
 function updateStats() {
 let sg=0, sb=0, sy=0, sr=0;
 ETAGES.forEach(e => { for(let i=1;i<=COLS;i++) {
@@ -613,6 +635,7 @@ document.getElementById('s-sy').textContent = sy;
 document.getElementById('s-sr').textContent = sr;
 }
 
+/* ── FILTERS ── */
 function setFilter(f) {
 activeFilter = f;
 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -630,6 +653,7 @@ if(activeFilter === 'hp') return a.some(c => c.hors_prod);
 return true;
 }
 
+/* ── RENDER RACK ── */
 function renderRack() {
 updateStats();
 const grid = document.getElementById('rack-grid');
@@ -678,16 +702,15 @@ badge.textContent = active.length || 'Vide';
 
 const prevs = document.createElement('div'); prevs.className='emp-previews';
 
-active.slice(0,2).forEach(c => {
+active.slice(0,1).forEach(c => {
 const p = document.createElement('div'); p.className='emp-prev';
-// Si HP sans client, afficher la description HP ou "Hors prod."
 const label = c.client || (c.hors_prod ? (c.hp_desc || 'Hors prod.') : '—');
 p.textContent = (c.hors_prod ? '🟣 ' : '') + label;
 prevs.appendChild(p);
 });
 
-if(active.length > 2) {
-const p = document.createElement('div'); p.className='emp-prev'; p.textContent = '+' + (active.length-2);
+if(active.length > 1) {
+const p = document.createElement('div'); p.className='emp-prev'; p.textContent = '+' + (active.length-1);
 prevs.appendChild(p);
 }
 
@@ -699,6 +722,12 @@ const dl = document.createElement('div');
 dl.className = 'emp-delay ' + cl;
 dl.textContent = getDelayLabel(oldest.ts);
 prevs.appendChild(dl);
+
+const remaining = getDaysRemaining(oldest.ts);
+const rem = document.createElement('div');
+rem.className = 'emp-remaining';
+rem.textContent = '⏱ ' + remaining + 'j restants';
+prevs.appendChild(rem);
 }
 }
 
@@ -730,6 +759,7 @@ grid.appendChild(sec);
 });
 }
 
+/* ── SEARCH ── */
 function onSearch(q) {
 q = q.trim();
 document.getElementById('search-clear').classList.toggle('show', q.length > 0);
@@ -760,6 +790,7 @@ document.getElementById('search-clear').classList.remove('show');
 document.getElementById('search-results').classList.remove('show');
 }
 
+/* ── EMPLACEMENT ── */
 function openColonne(id) {
 currentCol = id;
 const info = ETAGE_INFO[id[0]];
@@ -798,7 +829,6 @@ else stripe.classList.add('stripe-sg');
 const body = document.createElement('div');
 body.className = 'colis-body';
 
-// Afficher client ou description HP si pas de client
 const displayName = colis.client || (isHP ? (colis.hp_desc || 'Hors prod.') : '—');
 const clientEl = document.createElement('div'); clientEl.className='colis-client'; clientEl.textContent = displayName;
 const compEl = document.createElement('div'); compEl.className='colis-company';
@@ -824,7 +854,6 @@ const a = document.createElement('span'); a.className='colis-arc'; a.textContent
 
 body.appendChild(clientEl); body.appendChild(compEl);
 
-// Afficher description HP séparément si le client est aussi renseigné
 if(isHP && colis.hp_desc && colis.client) {
 const hpD = document.createElement('div'); hpD.className='colis-hp-desc'; hpD.textContent='📝 ' + colis.hp_desc;
 body.appendChild(hpD);
@@ -839,6 +868,16 @@ const b = document.createElement('span'); b.className='badge b-blue'; b.textCont
 afsWrap.appendChild(b);
 });
 body.appendChild(afsWrap);
+}
+
+// COMPTE À REBOURS 90 JOURS
+if(!colis.done && !isHP && colis.ts) {
+const remaining = getDaysRemaining(colis.ts);
+const countdownBox = document.createElement('div');
+countdownBox.className = 'countdown-box';
+if(remaining <= 10) countdownBox.classList.add('warning');
+countdownBox.textContent = getRemainingLabel(remaining);
+body.appendChild(countdownBox);
 }
 
 const acts = document.createElement('div'); acts.className='colis-acts';
@@ -865,14 +904,8 @@ const client = document.getElementById('inp-client').value.trim();
 const hors_prod = addHPActive;
 const hp_desc = addHPActive ? document.getElementById('inp-hp-desc').value.trim() : '';
 
-// N° client obligatoire SAUF si hors production coché
-if(!client && !hors_prod) {
-showToast('Entrez un N° client','⚠️'); return;
-}
-// Si hors prod, la description est obligatoire
-if(hors_prod && !hp_desc) {
-showToast('Entrez une description hors prod.','⚠️'); return;
-}
+if(!client && !hors_prod) { showToast('Entrez un N° client','⚠️'); return; }
+if(hors_prod && !hp_desc) { showToast('Entrez une description hors prod.','⚠️'); return; }
 
 const company = document.getElementById('inp-company').value.trim();
 const arc = document.getElementById('inp-arc').value.trim();
@@ -976,7 +1009,6 @@ renderAFSList(); renderColisList(); scheduleSave();
 function saveColis() {
 const client = document.getElementById('edit-client').value.trim();
 const c = state[currentCol].colis[currentColisIdx];
-// En édition, le client reste optionnel si hors prod
 if(!client && !c.hors_prod) { showToast('Entrez un N° client','⚠️'); return; }
 c.client = client;
 c.company = document.getElementById('edit-company').value.trim();
@@ -1049,5 +1081,6 @@ if(!e.target.closest('.search-wrap') && !e.target.closest('.search-results')) cl
 
 loadFromServer();
 </script>
+
 </body>
 </html>
