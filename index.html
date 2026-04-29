@@ -419,7 +419,7 @@ Hors production ?
 <p><strong>Chaque colis a un délai maximal de 90 jours.</strong></p>
 <p style="margin-top:8px;">En bas de chaque colis, vous verrez combien de <strong>jours restent</strong> avant les 90 jours.</p>
 <p style="margin-top:12px;"><strong>Exemple :</strong></p>
-<p style="font-size:12px;color:var(--text3);">• Si 60 jours ont passé → "30 jours restants avant 90j"</p>
+<p style="font-size:12px;color:var(--text3);">• Si 60 jours ont passé → "30 jours restants"</p>
 <p style="font-size:12px;color:var(--text3);">• Si 85 jours ont passé → "5 jours restants ⚠️"</p>
 <p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:var(--red);">🔴 Les Hors production n'ont pas de compte à rebours</p>
 </div>
@@ -519,8 +519,8 @@ return remaining;
 
 function getRemainingLabel(remaining) {
 if(remaining === 0) return "⏱ Délai 90j atteint !";
-if(remaining === 1) return "⏱ 1 jour avant 90j";
-return "⏱ " + remaining + " jours avant 90j";
+if(remaining === 1) return "⏱ 1j sur 90j";
+return "⏱ " + remaining + " jours j sur 90j";
 }
 
 /* ── HP TOGGLE (ajout) ── */
