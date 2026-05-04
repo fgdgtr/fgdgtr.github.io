@@ -23,8 +23,8 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
 # Configuration
 FIREBASE_URL = os.getenv('FIREBASE_URL', 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/retour.json')
-SMTP_USER = os.getenv('SMTP_USER', 'thuillier.kevin10@gmail.com')
-SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', '')
+SMTP_USER = os.getenv('SMTP_USER', 'axefoxe8592@gmail.com')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', 'xsmtpsib-1386a13c39dbb774792056d8212d82efc25706197bb9d853f9a8aeabe4f92923-QEWZbJQsl6z90NCo')
 RAPPORT_EMAIL = os.getenv('RAPPORT_EMAIL', 'axefoxe8592@gmail.com')
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
