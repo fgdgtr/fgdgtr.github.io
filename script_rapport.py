@@ -28,7 +28,7 @@ FIREBASE_URL = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/
 
 # Email à utiliser pour envoyer (Gmail)
 SMTP_USER = 'k61587549@gmail.com'
-SMTP_PASSWORD = 'Kevin59264??'  # ← CHANGE MOI
+SMTP_PASSWORD = 'gnpe bpxy ljpx slib'  # ← CHANGE MOI
 
 # Email qui reçoit le rapport
 RAPPORT_EMAIL = 'axefoxe8592@gmail.com'  # ← CHANGE MOI POUR ENVOYER A QUELQU'UN D'AUTRE
