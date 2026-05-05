@@ -27,8 +27,8 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 FIREBASE_URL = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/retour.json'
 
 # Email à utiliser pour envoyer (Gmail)
-SMTP_USER = 'axefoxe8592@gmail.com'
-SMTP_PASSWORD = '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'  # ← CHANGE MOI
+SMTP_USER = 'k61587549@gmail.com'
+SMTP_PASSWORD = 'Kevin59264??'  # ← CHANGE MOI
 
 # Email qui reçoit le rapport
 RAPPORT_EMAIL = 'axefoxe8592@gmail.com'  # ← CHANGE MOI POUR ENVOYER A QUELQU'UN D'AUTRE
