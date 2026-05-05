@@ -163,7 +163,7 @@ def get_emplacements(palettes_list, n=4):
     return ' | '.join(result[:n]) if result else '-'
 
 
-def generate_pdf(stats, filename='rapport_rack_attente_delais_hebdo.pdf'):
+def generate_pdf(stats, filename='rapport_rack_hebdo.pdf'):
     doc = SimpleDocTemplate(
         filename, pagesize=A4,
         topMargin=1*cm, bottomMargin=1*cm,
@@ -184,7 +184,7 @@ def generate_pdf(stats, filename='rapport_rack_attente_delais_hebdo.pdf'):
     title_style = ParagraphStyle('title', parent=styles['Normal'],
                                  fontSize=28, fontName='Helvetica-Bold',
                                  textColor=colors.white, alignment=TA_CENTER)
-    title_table = Table([[Paragraph("RAPPORT RACK ATTENTE DELAIS AUEM", title_style)]], colWidths=[18*cm])
+    title_table = Table([[Paragraph("RAPPORT RACK AUEM", title_style)]], colWidths=[18*cm])
     title_table.setStyle(TableStyle([
         ('BACKGROUND',    (0, 0), (-1, -1), colors.HexColor('#1c1814')),
         ('ALIGN',         (0, 0), (-1, -1), 'CENTER'),
