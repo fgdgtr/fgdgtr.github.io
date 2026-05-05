@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-AUEM Rack Weekly Report - SIMPLE VERSION
-Clear, minimal, easy to understand
+AUEM Rack Weekly Report - ULTRA SIMPLE
+Just numbers and essential info
 """
 
 import smtplib
@@ -16,7 +16,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 # ============================================================
@@ -96,130 +96,98 @@ def calculate_stats(palettes):
     return stats
 
 def generate_pdf(stats, filename='rapport_rack.pdf'):
-    doc = SimpleDocTemplate(filename, pagesize=A4, topMargin=1*cm, bottomMargin=1*cm)
+    doc = SimpleDocTemplate(filename, pagesize=A4, topMargin=1.5*cm, bottomMargin=1.5*cm, leftMargin=2*cm, rightMargin=2*cm)
     story = []
     styles = getSampleStyleSheet()
-    
-    # Couleurs
-    header_color = colors.HexColor('#1c1814')
-    primary_color = colors.HexColor('#fbbf24')
     
     # ===== TITRE =====
     title = Paragraph(
         "RAPPORT RACK AUEM",
-        ParagraphStyle('title', parent=styles['Normal'], fontSize=24, fontName='Helvetica-Bold', 
-                      textColor=colors.white, alignment=TA_CENTER)
+        ParagraphStyle('title', parent=styles['Normal'], fontSize=28, fontName='Helvetica-Bold', 
+                      textColor=colors.HexColor('#1c1814'), alignment=TA_CENTER)
     )
-    title_table = Table([[title]], colWidths=[19*cm])
-    title_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), header_color),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 15),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
-    ]))
-    story.append(title_table)
-    story.append(Spacer(1, 0.3*cm))
+    story.append(title)
+    story.append(Spacer(1, 0.2*cm))
     
     # Date
     week_num = datetime.now().isocalendar()[1]
     year = datetime.now().year
     date_text = Paragraph(
-        f"Semaine {week_num} - {year} | {datetime.now().strftime('%d/%m/%Y')}",
-        ParagraphStyle('date', parent=styles['Normal'], fontSize=11, alignment=TA_CENTER, 
-                      textColor=header_color)
+        f"Semaine {week_num} - {year}",
+        ParagraphStyle('date', parent=styles['Normal'], fontSize=12, alignment=TA_CENTER, 
+                      textColor=colors.HexColor('#666'))
     )
     story.append(date_text)
-    story.append(Spacer(1, 0.5*cm))
+    story.append(Spacer(1, 0.8*cm))
     
-    # ===== LES 4 CHIFFRES CLÉS =====
-    story.append(Paragraph("📊 CHIFFRES CLÉS", styles['Heading2']))
-    story.append(Spacer(1, 0.2*cm))
+    # ===== CHIFFRES CLÉS =====
+    story.append(Paragraph("Chiffres clés", ParagraphStyle('heading', parent=styles['Normal'], fontSize=14, fontName='Helvetica-Bold')))
+    story.append(Spacer(1, 0.3*cm))
     
-    key_data = [
-        ['Total palettes', str(stats['total'])],
-        ['Temps moyen d\'attente', f"{stats['temps_moyen']} jours"],
-        ['Palettes urgentes (+28j)', str(len(stats['critiques']))],
-    ]
+    story.append(Paragraph(
+        f"Total palettes en attente : <b>{stats['total']}</b>",
+        styles['Normal']
+    ))
+    story.append(Spacer(1, 0.15*cm))
     
-    key_table = Table(key_data, colWidths=[10*cm, 6*cm])
-    key_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f0f0f0')),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (1, 0), (1, -1), 14),
-        ('FONTNAME', (1, 0), (1, -1), 'Helvetica-Bold'),
-        ('TOPPADDING', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-        ('GRID', (0, 0), (-1, -1), 1, primary_color),
-    ]))
-    story.append(key_table)
-    story.append(Spacer(1, 0.5*cm))
+    story.append(Paragraph(
+        f"Temps moyen d'attente : <b>{stats['temps_moyen']} jours</b>",
+        styles['Normal']
+    ))
+    story.append(Spacer(1, 0.15*cm))
+    
+    story.append(Paragraph(
+        f"Palettes urgentes (+28j) : <b>{len(stats['critiques'])}</b>",
+        ParagraphStyle('urgent', parent=styles['Normal'], textColor=colors.HexColor('#dc2626'))
+    ))
+    story.append(Spacer(1, 0.8*cm))
     
     # ===== RÉPARTITION PAR DÉLAI =====
-    story.append(Paragraph("⏱️ RÉPARTITION PAR DÉLAI", styles['Heading2']))
-    story.append(Spacer(1, 0.2*cm))
+    story.append(Paragraph("Répartition par délai", ParagraphStyle('heading', parent=styles['Normal'], fontSize=14, fontName='Helvetica-Bold')))
+    story.append(Spacer(1, 0.3*cm))
     
-    zone_data = [
-        ['Délai', 'Nombre', ''],
-        ['🟢 0-15 jours', str(stats['par_zone']['vert']), ''],
-        ['🔵 15-21 jours', str(stats['par_zone']['bleu']), ''],
-        ['🟡 21-28 jours', str(stats['par_zone']['jaune']), ''],
-        ['🔴 +28 jours (URGENT)', str(stats['par_zone']['rouge']), '⚠️'],
-    ]
+    story.append(Paragraph(
+        f"🟢 0-15 jours : <b>{stats['par_zone']['vert']}</b> palettes",
+        styles['Normal']
+    ))
+    story.append(Spacer(1, 0.15*cm))
     
-    zone_table = Table(zone_data, colWidths=[8*cm, 3*cm, 6*cm])
-    zone_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), header_color),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('ALIGN', (1, 0), (1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (1, 0), (1, -1), 12),
-        ('FONTNAME', (1, 0), (1, -1), 'Helvetica-Bold'),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e0e0e0')),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9f9f9')]),
-    ]))
-    story.append(zone_table)
-    story.append(Spacer(1, 0.5*cm))
+    story.append(Paragraph(
+        f"🔵 15-21 jours : <b>{stats['par_zone']['bleu']}</b> palettes",
+        styles['Normal']
+    ))
+    story.append(Spacer(1, 0.15*cm))
+    
+    story.append(Paragraph(
+        f"🟡 21-28 jours : <b>{stats['par_zone']['jaune']}</b> palettes",
+        styles['Normal']
+    ))
+    story.append(Spacer(1, 0.15*cm))
+    
+    story.append(Paragraph(
+        f"🔴 +28 jours : <b>{stats['par_zone']['rouge']}</b> palettes",
+        ParagraphStyle('urgent', parent=styles['Normal'], textColor=colors.HexColor('#dc2626'))
+    ))
+    story.append(Spacer(1, 0.8*cm))
     
     # ===== PALETTES URGENTES =====
     if stats['critiques']:
-        story.append(Paragraph("🚨 PALETTES À TRAITER IMMÉDIATEMENT", styles['Heading2']))
-        story.append(Spacer(1, 0.2*cm))
+        story.append(Paragraph(
+            "À traiter immédiatement",
+            ParagraphStyle('heading', parent=styles['Normal'], fontSize=14, fontName='Helvetica-Bold', textColor=colors.HexColor('#dc2626'))
+        ))
+        story.append(Spacer(1, 0.3*cm))
         
-        critical_data = [['Client', 'Emplacement', 'Jours']]
         for crit in stats['critiques']:
-            critical_data.append([
-                crit['client'][:20],
-                crit['emplacement'],
-                str(crit['jours'])
-            ])
-        
-        critical_table = Table(critical_data, colWidths=[6*cm, 6*cm, 3*cm])
-        critical_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#dc2626')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('ALIGN', (2, 0), (2, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (2, 0), (2, -1), 11),
-            ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
-            ('TOPPADDING', (0, 0), (-1, -1), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#fca5a5')),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#fee2e2'), colors.HexColor('#fecaca')]),
-            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#fef2f2')),
-        ]))
-        story.append(critical_table)
+            story.append(Paragraph(
+                f"• {crit['client']} - {crit['emplacement']} ({crit['jours']} jours)",
+                styles['Normal']
+            ))
+            story.append(Spacer(1, 0.1*cm))
     else:
         story.append(Paragraph(
-            "✅ Aucune palette urgente! Tout est sous contrôle.",
-            ParagraphStyle('success', parent=styles['Normal'], fontSize=12, 
-                          textColor=colors.HexColor('#16a34a'), fontName='Helvetica-Bold')
+            "✅ Aucune palette urgente",
+            ParagraphStyle('success', parent=styles['Normal'], fontSize=12, textColor=colors.HexColor('#16a34a'), fontName='Helvetica-Bold')
         ))
     
     story.append(Spacer(1, 1*cm))
@@ -227,8 +195,7 @@ def generate_pdf(stats, filename='rapport_rack.pdf'):
     # Footer
     footer = Paragraph(
         f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}",
-        ParagraphStyle('footer', parent=styles['Normal'], fontSize=9, 
-                      alignment=TA_CENTER, textColor=colors.grey)
+        ParagraphStyle('footer', parent=styles['Normal'], fontSize=9, alignment=TA_CENTER, textColor=colors.HexColor('#999'))
     )
     story.append(footer)
     
@@ -250,7 +217,6 @@ def send_email(pdf_filename, recipient_email):
             <h2>Rapport Rack AUEM</h2>
             <p>Semaine {datetime.now().isocalendar()[1]} - {datetime.now().year}</p>
             <p>Voir le PDF attaché pour le rapport complet.</p>
-            <p style="color: #666; font-size: 12px;">Généré automatiquement chaque vendredi</p>
         </body></html>
         """
         
@@ -269,7 +235,7 @@ def send_email(pdf_filename, recipient_email):
         server.send_message(msg)
         server.quit()
         
-        print(f"✅ Email envoyé avec succès!")
+        print(f"✅ Email envoyé!")
         return True
     
     except Exception as e:
@@ -277,33 +243,27 @@ def send_email(pdf_filename, recipient_email):
         return False
 
 def main():
-    print("=" * 50)
     print("🚀 Génération du rapport rack")
-    print("=" * 50)
     
-    print("\n📥 Récupération des données...")
+    print("📥 Récupération des données...")
     data = fetch_firebase_data()
     palettes = parse_palettes(data)
-    print(f"✅ {len(palettes)} palettes trouvées")
+    print(f"✅ {len(palettes)} palettes")
     
-    print("\n📊 Calcul des stats...")
+    print("📊 Calcul...")
     stats = calculate_stats(palettes)
     
-    print("\n📄 Génération du PDF...")
+    print("📄 PDF...")
     pdf_file = 'rapport_rack_hebdo.pdf'
     generate_pdf(stats, pdf_file)
-    print(f"✅ PDF créé")
     
-    print("\n📧 Envoi de l'email...")
+    print("📧 Envoi...")
     if SMTP_PASSWORD == 'TON_APP_PASSWORD_ICI':
-        print("❌ Change le mot de passe dans le script!")
+        print("❌ Change le mot de passe!")
         return
     
     send_email(pdf_file, RAPPORT_EMAIL)
-    
-    print("\n" + "=" * 50)
-    print("✅ Rapport généré avec succès!")
-    print("=" * 50)
+    print("✅ Fait!")
 
 if __name__ == '__main__':
     main()
