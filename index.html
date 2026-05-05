@@ -132,13 +132,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .btn-sec:active{transform:scale(.95);}
 .colis-card{background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:12px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;animation:slideIn .2s cubic-bezier(.34,1.4,.64,1);position:relative;overflow:hidden;}
 @keyframes slideIn{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:none}}
-.colis-card.done{opacity:.32;}
+/* FIX: les colis "done" sont masqués complètement */
+.colis-card.done{display:none;}
 .colis-card.hp-card{border-color:rgba(168,85,247,.25);background:#130d1e;}
 .colis-stripe{width:3px;border-radius:3px;flex-shrink:0;align-self:stretch;min-height:42px;}
 .stripe-sg{background:var(--green);}.stripe-sb{background:var(--blue);}.stripe-sy{background:var(--yellow);}.stripe-sr{background:var(--red);}.stripe-hp{background:var(--purple);}.stripe-done{background:#252525;}
 .colis-body{flex:1;min-width:0;}
 .colis-client{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Mono',monospace;letter-spacing:.3px;}
-.colis-card.done .colis-client{text-decoration:line-through;color:var(--text3);}
 .colis-company{font-size:11px;color:var(--yellow);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .colis-hp-desc{font-size:11px;color:var(--purple);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .colis-meta{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap;}
@@ -153,7 +153,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .colis-acts{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
 .btn-circ{width:28px;height:28px;border-radius:50%;border:1px solid var(--border2);background:var(--card);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;}
 .btn-circ:active{transform:scale(.85);}
-.colis-card.done .btn-circ.chk{border-color:var(--green);color:var(--green);background:var(--green-bg);}
+.btn-circ.chk{border-color:var(--green);color:var(--green);}
 .countdown-box{margin-top:12px;padding:10px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);font-size:11px;font-weight:600;color:var(--yellow);font-family:'DM Mono',monospace;text-align:center;}
 .countdown-box.warning{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:var(--red);}
 .afs-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:5px;animation:slideIn .15s ease;}
@@ -243,9 +243,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .hist-body-txt{flex:1;min-width:0;}
 .hist-ref{font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Mono',monospace;}
 .hist-meta{font-size:9px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;}
-.hist-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;font-family:'DM Mono',monospace;background:var(--red-bg);color:var(--red);}
+.hist-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;font-family:'DM Mono',monospace;background:var(--green-bg);color:var(--green);}
 .hist-clear{width:100%;padding:9px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px;}
 .hist-clear:active{background:var(--red-bg);color:var(--red);}
+
+/* Animation sortie palette */
+@keyframes sortieOut{0%{opacity:1;transform:translateX(0);}60%{opacity:1;transform:translateX(8px);}100%{opacity:0;transform:translateX(60px);max-height:0;padding:0;margin:0;}}
+.colis-card.sortie-anim{animation:sortieOut .4s ease forwards;}
 </style>
 </head>
 <body>
@@ -319,7 +323,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 </div>
 <div class="purge-row">
 <div class="section-lbl" style="padding:0;margin:0;">Colis en cours</div>
-<button class="btn-purge" onclick="purgeDone()">Effacer retirés</button>
 </div>
 <div id="colis-list"></div>
 </div>
@@ -378,7 +381,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 </div>
 <div id="guide-slide-5" style="display:none;">
 <div class="guide-title">🎉 Vous maîtrisez le RACK !</div>
-<div class="guide-text"><p>📱 <strong>1.</strong> Scanner le QR code au rack</p><p>📍 <strong>2.</strong> Cliquer sur votre emplacement</p><p>✏️ <strong>3.</strong> Entrer le N° Client + infos</p><p>✓ <strong>4.</strong> Cliquer "+ Ajouter ce colis"</p><p>❓ <strong>5.</strong> Cliquer sur 🤖 pour poser une question</p><p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">💡 Chaque colis affiche ses jours restants avant 90j</p><p style="font-size:12px;color:var(--text3);margin-top:6px;">• Modifier un colis → ✏️ · Supprimer → ✕</p><p style="font-size:12px;color:var(--purple);margin-top:4px;">• Hors prod. → toggle violet, N° client optionnel</p></div>
+<div class="guide-text"><p>📱 <strong>1.</strong> Scanner le QR code au rack</p><p>📍 <strong>2.</strong> Cliquer sur votre emplacement</p><p>✏️ <strong>3.</strong> Entrer le N° Client + infos</p><p>✓ <strong>4.</strong> Cliquer "+ Ajouter ce colis"</p><p>❓ <strong>5.</strong> Cliquer sur 🤖 pour poser une question</p><p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">💡 Appuyer sur ✓ pour marquer une palette comme sortie</p><p style="font-size:12px;color:var(--text3);margin-top:6px;">• Modifier un colis → ✏️ · Supprimer → ✕</p><p style="font-size:12px;color:var(--purple);margin-top:4px;">• Hors prod. → toggle violet, N° client optionnel</p></div>
 <button class="btn-guide-next" onclick="showRack()">← Retour au Rack</button>
 </div>
 </div>
@@ -585,36 +588,77 @@ function openColonne(id){
 
 function renderColisList(){
   const list=document.getElementById('colis-list');
+  // On n'affiche QUE les colis non sortis
   const all=state[currentCol]?.colis||[];
-  if(!all.length){list.innerHTML='<div class="empty">Aucun colis sur cet emplacement<br>Ajoutez-en un ci-dessus ↑</div>';return;}
+  const actifs=all.filter(c=>!c.done);
+  if(!actifs.length){list.innerHTML='<div class="empty">Aucun colis sur cet emplacement<br>Ajoutez-en un ci-dessus ↑</div>';return;}
   list.innerHTML='';
-  [...all.filter(c=>!c.done),...all.filter(c=>c.done)].forEach(colis=>{
-    const idx=all.indexOf(colis);const isHP=!!colis.hors_prod;
-    const card=document.createElement('div');card.className='colis-card'+(colis.done?' done':'')+(isHP&&!colis.done?' hp-card':'');
-    const delayCls=(colis.done||isHP)?null:getDelayClass(colis.ts);
+  actifs.forEach(colis=>{
+    const idx=all.indexOf(colis);
+    const isHP=!!colis.hors_prod;
+    const card=document.createElement('div');
+    card.className='colis-card'+(isHP?' hp-card':'');
+    card.setAttribute('data-idx',idx);
+    const delayCls=isHP?null:getDelayClass(colis.ts);
     const stripe=document.createElement('div');stripe.className='colis-stripe';
-    if(colis.done)stripe.classList.add('stripe-done');else if(isHP)stripe.classList.add('stripe-hp');else if(delayCls)stripe.classList.add('stripe-'+delayCls);else stripe.classList.add('stripe-sg');
+    if(isHP)stripe.classList.add('stripe-hp');else if(delayCls)stripe.classList.add('stripe-'+delayCls);else stripe.classList.add('stripe-sg');
     const body=document.createElement('div');body.className='colis-body';
     const displayName=colis.client||(isHP?(colis.hp_desc||'Hors prod.'):'—');
     const clientEl=document.createElement('div');clientEl.className='colis-client';clientEl.textContent=displayName;
     const compEl=document.createElement('div');compEl.className='colis-company';compEl.textContent=colis.company?'🏭 '+colis.company:'';if(!colis.company)compEl.style.display='none';
     const meta=document.createElement('div');meta.className='colis-meta';
-    if(colis.done){const b=document.createElement('span');b.className='badge b-gray';b.textContent='Retiré';meta.appendChild(b);}
-    if(isHP&&!colis.done){const b=document.createElement('span');b.className='badge b-purple';b.textContent='🟣 Hors prod.';meta.appendChild(b);}
-    if(!colis.done&&!isHP&&colis.ts&&delayCls){const d=document.createElement('span');d.className='colis-delay '+delayCls;d.textContent=getDelayLabel(colis.ts);meta.appendChild(d);}
+    if(isHP){const b=document.createElement('span');b.className='badge b-purple';b.textContent='🟣 Hors prod.';meta.appendChild(b);}
+    if(!isHP&&colis.ts&&delayCls){const d=document.createElement('span');d.className='colis-delay '+delayCls;d.textContent=getDelayLabel(colis.ts);meta.appendChild(d);}
     if(colis.arc){const a=document.createElement('span');a.className='colis-arc';a.textContent='ARC: '+colis.arc;meta.appendChild(a);}
     body.appendChild(clientEl);body.appendChild(compEl);
     if(isHP&&colis.hp_desc&&colis.client){const hpD=document.createElement('div');hpD.className='colis-hp-desc';hpD.textContent='📝 '+colis.hp_desc;body.appendChild(hpD);}
     body.appendChild(meta);
     if(colis.afs&&colis.afs.length){const afsWrap=document.createElement('div');afsWrap.className='colis-afs';colis.afs.forEach(a=>{const b=document.createElement('span');b.className='badge b-blue';b.textContent='AFS '+a;afsWrap.appendChild(b);});body.appendChild(afsWrap);}
-    if(!colis.done&&!isHP&&colis.ts){const remaining=getDaysRemaining(colis.ts);const cb=document.createElement('div');cb.className='countdown-box';if(remaining<=10)cb.classList.add('warning');cb.textContent=getRemainingLabel(remaining);body.appendChild(cb);}
+    if(!isHP&&colis.ts){const remaining=getDaysRemaining(colis.ts);const cb=document.createElement('div');cb.className='countdown-box';if(remaining<=10)cb.classList.add('warning');cb.textContent=getRemainingLabel(remaining);body.appendChild(cb);}
     const acts=document.createElement('div');acts.className='colis-acts';
-    const btnEdit=document.createElement('button');btnEdit.className='btn-circ';btnEdit.textContent='✏️';btnEdit.setAttribute('data-idx',idx);btnEdit.onclick=function(){openColis(parseInt(this.getAttribute('data-idx')));};
-    const btnChk=document.createElement('button');btnChk.className='btn-circ chk';btnChk.textContent=colis.done?'↩':'✓';btnChk.setAttribute('data-idx',idx);btnChk.onclick=function(){toggleDone(parseInt(this.getAttribute('data-idx')));};
-    const btnDel=document.createElement('button');btnDel.className='btn-circ del';btnDel.textContent='✕';btnDel.setAttribute('data-idx',idx);btnDel.onclick=function(){askDelete(parseInt(this.getAttribute('data-idx')));};
+    // Bouton éditer
+    const btnEdit=document.createElement('button');btnEdit.className='btn-circ';btnEdit.textContent='✏️';btnEdit.title='Modifier';
+    btnEdit.setAttribute('data-idx',idx);btnEdit.onclick=function(e){e.stopPropagation();openColis(parseInt(this.getAttribute('data-idx')));};
+    // Bouton valider / sortie — FIX PRINCIPAL
+    const btnChk=document.createElement('button');btnChk.className='btn-circ chk';btnChk.textContent='✓';btnChk.title='Palette sortie';
+    btnChk.setAttribute('data-idx',idx);
+    btnChk.onclick=function(e){
+      e.stopPropagation();
+      const i=parseInt(this.getAttribute('data-idx'));
+      sortirPalette(i, card);
+    };
+    // Bouton supprimer
+    const btnDel=document.createElement('button');btnDel.className='btn-circ del';btnDel.textContent='✕';btnDel.title='Supprimer';
+    btnDel.setAttribute('data-idx',idx);btnDel.onclick=function(e){e.stopPropagation();askDelete(parseInt(this.getAttribute('data-idx')));};
     acts.appendChild(btnEdit);acts.appendChild(btnChk);acts.appendChild(btnDel);
     card.appendChild(stripe);card.appendChild(body);card.appendChild(acts);list.appendChild(card);
   });
+}
+
+/* ══ SORTIR UNE PALETTE — FONCTION PRINCIPALE FIX ══ */
+function sortirPalette(idx, cardEl) {
+  const c = state[currentCol].colis[idx];
+  if (!c) return;
+  const ref = c.client || c.hp_desc || '?';
+  // 1. Enregistrer dans l'historique des sorties
+  addSortieHist(ref, currentCol, c);
+  // 2. Marquer comme done dans le state
+  c.done = true;
+  // 3. Animation de sortie puis re-render
+  if (cardEl) {
+    cardEl.classList.add('sortie-anim');
+    setTimeout(() => {
+      renderColisList();
+      renderRack();
+    }, 380);
+  } else {
+    renderColisList();
+    renderRack();
+  }
+  // 4. Sauvegarder
+  scheduleSave();
+  // 5. Toast confirmation
+  showToast('📦 ' + ref + ' — Palette sortie !', '✅');
 }
 
 function addColis(){
@@ -633,12 +677,10 @@ function addColis(){
   showToast((client||hp_desc)+' ajouté'+(hors_prod?' (HP)':''),hors_prod?'🟣':'✓');
 }
 
-function toggleDone(idx){const c=state[currentCol].colis[idx];c.done=!c.done;renderColisList();renderRack();scheduleSave();showToast(c.done?'Colis retiré':'Restauré',c.done?'📦':'↩');}
 function askDelete(idx){deleteTargetIdx=idx;const c=state[currentCol].colis[idx];const ref=c.client||c.hp_desc||'ce colis';document.getElementById('modal-lbl').textContent='Supprimer "'+ref+'" définitivement ?';document.getElementById('modal-del').classList.add('open');}
 function closeModal(){document.getElementById('modal-del').classList.remove('open');deleteTargetIdx=null;}
 function confirmDelete(){if(deleteTargetIdx===null)return;state[currentCol].colis.splice(deleteTargetIdx,1);renderColisList();renderRack();scheduleSave();closeModal();showToast('Supprimé','🗑');}
 document.getElementById('modal-del').addEventListener('click',function(e){if(e.target===this)closeModal();});
-function purgeDone(){if(!state[currentCol])return;const before=state[currentCol].colis.length;state[currentCol].colis=state[currentCol].colis.filter(c=>!c.done);const removed=before-state[currentCol].colis.length;if(!removed){showToast('Aucun retiré','ℹ️');return;}renderColisList();renderRack();scheduleSave();showToast(removed+' supprimé'+(removed>1?'s':''),'🗑');}
 
 function openColis(idx){
   currentColisIdx=idx;const c=state[currentCol].colis[idx];
@@ -663,7 +705,7 @@ function nextGuide(){if(currentGuideSlide<5){currentGuideSlide++;updateGuideSlid
 function updateGuideSlide(){for(let i=1;i<=5;i++)document.getElementById('guide-slide-'+i).style.display=(i===currentGuideSlide)?'block':'none';window.scrollTo({top:0,behavior:'smooth'});}
 
 let toastTimer;
-function showToast(msg,icon=''){document.getElementById('t-ico').textContent=icon;document.getElementById('t-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2000);}
+function showToast(msg,icon=''){document.getElementById('t-ico').textContent=icon;document.getElementById('t-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500);}
 
 ['inp-client','inp-company','inp-arc','inp-afs'].forEach(id=>{document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});});
 ['edit-client','edit-company','edit-arc'].forEach(id=>{document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')saveColis();});});
@@ -673,24 +715,50 @@ document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap')&&!e.t
 /* ══ HISTORIQUE SORTIES ══ */
 var sortieHistory=(function(){try{return JSON.parse(localStorage.getItem('auem_sorties')||'[]');}catch(e){return[];}})();
 function saveSortieHistory(){localStorage.setItem('auem_sorties',JSON.stringify(sortieHistory));}
-function addSortieHist(ref,emp){sortieHistory.unshift({ref,emp:emp||'?',date:new Date().toISOString()});if(sortieHistory.length>50)sortieHistory.pop();saveSortieHistory();}
+
+function addSortieHist(ref, emp, colis){
+  const entry = {
+    ref: ref,
+    emp: emp || '?',
+    date: new Date().toISOString(),
+    client: colis ? (colis.client || '') : '',
+    company: colis ? (colis.company || '') : '',
+    arc: colis ? (colis.arc || '') : '',
+    afs: colis ? (colis.afs || []) : [],
+    hp: colis ? !!colis.hors_prod : false,
+    ts_entree: colis ? (colis.ts || null) : null,
+  };
+  sortieHistory.unshift(entry);
+  if(sortieHistory.length > 100) sortieHistory.pop();
+  saveSortieHistory();
+}
+
 function renderHist(){
   const body=document.getElementById('hist-body');if(!body)return;
-  if(!sortieHistory.length){body.innerHTML='<div class="hist-empty">Aucune sortie enregistrée.</div>';return;}
+  if(!sortieHistory.length){body.innerHTML='<div class="hist-empty">Aucune sortie enregistrée.<br>Appuyez sur ✓ pour marquer une palette comme sortie.</div>';return;}
   let html='';
-  sortieHistory.forEach(s=>{const d=new Date(s.date);const ds=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});html+='<div class="hist-item"><span class="hist-ico">📦</span><div class="hist-body-txt"><div class="hist-ref">'+escHtml(s.ref)+'</div><div class="hist-meta">'+ds+' · Emp. '+escHtml(s.emp)+'</div></div><span class="hist-badge">SORTI</span></div>';});
+  sortieHistory.forEach(s=>{
+    const d=new Date(s.date);
+    const ds=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    let duree='';
+    if(s.ts_entree){const j=Math.floor((new Date(s.date)-s.ts_entree)/86400000);duree=' · '+j+'j en rack';}
+    const company=s.company?' · '+escHtml(s.company):'';
+    html+='<div class="hist-item">';
+    html+='<span class="hist-ico">'+(s.hp?'🟣':'📦')+'</span>';
+    html+='<div class="hist-body-txt">';
+    html+='<div class="hist-ref">'+escHtml(s.ref)+company+'</div>';
+    html+='<div class="hist-meta">'+ds+' · Emp. '+escHtml(s.emp)+duree+'</div>';
+    if(s.arc){html+='<div class="hist-meta">ARC: '+escHtml(s.arc)+'</div>';}
+    if(s.afs&&s.afs.length){html+='<div class="hist-meta">AFS: '+s.afs.map(a=>escHtml(a)).join(', ')+'</div>';}
+    html+='</div>';
+    html+='<span class="hist-badge">SORTI</span>';
+    html+='</div>';
+  });
   html+='<button class="hist-clear" onclick="clearHist()">🗑 Effacer l\'historique</button>';
   body.innerHTML=html;
 }
-function clearHist(){if(!confirm('Effacer tout l\'historique ?'))return;sortieHistory=[];saveSortieHistory();renderHist();}
 
-/* Hook sortie colis → historique */
-const _origToggleDone=toggleDone;
-function toggleDone(idx){
-  const c=state[currentCol].colis[idx];
-  if(!c.done){const ref=c.client||c.hp_desc||'?';addSortieHist(ref,currentCol);}
-  _origToggleDone(idx);
-}
+function clearHist(){if(!confirm('Effacer tout l\'historique des sorties ?'))return;sortieHistory=[];saveSortieHistory();renderHist();}
 
 /* ══ ONGLETS ASSISTANT ══ */
 function switchAITab(tab){
@@ -733,11 +801,17 @@ function getRackContext(){
   lines.push('');
   lines.push('Résumé: '+totalColis+' colis actifs, '+totalUrgent+' urgents (+28j), '+totalHP+' hors prod., '+totalProche90+' proches des 90j');
   lines.push('');
+  lines.push('=== HISTORIQUE SORTIES RÉCENTES ===');
+  sortieHistory.slice(0,5).forEach(s=>{
+    const d=new Date(s.date).toLocaleDateString('fr-FR');
+    lines.push('  • '+s.ref+' (Emp.'+s.emp+') sorti le '+d+(s.company?' — '+s.company:''));
+  });
+  lines.push('');
   lines.push('=== GUIDE ===');
   lines.push('4 étages D(haut/gerbeur), C(gerbeur), B(main), A(bas/sol). 6 colonnes. 24 emplacements total.');
   lines.push('Couleurs: vert 0-15j, bleu 15-21j, jaune 21-28j, rouge +28j. Hors prod=violet, sans délai.');
   lines.push('90 jours max par colis. Ajouter: cliquer emplacement → remplir formulaire → bouton +Ajouter.');
-  lines.push('Retirer: clic ✓ sur le colis. Modifier: clic ✏️.');
+  lines.push('Sortir une palette: clic ✓ vert sur le colis. Modifier: clic ✏️. Supprimer: clic ✕.');
   return lines.join('\n');
 }
 
@@ -762,7 +836,7 @@ function sendChat(){
   chatBusy=true;document.getElementById('chat-send-btn').disabled=true;
   const typingBubble=appendMsg('bot','…en train de réfléchir…',true);
 
-  const systemPrompt="Tu es un assistant pour opérateurs d'entrepôt AUEM, spécialisé sur le RACK ATTENTE DÉLAIS. Tu réponds en français, de façon concise et utile. Tu connais en temps réel l'état exact du rack (ci-dessous). Réponds en moins de 5 phrases sauf si demande explicite de détails.\n\n"+getRackContext();
+  const systemPrompt="Tu es un assistant pour opérateurs d'entrepôt AUEM, spécialisé sur le RACK ATTENTE DÉLAIS. Tu réponds en français, de façon concise et utile. Tu connais en temps réel l'état exact du rack et l'historique des sorties (ci-dessous). Réponds en moins de 5 phrases sauf si demande explicite de détails.\n\n"+getRackContext();
 
   const messages=[{role:'system',content:systemPrompt},...chatHistory.slice(-8)];
 
@@ -775,7 +849,7 @@ function sendChat(){
   .then(data=>{
     let reply='Désolé, pas de réponse.';
     if(data.choices&&data.choices[0]&&data.choices[0].message)reply=data.choices[0].message.content;
-    else if(data.error)reply='❌ '+( data.error.message||'Erreur API');
+    else if(data.error)reply='❌ '+(data.error.message||'Erreur API');
     typingBubble.classList.remove('typing');typingBubble.textContent=reply;
     chatHistory.push({role:'assistant',content:reply});
     document.getElementById('chat-messages').scrollTop=99999;
