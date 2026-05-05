@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """
-AUEM Rack Weekly Report Generator
-Reads Firebase data and generates PDF report
+AUEM Rack Weekly Report Generator - SIMPLE VERSION
+No GitHub Secrets needed - everything in this file
 """
 
 import json
 import smtplib
-import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
@@ -21,13 +20,26 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
-# Configuration
-FIREBASE_URL = os.getenv('FIREBASE_URL', 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/retour.json')
-SMTP_USER = os.getenv('SMTP_USER', 'axefoxe8592@gmail.com')
-SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', 'xsmtpsib-1386a13c39dbb774792056d8212d82efc25706197bb9d853f9a8aeabe4f92923-QEWZbJQsl6z90NCo')
-RAPPORT_EMAIL = os.getenv('RAPPORT_EMAIL', 'axefoxe8592@gmail.com')
+# ============================================================
+# 🔧 CONFIGURATION - METS TES INFOS ICI
+# ============================================================
+
+FIREBASE_URL = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/retour.json'
+
+# Email à utiliser pour envoyer (Gmail)
+SMTP_USER = 'axefoxe8592@gmail.com'
+SMTP_PASSWORD = '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'  # ← CHANGE MOI
+
+# Email qui reçoit le rapport
+RAPPORT_EMAIL = 'axefoxe8592@gmail.com'  # ← CHANGE MOI POUR ENVOYER A QUELQU'UN D'AUTRE
+
+# Serveur SMTP Gmail
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
+
+# ============================================================
+# FIN DE LA CONFIGURATION
+# ============================================================
 
 def fetch_firebase_data():
     """Fetch data from Firebase"""
@@ -36,7 +48,7 @@ def fetch_firebase_data():
         data = response.json()
         return data if data else {}
     except Exception as e:
-        print(f"Erreur Firebase: {e}")
+        print(f"❌ Erreur Firebase: {e}")
         return {}
 
 def parse_palettes(data):
@@ -253,14 +265,14 @@ def generate_pdf(stats, filename='rapport_rack.pdf'):
 def send_email(pdf_filename, recipient_email):
     """Send PDF by email"""
     try:
+        print(f"📧 Tentative d'envoi à {recipient_email}...")
+        
         # Create message
         msg = MIMEMultipart('alternative')
         msg['Subject'] = f"📊 Rapport Rack Hebdomadaire - Semaine {datetime.now().isocalendar()[1]}"
         msg['From'] = SMTP_USER
         msg['To'] = recipient_email
         msg['Date'] = formatdate(localtime=True)
-        msg['Message-ID'] = f'<{datetime.now().timestamp()}@auem.fr>'
-        msg['X-Mailer'] = 'AUEM Rack Report Generator'
         
         # HTML body
         html = f"""
@@ -300,49 +312,63 @@ def send_email(pdf_filename, recipient_email):
             msg.attach(part)
         
         # Send
+        print(f"📡 Connexion à {SMTP_SERVER}:{SMTP_PORT}...")
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
+        print(f"🔐 Authentification...")
         server.login(SMTP_USER, SMTP_PASSWORD)
+        print(f"✉️ Envoi du message...")
         server.send_message(msg)
         server.quit()
         
-        print(f"✅ Email envoyé à {recipient_email}")
+        print(f"✅ Email envoyé à {recipient_email} avec succès!")
         return True
     
     except Exception as e:
         print(f"❌ Erreur d'envoi: {e}")
+        print(f"   Vérifies que:")
+        print(f"   1. SMTP_USER est correct: {SMTP_USER}")
+        print(f"   2. SMTP_PASSWORD est correct")
+        print(f"   3. RAPPORT_EMAIL est correct: {recipient_email}")
         return False
 
 def main():
     """Main function"""
-    print("🚀 Génération du rapport hebdomadaire...")
+    print("=" * 60)
+    print("🚀 AUEM RACK - Génération du rapport hebdomadaire")
+    print("=" * 60)
     
     # Fetch data
+    print("\n📥 Récupération des données Firebase...")
     data = fetch_firebase_data()
     palettes = parse_palettes(data)
-    
-    if not palettes:
-        print("⚠️ Aucune donnée trouvée")
-        palettes = []
-    
-    print(f"📦 {len(palettes)} palettes trouvées")
+    print(f"✅ {len(palettes)} palettes trouvées")
     
     # Calculate stats
+    print("\n📊 Calcul des statistiques...")
     stats = calculate_stats(palettes)
-    print(f"📊 Stats calculées: {stats['total']} palettes, {stats['temps_moyen']}j en moyenne")
+    print(f"✅ Total: {stats['total']} palettes")
+    print(f"✅ Temps moyen: {stats['temps_moyen']} jours")
+    print(f"✅ Critiques (+28j): {len(stats['critiques'])}")
     
     # Generate PDF
+    print("\n📄 Génération du PDF...")
     pdf_file = 'rapport_rack_hebdo.pdf'
     generate_pdf(stats, pdf_file)
-    print(f"📄 PDF généré: {pdf_file}")
+    print(f"✅ PDF créé: {pdf_file}")
     
     # Send email
-    if SMTP_PASSWORD and RAPPORT_EMAIL:
-        send_email(pdf_file, RAPPORT_EMAIL)
-    else:
-        print("⚠️ Email non configuré (variables manquantes)")
+    print("\n📧 Envoi de l'email...")
+    if SMTP_PASSWORD == 'MOT_DE_PASSE_ICI':
+        print("❌ ERREUR: Tu n'as pas changé le mot de passe dans le script!")
+        print("   Change SMTP_PASSWORD dans le fichier!")
+        return
     
+    send_email(pdf_file, RAPPORT_EMAIL)
+    
+    print("\n" + "=" * 60)
     print("✅ Rapport hebdomadaire généré avec succès!")
+    print("=" * 60)
 
 if __name__ == '__main__':
     main()
