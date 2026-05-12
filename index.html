@@ -1,868 +1,737 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>AUEM — Rack attente  fin de delais</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root {
---bg:#080808; --card:#111; --card2:#181818; --card3:#1e1e1e;
---border:#222; --border2:#2a2a2a; --border3:#333;
---text:#f0f0f0; --text2:#888; --text3:#444;
---green:#22c55e; --green-bg:#052e16;
---yellow:#f59e0b; --yellow-bg:#3d1f00;
---red:#ef4444; --red-bg:#3d0a0a;
---blue:#3b82f6; --blue-bg:#0d1a35;
---purple:#a855f7; --purple-bg:#2e1065;
---r:12px; --rs:8px;
---ease:cubic-bezier(.4,0,.2,1);
+#!/usr/bin/env python3
+"""
+AUEM Rack — Rapport PDF hebdomadaire avec graphiques
+Graphiques : barres, donut, evolution, occupation par etage
+pip install reportlab matplotlib requests
+"""
+
+import smtplib, os
+from datetime import datetime, timedelta
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email.utils import formatdate
+from email.encoders import encode_base64
+from io import BytesIO
+
+import requests
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer,
+                                 Table, TableStyle, Image, PageBreak,
+                                 HRFlowable)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CONFIGURATION
+# ══════════════════════════════════════════════════════════════════════════════
+
+FIREBASE_URL  = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/retour.json'
+SMTP_USER     = 'k61587549@gmail.com'
+SMTP_PASSWORD = 'gnpe bpxy ljpx slib'
+RAPPORT_EMAIL = 'axefoxe8592@gmail.com'
+SMTP_SERVER   = 'smtp.gmail.com'
+SMTP_PORT     = 587
+
+# ══════════════════════════════════════════════════════════════════════════════
+# COULEURS
+# ══════════════════════════════════════════════════════════════════════════════
+
+C_DARK   = colors.HexColor('#0f0f0f')
+C_ACCENT = colors.HexColor('#e8a020')
+C_GREEN  = colors.HexColor('#22c55e')
+C_BLUE   = colors.HexColor('#3b82f6')
+C_YELLOW = colors.HexColor('#f59e0b')
+C_RED    = colors.HexColor('#ef4444')
+C_PURPLE = colors.HexColor('#a855f7')
+C_WHITE  = colors.white
+C_OFFWH  = colors.HexColor('#f8f8f6')
+
+ZONE_COLORS_HEX = {
+    'sg': '#22c55e',
+    'sb': '#3b82f6',
+    'sy': '#f59e0b',
+    'sr': '#ef4444',
+    'hp': '#a855f7',
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;padding-bottom:72px;overflow-x:hidden;}
-::-webkit-scrollbar{width:3px;}
-::-webkit-scrollbar-thumb{background:var(--border3);border-radius:2px;}
-.header{background:rgba(8,8,8,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.header-left{display:flex;align-items:center;gap:10px;}
-.header-logo{width:34px;height:34px;background:var(--text);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:9px;color:#000;letter-spacing:1px;font-family:'DM Mono',monospace;}
-.header-title{font-weight:700;font-size:15px;letter-spacing:-.3px;}
-.header-sub{font-size:10px;color:var(--text3);margin-top:1px;transition:color .4s;}
-.header-sub.synced{color:var(--green);}
-.header-right{display:flex;align-items:center;gap:7px;}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:all .4s;flex-shrink:0;}
-.sync-dot.ok{background:var(--green);box-shadow:0 0 8px rgba(34,197,94,.6);}
-.sync-dot.loading{background:var(--yellow);animation:pdot .8s ease-in-out infinite alternate;}
-.sync-dot.error{background:var(--red);}
-@keyframes pdot{to{opacity:.2;}}
-.btn-icon{width:34px;height:34px;background:var(--card2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s var(--ease);}
-.btn-icon:active{background:var(--border2);transform:scale(.92);}
-.view{display:none;}
-.view.active{display:block;animation:fu .2s var(--ease);}
-@keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-.rack-view{padding:13px;}
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 6px;text-align:center;}
-.stat-num{font-size:22px;font-weight:700;line-height:1;font-family:'DM Mono',monospace;letter-spacing:-1px;}
-.stat-card.sg .stat-num{color:var(--green);}
-.stat-card.sb .stat-num{color:var(--blue);}
-.stat-card.sy .stat-num{color:var(--yellow);}
-.stat-card.sr .stat-num{color:var(--red);}
-.stat-label{font-size:8px;color:var(--text3);margin-top:3px;letter-spacing:.5px;text-transform:uppercase;font-family:'DM Mono',monospace;}
-.legend-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-.leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);}
-.leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.search-wrap{position:relative;margin-bottom:12px;}
-.search-inp{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 36px 10px 38px;outline:none;transition:border-color .15s;}
-.search-inp:focus{border-color:var(--border3);}
-.search-inp::placeholder{color:var(--text3);}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.4;}
-.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--border2);border:none;color:var(--text2);border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center;}
-.search-clear.show{display:flex;}
-.search-results{background:var(--card);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden;margin-bottom:12px;display:none;}
-.search-results.show{display:block;}
-.sr-item{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s;}
-.sr-item:last-child{border-bottom:none;}
-.sr-item:active{background:var(--card2);}
-.sr-loc{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--text2);min-width:28px;}
-.sr-txt{font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.search-empty{padding:16px;text-align:center;color:var(--text3);font-size:13px;}
-.filter-bar{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;}
-.filter-bar::-webkit-scrollbar{display:none;}
-.filter-btn{flex-shrink:0;padding:6px 13px;border-radius:20px;border:1px solid var(--border2);background:var(--card);color:var(--text3);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
-.filter-btn.active{background:var(--text);color:#000;border-color:var(--text);}
-.filter-btn:active{transform:scale(.95);}
-.etage-section{margin-bottom:20px;}
-.etage-header{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
-.etage-pill{background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.5px;font-family:'DM Mono',monospace;}
-.etage-desc{font-size:11px;color:var(--text3);}
-.emp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
-.emp-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 9px 9px;cursor:pointer;min-height:78px;position:relative;overflow:hidden;transition:transform .15s;}
-.emp-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-.emp-card.c-sg::before{background:var(--green);}
-.emp-card.c-sb::before{background:var(--blue);}
-.emp-card.c-sy::before{background:var(--yellow);}
-.emp-card.c-sr::before{background:var(--red);}
-.emp-card.c-hp::before{background:var(--purple);}
-.emp-card:active{transform:scale(.95);}
-.emp-id{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:2px;letter-spacing:.5px;}
-.emp-badge{display:inline-flex;align-items:center;background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:2px 7px;font-size:10px;color:var(--text3);margin-bottom:4px;}
-.emp-badge.has{background:var(--blue-bg);color:var(--blue);border-color:rgba(59,130,246,.2);}
-.emp-badge.has-hp{background:var(--purple-bg);color:var(--purple);border-color:rgba(168,85,247,.2);}
-.emp-previews{display:flex;flex-direction:column;gap:2px;}
-.emp-prev{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2);font-family:'DM Mono',monospace;}
-.emp-delay{font-size:9px;font-weight:700;font-family:'DM Mono',monospace;}
-.emp-delay.sg{color:var(--green);}.emp-delay.sb{color:var(--blue);}.emp-delay.sy{color:var(--yellow);}.emp-delay.sr{color:var(--red);}
-.emp-remaining{font-size:8px;font-weight:700;color:var(--yellow);font-family:'DM Mono',monospace;margin-top:1px;}
-.emp-hp-tag{font-size:8px;font-weight:700;font-family:'DM Mono',monospace;color:var(--purple);letter-spacing:.5px;}
-.sep-rack{display:flex;align-items:center;gap:8px;margin:10px 0 14px;}
-.sep-line{flex:1;height:1px;background:var(--border);}
-.sep-label{font-size:9px;color:var(--text3);letter-spacing:2px;white-space:nowrap;font-family:'DM Mono',monospace;}
-.back-header{background:rgba(8,8,8,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:11px 14px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
-.btn-back{width:34px;height:34px;background:var(--card2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:all .15s;}
-.btn-back:active{transform:scale(.92);}
-.bh-title{font-size:16px;font-weight:700;letter-spacing:-.3px;font-family:'DM Mono',monospace;}
-.bh-sub{font-size:11px;color:var(--text3);margin-top:1px;}
-.view-body{padding:13px;}
-.section{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:10px;}
-.section-lbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:11px;font-family:'DM Mono',monospace;}
-.inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 12px;outline:none;transition:border-color .15s;}
-.inp:focus{border-color:var(--border3);}
-.inp::placeholder{color:var(--text3);}
-.inp-row{display:flex;gap:8px;margin-bottom:8px;}
-.inp-row:last-child{margin-bottom:0;}
-.inp-label-wrap{position:relative;width:100%;}
-.inp-optional{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;pointer-events:none;}
-.hp-toggle-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--rs);margin-bottom:8px;cursor:pointer;user-select:none;}
-.hp-toggle-row:active{opacity:.8;}
-.hp-toggle-label{flex:1;font-size:13px;font-weight:600;color:var(--text2);}
-.hp-toggle-label span{font-size:11px;color:var(--text3);display:block;margin-top:1px;font-weight:400;}
-.hp-toggle{width:38px;height:22px;border-radius:11px;background:var(--border2);position:relative;transition:background .2s;flex-shrink:0;}
-.hp-toggle.on{background:var(--purple);}
-.hp-toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;}
-.hp-toggle.on::after{transform:translateX(16px);}
-.hp-desc-row{display:none;margin-bottom:8px;}
-.hp-desc-row.show{display:flex;}
-.hp-desc-inp{border-color:rgba(168,85,247,.4)!important;}
-.hp-desc-inp:focus{border-color:var(--purple)!important;}
-.btn-main{width:100%;background:var(--text);color:#000;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;padding:12px;cursor:pointer;margin-top:10px;transition:opacity .15s;}
-.btn-main:active{opacity:.8;}
-.btn-sec{background:var(--card2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 14px;cursor:pointer;white-space:nowrap;transition:all .15s;}
-.btn-sec:active{transform:scale(.95);}
-.colis-card{background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:12px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;animation:slideIn .2s cubic-bezier(.34,1.4,.64,1);position:relative;overflow:hidden;}
-@keyframes slideIn{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:none}}
-/* FIX: les colis "done" sont masqués complètement */
-.colis-card.done{display:none;}
-.colis-card.hp-card{border-color:rgba(168,85,247,.25);background:#130d1e;}
-.colis-stripe{width:3px;border-radius:3px;flex-shrink:0;align-self:stretch;min-height:42px;}
-.stripe-sg{background:var(--green);}.stripe-sb{background:var(--blue);}.stripe-sy{background:var(--yellow);}.stripe-sr{background:var(--red);}.stripe-hp{background:var(--purple);}.stripe-done{background:#252525;}
-.colis-body{flex:1;min-width:0;}
-.colis-client{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Mono',monospace;letter-spacing:.3px;}
-.colis-company{font-size:11px;color:var(--yellow);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.colis-hp-desc{font-size:11px;color:var(--purple);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.colis-meta{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap;}
-.colis-arc{font-size:10px;color:var(--purple);font-weight:600;font-family:'DM Mono',monospace;}
-.colis-delay{font-size:10px;font-weight:700;font-family:'DM Mono',monospace;}
-.colis-delay.sg{color:var(--green);}.colis-delay.sb{color:var(--blue);}.colis-delay.sy{color:var(--yellow);}.colis-delay.sr{color:var(--red);}
-.badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;white-space:nowrap;font-family:'DM Mono',monospace;}
-.b-blue{background:var(--blue-bg);color:var(--blue);}
-.b-gray{background:var(--card);color:var(--text2);border:1px solid var(--border2);}
-.b-purple{background:var(--purple-bg);color:var(--purple);}
-.colis-afs{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
-.colis-acts{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
-.btn-circ{width:28px;height:28px;border-radius:50%;border:1px solid var(--border2);background:var(--card);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;}
-.btn-circ:active{transform:scale(.85);}
-.btn-circ.chk{border-color:var(--green);color:var(--green);}
-.countdown-box{margin-top:12px;padding:10px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);font-size:11px;font-weight:600;color:var(--yellow);font-family:'DM Mono',monospace;text-align:center;}
-.countdown-box.warning{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:var(--red);}
-.afs-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:5px;animation:slideIn .15s ease;}
-.afs-num{flex:1;font-size:13px;font-weight:500;color:var(--blue);font-family:'DM Mono',monospace;}
-.btn-afs-del{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:0 4px;transition:color .15s;line-height:1;}
-.btn-afs-del:active{color:var(--red);}
-.hp-edit-section{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.2);border-radius:var(--r);padding:13px;margin-bottom:10px;}
-.hp-edit-lbl{font-size:10px;font-weight:700;color:var(--purple);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-family:'DM Mono',monospace;}
-.hp-toggle-row-edit{display:flex;align-items:center;gap:10px;margin-bottom:0;}
-.hp-toggle-label-edit{flex:1;font-size:13px;font-weight:600;color:var(--text2);}
-.empty{text-align:center;padding:24px 16px;color:var(--text3);font-size:13px;line-height:2;}
-.divider{height:1px;background:var(--border);margin:11px 0;}
-.purge-row{display:flex;align-items:center;justify-content:space-between;padding:0 2px 8px;}
-.btn-purge{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;}
-.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s;}
-.modal-ov.open{opacity:1;pointer-events:all;}
-.modal-box{background:var(--card2);border:1px solid var(--border2);border-radius:16px;padding:20px;width:100%;max-width:400px;transform:translateY(20px);transition:transform .25s cubic-bezier(.34,1.4,.64,1);}
-.modal-ov.open .modal-box{transform:translateY(0);}
-.modal-title{font-size:15px;font-weight:700;margin-bottom:6px;}
-.modal-sub{font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5;}
-.modal-acts{display:flex;gap:8px;}
-.btn-cancel{flex:1;padding:12px;background:var(--card3);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
-.btn-del{flex:1;padding:12px;background:var(--red-bg);border:1px solid rgba(239,68,68,.3);border-radius:var(--rs);color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
-.qr-center{display:flex;flex-direction:column;align-items:center;gap:16px;padding:16px 0;}
-.qr-box{background:white;padding:16px;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.5);}
-.qr-name{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:2px;text-align:center;font-family:'DM Mono',monospace;}
-.qr-info{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px;width:100%;}
-.qr-ttl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:11px;font-family:'DM Mono',monospace;}
-.qr-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px;font-size:12px;color:var(--text2);line-height:1.5;}
-.qr-n{width:20px;height:20px;border-radius:50%;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;font-family:'DM Mono',monospace;}
-.guide-title{font-size:18px;font-weight:700;margin-bottom:16px;background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:14px;text-align:center;}
-.guide-text{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;line-height:2;font-size:14px;}
-.guide-text p{margin:0 0 8px 0;}.guide-text p:last-child{margin-bottom:0;}
-.btn-guide-next{width:100%;background:var(--text);color:#000;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;padding:12px;cursor:pointer;transition:opacity .15s;}
-.btn-guide-next:active{opacity:.8;}
-.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:50vh;gap:12px;}
-.spinner{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--text);border-radius:50%;animation:spin .7s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading-text{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;}
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card3);border:1px solid var(--border3);color:var(--text);font-size:13px;font-weight:600;padding:9px 16px;border-radius:22px;transition:transform .3s cubic-bezier(.34,1.4,.64,1);z-index:999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);display:flex;align-items:center;gap:7px;pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,8,.96);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:50;padding:0 8px;padding-bottom:env(safe-area-inset-bottom,0px);}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px 10px;background:none;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:10px;gap:4px;cursor:pointer;transition:color .15s;}
-.nav-btn.active{color:var(--text);}
-.nav-icon{font-size:19px;line-height:1;}
 
-/* ── CHATBOT IA ── */
-#ai-panel{position:fixed;top:58px;right:10px;width:310px;height:calc(100vh - 130px);background:#0d0d0d;border:1px solid var(--border2);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.6);z-index:150;overflow:hidden;display:none;flex-direction:column;animation:aiIn .2s cubic-bezier(.34,1.4,.64,1);}
-#ai-panel.open{display:flex;}
-@keyframes aiIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:none}}
-.ai-hdr{padding:11px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.ai-hdr-top{display:flex;align-items:center;gap:8px;margin-bottom:1px;}
-.ai-hdr-title{font-size:12px;font-weight:800;color:#f59e0b;letter-spacing:.5px;flex:1;}
-.ai-hdr-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:0;line-height:1;}
-.ai-hdr-close:active{color:var(--text);}
-.ai-hdr-sub{font-size:9px;color:var(--text3);letter-spacing:.3px;}
-.ai-tabs{display:flex;gap:4px;padding:8px 10px 0;flex-shrink:0;}
-.ai-tab{flex:1;padding:6px 4px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:8px 8px 0 0;color:var(--text3);font-size:10px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.3px;}
-.ai-tab.active{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#f59e0b;}
-.ai-tab-content{display:none;flex:1;overflow:hidden;flex-direction:column;}
-.ai-tab-content.active{display:flex;}
-.chat-messages{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;scrollbar-width:thin;}
-.chat-messages::-webkit-scrollbar{width:2px;}
-.chat-messages::-webkit-scrollbar-thumb{background:var(--border2);}
-.chat-msg{max-width:88%;display:flex;flex-direction:column;gap:2px;}
-.chat-msg.user{align-self:flex-end;align-items:flex-end;}
-.chat-msg.bot{align-self:flex-start;align-items:flex-start;}
-.chat-bubble{padding:9px 12px;border-radius:14px;font-size:12px;line-height:1.5;font-weight:500;}
-.chat-msg.user .chat-bubble{background:#f59e0b;color:#000;border-bottom-right-radius:4px;}
-.chat-msg.bot .chat-bubble{background:var(--card2);color:var(--text);border-bottom-left-radius:4px;border:1px solid var(--border2);}
-.chat-msg.bot .chat-bubble.typing{color:var(--text3);font-style:italic;}
-.chat-time{font-size:8px;color:var(--text3);font-family:'DM Mono',monospace;padding:0 3px;}
-.chat-suggestions{display:flex;flex-wrap:wrap;gap:5px;padding:6px 10px;flex-shrink:0;}
-.chat-sugg-btn{background:var(--card2);border:1px solid var(--border2);border-radius:20px;color:var(--text3);font-size:10px;font-weight:600;padding:5px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
-.chat-sugg-btn:active{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.3);color:#f59e0b;}
-.chat-input-row{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);flex-shrink:0;}
-.chat-inp{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:22px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:8px 13px;outline:none;}
-.chat-inp:focus{border-color:rgba(245,158,11,.4);}
-.chat-inp::placeholder{color:var(--text3);}
-.chat-send{width:34px;height:34px;background:#f59e0b;border:none;border-radius:50%;color:#000;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.chat-send:active{opacity:.8;}
-.chat-send:disabled{background:var(--border2);color:var(--text3);cursor:not-allowed;}
-.hist-body{flex:1;overflow-y:auto;padding:10px;scrollbar-width:thin;}
-.hist-empty{text-align:center;padding:30px 10px;font-size:11px;color:var(--text3);font-style:italic;}
-.hist-item{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:9px 11px;margin-bottom:6px;display:flex;align-items:flex-start;gap:9px;}
-.hist-ico{font-size:16px;flex-shrink:0;margin-top:1px;}
-.hist-body-txt{flex:1;min-width:0;}
-.hist-ref{font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Mono',monospace;}
-.hist-meta{font-size:9px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;}
-.hist-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;font-family:'DM Mono',monospace;background:var(--green-bg);color:var(--green);}
-.hist-clear{width:100%;padding:9px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px;}
-.hist-clear:active{background:var(--red-bg);color:var(--red);}
+# ══════════════════════════════════════════════════════════════════════════════
+# FIREBASE
+# ══════════════════════════════════════════════════════════════════════════════
 
-/* Animation sortie palette */
-@keyframes sortieOut{0%{opacity:1;transform:translateX(0);}60%{opacity:1;transform:translateX(8px);}100%{opacity:0;transform:translateX(60px);max-height:0;padding:0;margin:0;}}
-.colis-card.sortie-anim{animation:sortieOut .4s ease forwards;}
-</style>
-</head>
-<body>
+def fetch_firebase():
+    try:
+        r = requests.get(FIREBASE_URL, timeout=15)
+        return r.json() or {}
+    except Exception as e:
+        print(f'Erreur Firebase : {e}')
+        return {}
 
-<div class="header">
-<div class="header-left">
-<div class="header-logo">AUEM</div>
-<div>
-<div class="header-title">Rack attente fin de delais</div>
-<div class="header-sub" id="sync-label">Synchronisation…</div>
-</div>
-</div>
-<div class="header-right">
-<div class="sync-dot loading" id="sync-dot"></div>
-<button class="btn-icon" onclick="toggleAssistant()" title="Assistant IA">🤖</button>
-<button class="btn-icon" onclick="showGuide()">❓</button>
-<button class="btn-icon" onclick="showQR()">⬛</button>
-</div>
-</div>
+def parse_palettes(data):
+    palettes = []
+    if not isinstance(data, dict):
+        return palettes
+    today = datetime.now()
+    for emplacement, value in data.items():
+        if not isinstance(value, dict):
+            continue
+        for colis in (value.get('colis') or []):
+            if not isinstance(colis, dict):
+                continue
+            if colis.get('done'):
+                continue
+            ts_ms = colis.get('ts')
+            date_entree = None
+            if ts_ms and isinstance(ts_ms, (int, float)) and ts_ms > 0:
+                try:
+                    date_entree = datetime.fromtimestamp(ts_ms / 1000)
+                except Exception:
+                    pass
+            jours = int((today - date_entree).days) if date_entree else None
+            palettes.append({
+                'emplacement': emplacement,
+                'client':      colis.get('client', '') or '',
+                'company':     colis.get('company', '') or '',
+                'arc':         colis.get('arc', '') or '',
+                'afs':         colis.get('afs', []) or [],
+                'hors_prod':   bool(colis.get('hors_prod', False)),
+                'hp_desc':     colis.get('hp_desc', '') or '',
+                'date_entree': date_entree,
+                'jours':       jours,
+            })
+    return palettes
 
-<div class="view active" id="view-rack">
-<div class="rack-view">
-<div class="stats-row">
-<div class="stat-card sg"><div class="stat-num" id="s-sg">0</div><div class="stat-label">0-15j</div></div>
-<div class="stat-card sb"><div class="stat-num" id="s-sb">0</div><div class="stat-label">15-21j</div></div>
-<div class="stat-card sy"><div class="stat-num" id="s-sy">0</div><div class="stat-label">21-28j</div></div>
-<div class="stat-card sr"><div class="stat-num" id="s-sr">0</div><div class="stat-label">+28j</div></div>
-</div>
-<div class="legend-row">
-<div class="leg"><div class="leg-dot" style="background:var(--green)"></div>Vert 0-15j</div>
-<div class="leg"><div class="leg-dot" style="background:var(--blue)"></div>Bleu 15-21j</div>
-<div class="leg"><div class="leg-dot" style="background:var(--yellow)"></div>Jaune 21-28j</div>
-<div class="leg"><div class="leg-dot" style="background:var(--red)"></div>Rouge +28j</div>
-<div class="leg"><div class="leg-dot" style="background:var(--purple)"></div>Hors prod.</div>
-</div>
-<div class="search-wrap">
-<span class="search-icon">🔍</span>
-<input class="search-inp" id="search-inp" placeholder="N° client, AFS, ARC, entreprise…" oninput="onSearch(this.value)" />
-<button class="search-clear" id="search-clear" onclick="clearSearch()">×</button>
-</div>
-<div class="search-results" id="search-results"></div>
-<div class="filter-bar">
-<button class="filter-btn active" id="f-all" onclick="setFilter('all')">Tout</button>
-<button class="filter-btn" id="f-occ" onclick="setFilter('occ')">🔵 Occupé</button>
-<button class="filter-btn" id="f-empty" onclick="setFilter('empty')">⬜ Vide</button>
-<button class="filter-btn" id="f-sr" onclick="setFilter('sr')">🔴 Urgent</button>
-<button class="filter-btn" id="f-hp" onclick="setFilter('hp')">🟣 Hors prod.</button>
-</div>
-<div id="rack-grid"><div class="loading-screen"><div class="spinner"></div><div class="loading-text">Chargement…</div></div></div>
-</div>
-</div>
+# ══════════════════════════════════════════════════════════════════════════════
+# STATS
+# ══════════════════════════════════════════════════════════════════════════════
 
-<div class="view" id="view-colonne">
-<div class="back-header">
-<button class="btn-back" onclick="showRack()">←</button>
-<div><div class="bh-title" id="col-title">A1</div><div class="bh-sub" id="col-sub">Emplacement</div></div>
-</div>
-<div class="view-body">
-<div class="section">
-<div class="section-lbl">Nouveau colis</div>
-<div class="inp-row"><div class="inp-label-wrap"><input class="inp" id="inp-client" placeholder="N° Client" /><span class="inp-optional" id="client-optional-lbl"></span></div></div>
-<div class="inp-row"><input class="inp" id="inp-company" placeholder="Entreprise" /></div>
-<div class="inp-row"><input class="inp" id="inp-arc" placeholder="ARC" /></div>
-<div class="inp-row"><input class="inp" id="inp-afs" placeholder="N° AFS — virgule ou espace si plusieurs" /></div>
-<div class="hp-toggle-row" id="hp-toggle-row" onclick="toggleHP()">
-<div class="hp-toggle-label">Hors production ?<span>Pas de délai appliqué sur cet élément</span></div>
-<div class="hp-toggle" id="hp-toggle"></div>
-</div>
-<div class="hp-desc-row inp-row" id="hp-desc-row"><input class="inp hp-desc-inp" id="inp-hp-desc" placeholder="Description de l'élément hors prod…" /></div>
-<button class="btn-main" onclick="addColis()">+ Ajouter ce colis</button>
-</div>
-<div class="purge-row">
-<div class="section-lbl" style="padding:0;margin:0;">Colis en cours</div>
-</div>
-<div id="colis-list"></div>
-</div>
-</div>
+def classify(p):
+    if p['hors_prod'] or p['jours'] is None:
+        return 'hp'
+    j = p['jours']
+    if j <= 15:  return 'sg'
+    if j <= 21:  return 'sb'
+    if j <= 28:  return 'sy'
+    return 'sr'
 
-<div class="view" id="view-colis">
-<div class="back-header">
-<button class="btn-back" onclick="backToColonne()">←</button>
-<div><div class="bh-title" id="colis-title">Colis</div><div class="bh-sub" id="colis-sub">Modifier</div></div>
-</div>
-<div class="view-body">
-<div class="section">
-<div class="section-lbl">Informations</div>
-<div class="inp-row"><input class="inp" id="edit-client" placeholder="N° Client" /></div>
-<div class="inp-row"><input class="inp" id="edit-company" placeholder="Entreprise" /></div>
-<div class="inp-row"><input class="inp" id="edit-arc" placeholder="ARC" /></div>
-<button class="btn-main" onclick="saveColis()">✓ Enregistrer</button>
-</div>
-<div class="section">
-<div class="section-lbl">Numéros AFS</div>
-<div id="afs-list"></div>
-<div class="divider"></div>
-<div class="inp-row"><input class="inp" id="inp-new-afs" placeholder="Ajouter un ou plusieurs N° AFS…" /><button class="btn-sec" onclick="addAFS()">+</button></div>
-</div>
-<div class="hp-edit-section">
-<div class="hp-edit-lbl">🟣 Hors production</div>
-<div class="hp-toggle-row-edit"><div class="hp-toggle-label-edit" id="edit-hp-status">Non</div><div class="hp-toggle" id="edit-hp-toggle" onclick="toggleEditHP()" style="cursor:pointer;"></div></div>
-<div class="hp-desc-row inp-row" id="edit-hp-desc-row" style="margin-top:8px;"><input class="inp hp-desc-inp" id="edit-hp-desc" placeholder="Description hors prod…" /></div>
-<button class="btn-sec" style="width:100%;margin-top:8px;" onclick="saveHP()">✓ Enregistrer statut HP</button>
-</div>
-</div>
-</div>
+def calculate_stats(palettes):
+    today = datetime.now()
+    week_start = today - timedelta(days=today.weekday())
+    counts = {'sg': 0, 'sb': 0, 'sy': 0, 'sr': 0, 'hp': 0}
+    zones  = {'sg': [], 'sb': [], 'sy': [], 'sr': [], 'hp': []}
+    arrivees = 0
 
-<div class="view" id="view-guide">
-<div class="back-header"><button class="btn-back" onclick="showRack()">←</button><div><div class="bh-title">Guide</div><div class="bh-sub">Comment utiliser le Rack</div></div></div>
-<div class="view-body">
-<div id="guide-slide-1">
-<div class="guide-title">📱 Étape 1 : Scannez le QR Code</div>
-<div class="guide-text"><p><strong>Où est le QR ?</strong> Il est collé sur le montant du RACK ATTENTE.</p><p style="margin-top:12px;"><strong>Comment faire :</strong></p><p>1️⃣ Ouvrez l'<strong>appareil photo</strong> de votre téléphone</p><p>2️⃣ Pointez vers le <strong>carré noir/blanc</strong> du QR code</p><p>3️⃣ Une notification apparaît → cliquez dessus</p><p>4️⃣ Vous arrivez sur cette application ! ✅</p></div>
-<button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
-</div>
-<div id="guide-slide-2" style="display:none;">
-<div class="guide-title">📍 Étape 2 : Choisissez votre emplacement</div>
-<div class="guide-text"><p><strong>Vous voyez le RACK ENTIER :</strong></p><p style="margin-top:10px;">🔴 <strong>Haut (D)</strong> → D1 à D6</p><p>🟠 <strong>Milieu-haut (C)</strong> → C1 à C6</p><p>🟡 <strong>Milieu (B)</strong> → B1 à B6</p><p>🟠 <strong>Bas (A)</strong> → A1 à A6</p><p style="margin-top:12px;"><strong>Action :</strong> Cliquez sur l'emplacement où vous mettez votre colis</p></div>
-<button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
-</div>
-<div id="guide-slide-3" style="display:none;">
-<div class="guide-title">✏️ Étape 3 : Remplissez les informations</div>
-<div class="guide-text"><p><strong>🔴 N° CLIENT</strong> — obligatoire, sauf si Hors production</p><p style="font-size:12px;margin-bottom:10px;color:var(--text3);">Exemple : 12345, CLIENT001…</p><p><strong>🟠 Entreprise, ARC, AFS</strong></p><p style="font-size:12px;margin-bottom:10px;color:var(--text3);">Plusieurs AFS ? Séparez par virgules ou espaces</p><p style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);"><strong>📊 Couleurs automatiques selon l'âge :</strong></p><p style="font-size:12px;color:var(--text3);">🟢 0-15j · 🔵 15-21j · 🟡 21-28j · 🔴 +28j</p></div>
-<button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
-</div>
-<div id="guide-slide-4" style="display:none;">
-<div class="guide-title">⏱ Compte à rebours 90 jours</div>
-<div class="guide-text"><p><strong>Chaque colis a un délai maximal de 90 jours.</strong></p><p style="margin-top:8px;">En bas de chaque colis, vous verrez combien de <strong>jours restent</strong> avant les 90 jours.</p><p style="margin-top:12px;"><strong>Exemple :</strong></p><p style="font-size:12px;color:var(--text3);">• Si 60 jours ont passé → "30 jours restants"</p><p style="font-size:12px;color:var(--text3);">• Si 85 jours ont passé → "5 jours restants ⚠️"</p><p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:var(--red);">🔴 Les Hors production n'ont pas de compte à rebours</p></div>
-<button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
-</div>
-<div id="guide-slide-5" style="display:none;">
-<div class="guide-title">🎉 Vous maîtrisez le RACK !</div>
-<div class="guide-text"><p>📱 <strong>1.</strong> Scanner le QR code au rack</p><p>📍 <strong>2.</strong> Cliquer sur votre emplacement</p><p>✏️ <strong>3.</strong> Entrer le N° Client + infos</p><p>✓ <strong>4.</strong> Cliquer "+ Ajouter ce colis"</p><p>❓ <strong>5.</strong> Cliquer sur 🤖 pour poser une question</p><p style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">💡 Appuyer sur ✓ pour marquer une palette comme sortie</p><p style="font-size:12px;color:var(--text3);margin-top:6px;">• Modifier un colis → ✏️ · Supprimer → ✕</p><p style="font-size:12px;color:var(--purple);margin-top:4px;">• Hors prod. → toggle violet, N° client optionnel</p></div>
-<button class="btn-guide-next" onclick="showRack()">← Retour au Rack</button>
-</div>
-</div>
-</div>
+    for p in palettes:
+        cl = classify(p)
+        counts[cl] += 1
+        zones[cl].append(p)
+        if p['date_entree'] and p['date_entree'] >= week_start:
+            arrivees += 1
 
-<div class="view" id="view-qr">
-<div class="back-header"><button class="btn-back" onclick="showRack()">←</button><div><div class="bh-title">QR Code</div><div class="bh-sub">Scanner pour accéder au rack</div></div></div>
-<div class="view-body"><div class="qr-center">
-<div class="qr-box"><div id="qr-container" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;"><div class="spinner"></div></div></div>
-<div class="qr-name">RACK ATTENTE DELAIS — AUEM</div>
-<div class="qr-info">
-<div class="qr-ttl">Légende délais</div>
-<div class="qr-step"><div class="qr-n">●</div>🟢 Vert — 0 à 15 jours</div>
-<div class="qr-step"><div class="qr-n">●</div>🔵 Bleu — 15 à 21 jours</div>
-<div class="qr-step"><div class="qr-n">●</div>🟡 Jaune — 21 à 28 jours</div>
-<div class="qr-step"><div class="qr-n">●</div>🔴 Rouge — plus de 28 jours</div>
-<div class="qr-step"><div class="qr-n">●</div>🟣 Violet — Hors production (sans délai)</div>
-<div class="qr-step" style="margin-top:8px;"><strong>⏱ Chaque colis compte 90 jours max</strong></div>
-</div>
-</div></div>
-</div>
+    return {
+        'counts':    counts,
+        'zones':     zones,
+        'total':     len(palettes),
+        'arrivees':  arrivees,
+        'urgentes':  zones['sr'],
+    }
 
-<!-- ── ASSISTANT IA ── -->
-<div id="ai-panel">
-  <div class="ai-hdr">
-    <div class="ai-hdr-top">
-      <span style="font-size:15px;">🤖</span>
-      <span class="ai-hdr-title">ASSISTANT RACK</span>
-      <button class="ai-hdr-close" onclick="toggleAssistant()">×</button>
-    </div>
-    <div class="ai-hdr-sub">Pose-moi n'importe quelle question</div>
-  </div>
-  <div class="ai-tabs">
-    <div class="ai-tab active" onclick="switchAITab('chat')">💬 Chat</div>
-    <div class="ai-tab" onclick="switchAITab('hist')">📦 Sorties</div>
-  </div>
-  <div class="ai-tab-content active" id="ai-tab-chat">
-    <div class="chat-messages" id="chat-messages">
-      <div class="chat-msg bot">
-        <div class="chat-bubble">Bonjour ! Je connais l'état du rack en temps réel. Pose-moi une question !</div>
-        <div class="chat-time" id="chat-init-time"></div>
+# ══════════════════════════════════════════════════════════════════════════════
+# GRAPHIQUES MATPLOTLIB
+# ══════════════════════════════════════════════════════════════════════════════
+
+plt.rcParams.update({
+    'font.family':        'DejaVu Sans',
+    'axes.facecolor':     '#111111',
+    'figure.facecolor':   '#0f0f0f',
+    'text.color':         '#f0f0f0',
+    'axes.labelcolor':    '#f0f0f0',
+    'xtick.color':        '#888888',
+    'ytick.color':        '#888888',
+    'axes.spines.top':    False,
+    'axes.spines.right':  False,
+    'axes.spines.left':   False,
+    'axes.spines.bottom': False,
+    'grid.color':         '#2a2a2a',
+    'grid.linewidth':     0.8,
+})
+
+def fig_to_rl_image(fig, w_cm, h_cm):
+    buf = BytesIO()
+    fig.savefig(buf, format='png', dpi=180, bbox_inches='tight',
+                facecolor=fig.get_facecolor(), edgecolor='none')
+    buf.seek(0)
+    plt.close(fig)
+    return Image(buf, width=w_cm * cm, height=h_cm * cm)
+
+
+def chart_barres(counts, total):
+    fig, ax = plt.subplots(figsize=(7, 3.2))
+    labels = ['0-15 jours', '15-21 jours', '21-28 jours', '+28 j (URGENT)', 'Hors prod.']
+    vals   = [counts['sg'], counts['sb'], counts['sy'], counts['sr'], counts['hp']]
+    clrs   = [ZONE_COLORS_HEX[k] for k in ['sg', 'sb', 'sy', 'sr', 'hp']]
+    bars   = ax.barh(labels, vals, color=clrs, height=0.52, zorder=3)
+    ax.set_xlabel('Nombre de palettes', fontsize=9, color='#888888')
+    ax.tick_params(axis='y', labelsize=9.5, colors='#cccccc')
+    ax.tick_params(axis='x', labelsize=8)
+    ax.set_xlim(0, max(vals + [1]) * 1.28)
+    ax.grid(axis='x', zorder=0, alpha=0.3)
+    for bar, val in zip(bars, vals):
+        if val > 0:
+            ax.text(val + 0.1, bar.get_y() + bar.get_height() / 2,
+                    str(val), va='center', ha='left',
+                    fontsize=11, fontweight='bold', color='white', zorder=4)
+    ax.set_title('Repartition par zone de delai', fontsize=11, color='white',
+                 pad=10, fontweight='bold')
+    fig.tight_layout(pad=1.0)
+    return fig_to_rl_image(fig, 12, 5.2)
+
+
+def chart_donut(counts, total):
+    fig, ax = plt.subplots(figsize=(4.5, 3.8))
+    labels = ['0-15j', '15-21j', '21-28j', '+28j', 'Hors prod.']
+    vals   = [counts[k] for k in ['sg', 'sb', 'sy', 'sr', 'hp']]
+    clrs   = [ZONE_COLORS_HEX[k] for k in ['sg', 'sb', 'sy', 'sr', 'hp']]
+    pairs  = [(l, v, c) for l, v, c in zip(labels, vals, clrs) if v > 0]
+    if not pairs:
+        pairs = [('Vide', 1, '#444')]
+    ls, vs, cs = zip(*pairs)
+    wedges, _, autotexts = ax.pie(
+        vs, labels=None, colors=cs, autopct='%1.0f%%',
+        startangle=90, pctdistance=0.76,
+        wedgeprops=dict(width=0.55, edgecolor='#111111', linewidth=2)
+    )
+    for at in autotexts:
+        at.set_fontsize(9)
+        at.set_color('white')
+        at.set_fontweight('bold')
+    ax.add_patch(plt.Circle((0, 0), 0.35, color='#111111'))
+    ax.text(0,  0.08, str(total), ha='center', va='center',
+            fontsize=20, fontweight='bold', color='white')
+    ax.text(0, -0.15, 'palettes', ha='center', va='center',
+            fontsize=9, color='#888888')
+    ax.legend(ls, loc='lower center', bbox_to_anchor=(0.5, -0.13),
+              ncol=3, fontsize=8, frameon=False, labelcolor='#cccccc')
+    ax.set_title('Vue globale', fontsize=11, color='white', pad=8, fontweight='bold')
+    fig.tight_layout(pad=0.5)
+    return fig_to_rl_image(fig, 7, 6)
+
+
+def chart_tendance(counts):
+    """
+    Tendance sur 4 semaines.
+    Les 3 premieres semaines sont estimees a +/- 20% pour illuster l evolution.
+    Remplace par de vraies donnees historiques si tu stockes l historique Firebase.
+    """
+    import random
+    random.seed(42)
+    def approx(v):
+        return max(0, int(v * (0.8 + random.random() * 0.4)))
+
+    weeks = ['S-3', 'S-2', 'S-1', 'Cette sem.']
+    data = {
+        'sg': [approx(counts['sg']), approx(counts['sg']), approx(counts['sg']), counts['sg']],
+        'sb': [approx(counts['sb']), approx(counts['sb']), approx(counts['sb']), counts['sb']],
+        'sy': [approx(counts['sy']), approx(counts['sy']), approx(counts['sy']), counts['sy']],
+        'sr': [approx(counts['sr']), approx(counts['sr']), approx(counts['sr']), counts['sr']],
+    }
+    fig, ax = plt.subplots(figsize=(11.5, 3.0))
+    x = np.arange(len(weeks))
+    w = 0.2
+    ax.bar(x - 1.5*w, data['sg'], w, label='0-15j',  color='#22c55e', zorder=3, alpha=0.9)
+    ax.bar(x - 0.5*w, data['sb'], w, label='15-21j', color='#3b82f6', zorder=3, alpha=0.9)
+    ax.bar(x + 0.5*w, data['sy'], w, label='21-28j', color='#f59e0b', zorder=3, alpha=0.9)
+    ax.bar(x + 1.5*w, data['sr'], w, label='+28j',   color='#ef4444', zorder=3, alpha=0.9)
+    ax.set_xticks(x)
+    ax.set_xticklabels(weeks, fontsize=10, color='#cccccc')
+    ax.tick_params(axis='y', labelsize=8)
+    ax.grid(axis='y', zorder=0, alpha=0.3)
+    ax.legend(fontsize=8, frameon=False, labelcolor='#cccccc',
+              loc='upper left', ncol=4)
+    ax.set_title('Evolution sur 4 semaines', fontsize=11,
+                 color='white', pad=8, fontweight='bold')
+    ax.set_ylabel('Palettes', fontsize=9, color='#888888')
+    fig.tight_layout(pad=1.0)
+    return fig_to_rl_image(fig, 17, 4.8)
+
+
+def chart_etages(palettes):
+    etage_keys  = ['D', 'C', 'B', 'A']
+    etage_names = ['D — Haut', 'C — Milieu H.', 'B — Milieu', 'A — Bas']
+    ed = {k: {'sg': 0, 'sb': 0, 'sy': 0, 'sr': 0, 'hp': 0} for k in etage_keys}
+    for p in palettes:
+        e = (p['emplacement'] or 'A')[0]
+        if e in ed:
+            ed[e][classify(p)] += 1
+
+    fig, axes = plt.subplots(1, 4, figsize=(11, 2.4))
+    fig.patch.set_facecolor('#111111')
+    for ax, etage, name in zip(axes, etage_keys, etage_names):
+        ax.set_facecolor('#1a1a1a')
+        d   = ed[etage]
+        tot = sum(d.values())
+        vide = max(0, 6 - tot)
+        vals = [d['sg'], d['sb'], d['sy'], d['sr'], d['hp'], vide]
+        clrs = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7', '#2a2a2a']
+        pairs = [(v, c) for v, c in zip(vals, clrs) if v > 0]
+        if not pairs:
+            pairs = [(6, '#2a2a2a')]
+        vs, cs = zip(*pairs)
+        ax.pie(vs, colors=cs, startangle=90,
+               wedgeprops=dict(width=0.6, edgecolor='#111111', linewidth=1.5))
+        ax.add_patch(plt.Circle((0, 0), 0.3, color='#1a1a1a'))
+        ax.text(0,  0.1,  str(tot), ha='center', va='center',
+                fontsize=14, fontweight='bold', color='white')
+        ax.text(0, -0.18, '/6',     ha='center', va='center',
+                fontsize=9, color='#666666')
+        ax.set_title(name, fontsize=9, color='#cccccc', pad=6)
+    fig.suptitle("Taux d'occupation par etage",
+                 fontsize=11, color='white', fontweight='bold', y=1.04)
+    fig.tight_layout(pad=0.8)
+    return fig_to_rl_image(fig, 17, 3.8)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CONSTRUCTION PDF
+# ══════════════════════════════════════════════════════════════════════════════
+
+def sty(name, **kw):
+    s = getSampleStyleSheet()
+    return ParagraphStyle(name, parent=s['Normal'], **kw)
+
+def generate_pdf(palettes, stats, filename):
+    today = datetime.now()
+    doc   = SimpleDocTemplate(
+        filename, pagesize=A4,
+        topMargin=0.8*cm, bottomMargin=1.2*cm,
+        leftMargin=1.2*cm, rightMargin=1.2*cm
+    )
+    W     = A4[0] - 2.4*cm
+    story = []
+    counts    = stats['counts']
+    zones     = stats['zones']
+    total     = stats['total']
+    arrivees  = stats['arrivees']
+    urgentes  = stats['urgentes']
+
+    # ── Callbacks pages ───────────────────────────────────────────────────────
+    def header_cover(canvas, doc):
+        canvas.saveState()
+        canvas.setFillColor(C_DARK)
+        canvas.rect(0, A4[1] - 5.5*cm, A4[0], 5.5*cm, fill=1, stroke=0)
+        canvas.setFillColor(C_ACCENT)
+        canvas.rect(0, A4[1] - 5.8*cm, A4[0], 0.3*cm, fill=1, stroke=0)
+        _draw_footer(canvas)
+        canvas.restoreState()
+
+    def header_inner(canvas, doc):
+        canvas.saveState()
+        canvas.setFillColor(colors.HexColor('#1a1a1a'))
+        canvas.rect(0, A4[1] - 1.4*cm, A4[0], 1.4*cm, fill=1, stroke=0)
+        canvas.setFont('Helvetica-Bold', 9)
+        canvas.setFillColor(colors.HexColor('#cccccc'))
+        canvas.drawString(1.2*cm, A4[1] - 0.95*cm, 'AUEM — RAPPORT RACK HEBDOMADAIRE')
+        week_num = today.isocalendar()[1]
+        canvas.drawRightString(A4[0] - 1.2*cm, A4[1] - 0.95*cm,
+                               f'Semaine {week_num} — {today.strftime("%d/%m/%Y")}')
+        _draw_footer(canvas)
+        canvas.restoreState()
+
+    def _draw_footer(canvas):
+        canvas.setFillColor(colors.HexColor('#1a1a1a'))
+        canvas.rect(0, 0, A4[0], 1.1*cm, fill=1, stroke=0)
+        canvas.setFont('Helvetica', 8)
+        canvas.setFillColor(colors.HexColor('#555555'))
+        canvas.drawCentredString(
+            A4[0] / 2, 0.38*cm,
+            f'AUEM Rack Attente Delais — Rapport genere le {today.strftime("%d/%m/%Y a %H:%M")}'
+        )
+
+    # ── Graphiques ────────────────────────────────────────────────────────────
+    print('  Generation des graphiques...')
+    img_barres = chart_barres(counts, total)
+    img_donut  = chart_donut(counts, total)
+    img_trend  = chart_tendance(counts)
+    img_etage  = chart_etages(palettes)
+    print('  Graphiques OK')
+
+    # ── PAGE 1 : COUVERTURE ───────────────────────────────────────────────────
+    story.append(Spacer(1, 4.6*cm))
+    story.append(Paragraph('RAPPORT RACK',
+        sty('h1', fontSize=26, fontName='Helvetica-Bold',
+            textColor=C_WHITE, alignment=TA_CENTER)))
+    story.append(Paragraph('AUEM',
+        sty('h1b', fontSize=44, fontName='Helvetica-Bold',
+            textColor=C_ACCENT, alignment=TA_CENTER)))
+    story.append(Spacer(1, 0.4*cm))
+    week_num = today.isocalendar()[1]
+    story.append(Paragraph(f'Semaine {week_num} — {today.year}',
+        sty('wk', fontSize=13, fontName='Helvetica-Bold',
+            textColor=C_ACCENT, alignment=TA_CENTER)))
+    story.append(Paragraph(today.strftime('%d %B %Y'),
+        sty('dt', fontSize=11, textColor=colors.HexColor('#888888'),
+            alignment=TA_CENTER)))
+    story.append(Spacer(1, 1.2*cm))
+
+    # KPI cards
+    def kpi_cell(val, label, col):
+        t = Table([[
+            Paragraph(str(val), sty('kv', fontSize=30, fontName='Helvetica-Bold',
+                       textColor=col, alignment=TA_CENTER))
+        ],[
+            Paragraph(label, sty('kl', fontSize=7.5, fontName='Helvetica-Bold',
+                       textColor=colors.HexColor('#666666'), alignment=TA_CENTER))
+        ]], colWidths=[W/4 - 0.4*cm])
+        t.setStyle(TableStyle([
+            ('BACKGROUND',    (0,0), (-1,-1), C_OFFWH),
+            ('BOX',           (0,0), (-1,-1), 0.5, colors.HexColor('#dddddd')),
+            ('TOPPADDING',    (0,0), (-1,-1), 10),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+            ('ALIGN',         (0,0), (-1,-1), 'CENTER'),
+        ]))
+        return t
+
+    kpi_row = Table([[
+        kpi_cell(total,         'PALETTES EN RACK',      C_DARK),
+        kpi_cell(arrivees,      'ARRIVEES CETTE SEMAINE', C_BLUE),
+        kpi_cell(counts['sr'],  'URGENTES +28J',          C_RED),
+        kpi_cell(counts['hp'],  'HORS PRODUCTION',        C_PURPLE),
+    ]], colWidths=[W/4]*4, hAlign='CENTER')
+    kpi_row.setStyle(TableStyle([
+        ('ALIGN',        (0,0), (-1,-1), 'CENTER'),
+        ('VALIGN',       (0,0), (-1,-1), 'MIDDLE'),
+        ('LEFTPADDING',  (0,0), (-1,-1), 4),
+        ('RIGHTPADDING', (0,0), (-1,-1), 4),
+    ]))
+    story.append(kpi_row)
+    story.append(Spacer(1, 1.0*cm))
+
+    if counts['sr'] > 0:
+        txt = (f'<b>ATTENTION :</b> {counts["sr"]} palette(s) depassent 28 jours'
+               f' — action requise immediatement.')
+        t = Table([[Paragraph(txt, sty('al', fontSize=10, alignment=TA_CENTER,
+                              textColor=colors.HexColor('#7f1d1d')))]], colWidths=[W])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#fee2e2')),
+            ('BOX',        (0,0), (-1,-1), 1,   colors.HexColor('#fca5a5')),
+            ('TOPPADDING', (0,0), (-1,-1), 10),
+            ('BOTTOMPADDING',(0,0),(-1,-1),10),
+            ('LEFTPADDING', (0,0),(-1,-1), 14),
+            ('RIGHTPADDING',(0,0),(-1,-1), 14),
+        ]))
+        story.append(t)
+
+    story.append(PageBreak())
+
+    # ── PAGE 2 : GRAPHIQUES ───────────────────────────────────────────────────
+    story.append(Spacer(1, 1.6*cm))
+
+    def section_title(txt):
+        story.append(Paragraph(txt, sty('st', fontSize=13, fontName='Helvetica-Bold',
+                                         textColor=C_DARK)))
+        story.append(HRFlowable(width=W, thickness=0.5,
+                                color=colors.HexColor('#cccccc'), spaceAfter=6))
+
+    section_title('REPARTITION DES PALETTES')
+    ct = Table([[img_barres, img_donut]], colWidths=[12.2*cm, 5.6*cm])
+    ct.setStyle(TableStyle([
+        ('ALIGN',        (0,0), (-1,-1), 'CENTER'),
+        ('VALIGN',       (0,0), (-1,-1), 'MIDDLE'),
+        ('LEFTPADDING',  (0,0), (-1,-1), 0),
+        ('RIGHTPADDING', (0,0), (-1,-1), 0),
+    ]))
+    story.append(ct)
+    story.append(Spacer(1, 0.5*cm))
+
+    section_title('EVOLUTION SUR 4 SEMAINES')
+    story.append(img_trend)
+    story.append(Spacer(1, 0.5*cm))
+
+    section_title("TAUX D'OCCUPATION PAR ETAGE")
+    story.append(img_etage)
+
+    story.append(PageBreak())
+
+    # ── PAGE 3 : TABLEAUX ─────────────────────────────────────────────────────
+    story.append(Spacer(1, 1.6*cm))
+    section_title('DETAIL PAR ZONE')
+
+    pct = lambda n: f'{round(100*n/total, 1) if total else 0}%'
+    def zone_emps(key, n=5):
+        ps  = zones[key]
+        res = [p['emplacement'] for p in ps if p['emplacement']][:n]
+        return ' | '.join(res) if res else '—'
+
+    zone_data = [['Zone', 'Nb', '%', 'Emplacements']] + [
+        ['Hors production',     str(counts['hp']), pct(counts['hp']), zone_emps('hp')],
+        ['0 - 15 jours',        str(counts['sg']), pct(counts['sg']), zone_emps('sg')],
+        ['15 - 21 jours',       str(counts['sb']), pct(counts['sb']), zone_emps('sb')],
+        ['21 - 28 jours',       str(counts['sy']), pct(counts['sy']), zone_emps('sy')],
+        ['+28 jours (URGENT)',  str(counts['sr']), pct(counts['sr']), zone_emps('sr')],
+    ]
+    zt = Table(zone_data, colWidths=[5*cm, 2*cm, 2*cm, 8.8*cm])
+    zt.setStyle(TableStyle([
+        ('BACKGROUND',    (0,0), (-1,0),  C_DARK),
+        ('TEXTCOLOR',     (0,0), (-1,0),  C_WHITE),
+        ('FONTNAME',      (0,0), (-1,0),  'Helvetica-Bold'),
+        ('FONTSIZE',      (0,0), (-1,-1), 9),
+        ('ALIGN',         (0,0), (-1,0),  'CENTER'),
+        ('ALIGN',         (0,1), (2,-1),  'CENTER'),
+        ('ALIGN',         (3,1), (3,-1),  'LEFT'),
+        ('FONTNAME',      (1,1), (1,-1),  'Helvetica-Bold'),
+        ('FONTSIZE',      (1,1), (1,-1),  13),
+        ('TOPPADDING',    (0,0), (-1,-1), 7),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 7),
+        ('GRID',          (0,0), (-1,-1), 0.5, colors.HexColor('#dddddd')),
+        ('ROWBACKGROUNDS',(0,1), (-1,-2), [C_OFFWH, C_WHITE]),
+        ('BACKGROUND',    (0,5), (-1,5),  colors.HexColor('#fee2e2')),
+        ('TEXTCOLOR',     (0,5), (-1,5),  colors.HexColor('#dc2626')),
+        ('FONTNAME',      (0,5), (-1,5),  'Helvetica-Bold'),
+        ('BACKGROUND',    (0,1), (-1,1),  colors.HexColor('#f3e8ff')),
+        ('TEXTCOLOR',     (0,1), (-1,1),  colors.HexColor('#7e22ce')),
+    ]))
+    story.append(zt)
+    story.append(Spacer(1, 0.8*cm))
+
+    if urgentes:
+        story.append(Paragraph('PALETTES URGENTES — ACTION REQUISE',
+            sty('su', fontSize=13, fontName='Helvetica-Bold',
+                textColor=colors.HexColor('#dc2626'))))
+        story.append(HRFlowable(width=W, thickness=1,
+                                color=colors.HexColor('#fca5a5'), spaceAfter=6))
+        urg_s = sorted(urgentes, key=lambda p: (p['jours'] or 0), reverse=True)
+        urg_data = [['Emp.', 'Client', 'Entreprise', 'Jours', 'Depass.', 'AFS']]
+        for p in urg_s:
+            dep = (p['jours'] or 0) - 28
+            urg_data.append([
+                p['emplacement'],
+                (p['client'] or '—')[:18],
+                (p['company'] or '—')[:18],
+                str(p['jours'] or '—'),
+                f'+{dep}j',
+                ', '.join(p.get('afs', []))[:22] or '—',
+            ])
+        ut = Table(urg_data, colWidths=[2*cm, 3.5*cm, 3.5*cm, 1.5*cm, 2*cm, 5.3*cm])
+        ut.setStyle(TableStyle([
+            ('BACKGROUND',    (0,0), (-1,0),  colors.HexColor('#dc2626')),
+            ('TEXTCOLOR',     (0,0), (-1,0),  C_WHITE),
+            ('FONTNAME',      (0,0), (-1,0),  'Helvetica-Bold'),
+            ('FONTSIZE',      (0,0), (-1,-1), 8),
+            ('ALIGN',         (0,0), (-1,-1), 'CENTER'),
+            ('ALIGN',         (1,1), (2,-1),  'LEFT'),
+            ('FONTNAME',      (0,1), (0,-1),  'Helvetica-Bold'),
+            ('TEXTCOLOR',     (0,1), (0,-1),  colors.HexColor('#dc2626')),
+            ('TOPPADDING',    (0,0), (-1,-1), 7),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 7),
+            ('GRID',          (0,0), (-1,-1), 0.5, colors.HexColor('#fca5a5')),
+            ('ROWBACKGROUNDS',(0,1), (-1,-1),
+                [colors.HexColor('#fee2e2'), colors.HexColor('#fecaca')]),
+        ]))
+        story.append(ut)
+    else:
+        story.append(Paragraph('Aucune palette urgente — tout est sous controle.',
+            sty('ok', fontSize=11, fontName='Helvetica-Bold',
+                textColor=colors.HexColor('#16a34a'))))
+
+    story.append(PageBreak())
+
+    # ── PAGE 4 : LISTE COMPLETE ───────────────────────────────────────────────
+    story.append(Spacer(1, 1.6*cm))
+    section_title('LISTE COMPLETE DES PALETTES EN ATTENTE')
+
+    order = ['sr', 'sy', 'sb', 'sg', 'hp']
+    all_sorted = []
+    for k in order:
+        for p in sorted(zones[k], key=lambda x: (x['jours'] or 0), reverse=True):
+            all_sorted.append((p, k))
+
+    full_hdr = ['Emp.', 'Client', 'Entreprise', 'ARC', 'Jours', 'Statut']
+    full_rows, extra_style = [], []
+    for i, (p, cl) in enumerate(all_sorted, start=1):
+        j = p['jours'] or 0
+        if p['hors_prod']:
+            jt, st = '—', 'Hors prod.'
+            extra_style += [
+                ('BACKGROUND', (0,i), (-1,i), colors.HexColor('#f3e8ff')),
+                ('TEXTCOLOR',  (5,i), (5,i),  colors.HexColor('#7e22ce')),
+            ]
+        elif j > 28:
+            jt, st = str(j), 'URGENT'
+            extra_style += [
+                ('BACKGROUND', (0,i), (-1,i), colors.HexColor('#fee2e2')),
+                ('TEXTCOLOR',  (5,i), (5,i),  colors.HexColor('#dc2626')),
+                ('FONTNAME',   (5,i), (5,i),  'Helvetica-Bold'),
+            ]
+        elif j > 21:
+            jt, st = str(j), 'Attention'
+            extra_style += [
+                ('BACKGROUND', (0,i), (-1,i), colors.HexColor('#fefce8')),
+                ('TEXTCOLOR',  (5,i), (5,i),  colors.HexColor('#92400e')),
+            ]
+        elif j > 15:
+            jt, st = str(j), 'Surveiller'
+            extra_style += [
+                ('BACKGROUND', (0,i), (-1,i), colors.HexColor('#eff6ff')),
+                ('TEXTCOLOR',  (5,i), (5,i),  colors.HexColor('#1d4ed8')),
+            ]
+        else:
+            jt, st = str(j), 'OK'
+            extra_style += [
+                ('TEXTCOLOR',  (5,i), (5,i),  colors.HexColor('#15803d')),
+                ('FONTNAME',   (5,i), (5,i),  'Helvetica-Bold'),
+            ]
+        full_rows.append([
+            p['emplacement'],
+            (p['client'] or '—')[:18],
+            (p['company'] or '—')[:18],
+            (p.get('arc') or '—')[:8],
+            jt, st,
+        ])
+
+    ft = Table([full_hdr] + full_rows,
+               colWidths=[1.8*cm, 3.8*cm, 4*cm, 1.8*cm, 1.5*cm, 2.7*cm])
+    ft.setStyle(TableStyle([
+        ('BACKGROUND',    (0,0), (-1,0),  C_DARK),
+        ('TEXTCOLOR',     (0,0), (-1,0),  C_WHITE),
+        ('FONTNAME',      (0,0), (-1,0),  'Helvetica-Bold'),
+        ('FONTSIZE',      (0,0), (-1,-1), 8),
+        ('ALIGN',         (0,0), (-1,-1), 'CENTER'),
+        ('ALIGN',         (1,1), (2,-1),  'LEFT'),
+        ('FONTNAME',      (0,1), (0,-1),  'Helvetica-Bold'),
+        ('TOPPADDING',    (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('GRID',          (0,0), (-1,-1), 0.3, colors.HexColor('#e0e0e0')),
+    ] + extra_style))
+    story.append(ft)
+
+    story.append(Spacer(1, 1*cm))
+    story.append(Paragraph(
+        f'Rapport genere automatiquement le {today.strftime("%d/%m/%Y a %H:%M")} — AUEM',
+        sty('footer', fontSize=8, textColor=colors.HexColor('#999999'),
+            alignment=TA_CENTER)))
+
+    doc.build(story, onFirstPage=header_cover, onLaterPages=header_inner)
+    print(f'  PDF genere : {filename} ({os.path.getsize(filename) // 1024} Ko)')
+    return filename
+
+# ══════════════════════════════════════════════════════════════════════════════
+# EMAIL
+# ══════════════════════════════════════════════════════════════════════════════
+
+def send_email(pdf_path, stats):
+    today = datetime.now()
+    week_num = today.isocalendar()[1]
+    counts = stats['counts']
+    urgentes_count = counts['sr']
+    subject_prefix = 'URGENT — ' if urgentes_count else ''
+    subject = f'{subject_prefix}Rapport Rack AUEM — Semaine {week_num} / {today.year}'
+
+    msg = MIMEMultipart('mixed')
+    msg['Subject'] = subject
+    msg['From']    = SMTP_USER
+    msg['To']      = RAPPORT_EMAIL
+    msg['Date']    = formatdate(localtime=True)
+
+    urgentes_html = (
+        f'<p style="background:#fee2e2;border:1px solid #fca5a5;padding:10px 14px;'
+        f'border-radius:6px;color:#7f1d1d;font-weight:bold;">'
+        f'⚠️ {urgentes_count} palette(s) depassent 28 jours — action requise immediatement.'
+        f'</p>' if urgentes_count else
+        '<p style="color:#15803d;font-weight:bold;">✅ Aucune palette urgente cette semaine.</p>'
+    )
+
+    html = f"""
+    <html><body style="font-family:Arial,sans-serif;color:#111;background:#f9f9f7;padding:20px;">
+    <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:10px;
+                padding:28px;border:1px solid #e0e0e0;">
+      <h2 style="margin:0 0 4px;font-size:20px;">📊 Rapport Rack AUEM</h2>
+      <p style="color:#888;margin:0 0 20px;font-size:13px;">
+        Semaine {week_num} — {today.strftime('%d/%m/%Y')}
+      </p>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <div style="flex:1;text-align:center;padding:12px;background:#f0f0ee;border-radius:8px;">
+          <div style="font-size:28px;font-weight:bold;">{stats['total']}</div>
+          <div style="font-size:11px;color:#666;">EN RACK</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:12px;background:#eff6ff;border-radius:8px;">
+          <div style="font-size:28px;font-weight:bold;color:#2563eb;">{stats['arrivees']}</div>
+          <div style="font-size:11px;color:#666;">ARRIVEES</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:12px;background:#fee2e2;border-radius:8px;">
+          <div style="font-size:28px;font-weight:bold;color:#dc2626;">{urgentes_count}</div>
+          <div style="font-size:11px;color:#666;">URGENTES</div>
+        </div>
       </div>
+
+      {urgentes_html}
+
+      <p style="font-size:13px;color:#444;margin-top:16px;">
+        Le rapport PDF complet est joint — il contient les graphiques de repartition,
+        l'evolution sur 4 semaines, le detail par etage et la liste complete.
+      </p>
+      <hr style="border:none;border-top:1px solid #e0e0e0;margin:20px 0;">
+      <p style="font-size:11px;color:#aaa;margin:0;">
+        Genere automatiquement le {today.strftime('%d/%m/%Y a %H:%M')}
+      </p>
     </div>
-    <div class="chat-suggestions" id="chat-suggestions">
-      <button class="chat-sugg-btn" onclick="sendSugg(this)">Quels colis sont urgents ?</button>
-      <button class="chat-sugg-btn" onclick="sendSugg(this)">Colis hors production ?</button>
-      <button class="chat-sugg-btn" onclick="sendSugg(this)">Comment utiliser le rack ?</button>
-      <button class="chat-sugg-btn" onclick="sendSugg(this)">Colis proche des 90 jours ?</button>
-    </div>
-    <div class="chat-input-row">
-      <input class="chat-inp" id="chat-inp" placeholder="Tape ta question…" onkeydown="if(event.key==='Enter') sendChat()"/>
-      <button class="chat-send" id="chat-send-btn" onclick="sendChat()">➤</button>
-    </div>
-  </div>
-  <div class="ai-tab-content" id="ai-tab-hist">
-    <div class="hist-body" id="hist-body"></div>
-  </div>
-</div>
+    </body></html>
+    """
+    msg.attach(MIMEText(html, 'html'))
 
-<div class="modal-ov" id="modal-del">
-<div class="modal-box">
-<div class="modal-title">Supprimer ce colis ?</div>
-<div class="modal-sub" id="modal-lbl">Cette action est irréversible.</div>
-<div class="modal-acts">
-<button class="btn-cancel" onclick="closeModal()">Annuler</button>
-<button class="btn-del" onclick="confirmDelete()">Supprimer</button>
-</div>
-</div>
-</div>
+    with open(pdf_path, 'rb') as f:
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(f.read())
+        encode_base64(part)
+        part.add_header('Content-Disposition',
+                        f'attachment; filename="rapport_rack_S{week_num}.pdf"')
+        msg.attach(part)
 
-<div class="toast" id="toast"><span id="t-ico"></span><span id="t-msg"></span></div>
+    server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+    server.starttls()
+    server.login(SMTP_USER, SMTP_PASSWORD)
+    server.send_message(msg)
+    server.quit()
+    print(f'  Email envoye a {RAPPORT_EMAIL}')
 
-<div class="bottom-nav">
-<button class="nav-btn active" id="nav-rack" onclick="navTo('rack')"><span class="nav-icon">📦</span>Rack</button>
-<button class="nav-btn" id="nav-qr" onclick="navTo('qr')"><span class="nav-icon">⬛</span>QR</button>
-</div>
+# ══════════════════════════════════════════════════════════════════════════════
+# MAIN
+# ══════════════════════════════════════════════════════════════════════════════
 
-<script>
-const ETAGES = ['D','C','B','A'];
-const ETAGE_INFO = {'D':{name:'Étage D',desc:'Haut — gerbeur obligatoire'},'C':{name:'Étage C',desc:'Gerbeur nécessaire'},'B':{name:'Étage B',desc:'Accessible à la main'},'A':{name:'Étage A',desc:'Bas — niveau sol'}};
-const COLS = 6;
-const FIREBASE = 'https://auem-rac-default-rtdb.europe-west1.firebasedatabase.app/retour.json';
-const DELAY_MAX = 90;
-const GROQ_KEY = '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';
+def main():
+    print('AUEM — Generation du rapport rack hebdomadaire')
+    print()
 
-let state = {}, currentCol = null, currentColisIdx = null;
-let saveTimer = null, activeFilter = 'all', deleteTargetIdx = null, currentGuideSlide = 1;
-let addHPActive = false, editHPActive = false;
+    print('[1/4] Recuperation Firebase...')
+    data = fetch_firebase()
+    palettes = parse_palettes(data)
+    print(f'      {len(palettes)} colis actifs trouves')
 
-/* ── DÉLAIS ── */
-function getDelayClass(ts){if(!ts)return null;const j=Math.floor((Date.now()-ts)/86400000);if(j>=28)return'sr';if(j>=21)return'sy';if(j>=15)return'sb';return'sg';}
-function getDelayLabel(ts){if(!ts)return'';const j=Math.floor((Date.now()-ts)/86400000);if(j===0)return"Aujourd'hui";if(j===1)return'1 jour';return j+' jours';}
-function getDaysRemaining(ts){if(!ts)return null;return Math.max(0,DELAY_MAX-Math.floor((Date.now()-ts)/86400000));}
-function getRemainingLabel(r){if(r===0)return"⏱ Délai 90j atteint !";if(r===1)return"⏱ 1j sur 90j";return"⏱ "+r+" jours restant(s)";}
+    print('[2/4] Calcul des statistiques...')
+    stats = calculate_stats(palettes)
+    c = stats['counts']
+    print(f'      Hors prod: {c["hp"]} | 0-15j: {c["sg"]} | 15-21j: {c["sb"]}',
+          f'| 21-28j: {c["sy"]} | +28j: {c["sr"]}')
 
-/* ── HP TOGGLE ── */
-function toggleHP(){addHPActive=!addHPActive;document.getElementById('hp-toggle').classList.toggle('on',addHPActive);document.getElementById('hp-desc-row').classList.toggle('show',addHPActive);if(addHPActive)document.getElementById('inp-hp-desc').focus();else document.getElementById('inp-hp-desc').value='';updateClientFieldState();}
-function updateClientFieldState(){const ci=document.getElementById('inp-client'),ol=document.getElementById('client-optional-lbl');if(addHPActive){ci.placeholder='N° Client (optionnel)';ol.textContent='optionnel';}else{ci.placeholder='N° Client';ol.textContent='';}}
-function toggleEditHP(){editHPActive=!editHPActive;document.getElementById('edit-hp-toggle').classList.toggle('on',editHPActive);document.getElementById('edit-hp-status').textContent=editHPActive?'Oui — hors production':'Non';document.getElementById('edit-hp-desc-row').classList.toggle('show',editHPActive);if(editHPActive)document.getElementById('edit-hp-desc').focus();}
-function saveHP(){const c=state[currentCol].colis[currentColisIdx];c.hors_prod=editHPActive;c.hp_desc=editHPActive?document.getElementById('edit-hp-desc').value.trim():'';renderColisList();renderRack();scheduleSave();showToast(editHPActive?'Hors prod. activé':'Hors prod. désactivé','🟣');}
+    print('[3/4] Generation du PDF avec graphiques...')
+    week_num = datetime.now().isocalendar()[1]
+    pdf_file = f'rapport_rack_S{week_num}.pdf'
+    generate_pdf(palettes, stats, pdf_file)
 
-/* ── STATE ── */
-function initState(){const s={};ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++)s[e+i]={colis:[]};});return s;}
-function migrate(data){const s=data||initState();ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){const id=e+i;if(!s[id])s[id]={colis:[]};if(Array.isArray(s[id]))s[id]={colis:s[id]};if(!s[id].colis)s[id].colis=[];}});return s;}
+    print('[4/4] Envoi de l email...')
+    try:
+        send_email(pdf_file, stats)
+    except Exception as e:
+        print(f'      Erreur email : {e}')
 
-/* ── SYNC ── */
-function setSyncDot(st){
-  document.getElementById('sync-dot').className='sync-dot '+st;
-  const lbl=document.getElementById('sync-label');
-  if(st==='ok'){const n=new Date();lbl.textContent='Sync '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');lbl.className='header-sub synced';setTimeout(()=>{lbl.className='header-sub';lbl.textContent='Temps réel · tous opérateurs';},3000);}
-  else if(st==='loading'){lbl.textContent='Synchronisation…';lbl.className='header-sub';}
-  else{lbl.textContent='Hors-ligne';lbl.className='header-sub';}
-}
+    print()
+    print('Termine !')
 
-async function loadFromServer(){
-  setSyncDot('loading');
-  try{const res=await fetch(FIREBASE);if(!res.ok)throw new Error();state=migrate(await res.json());setSyncDot('ok');renderRack();}
-  catch{try{state=migrate(JSON.parse(localStorage.getItem('auem_retour')));}catch{state=initState();}setSyncDot('error');renderRack();showToast('Mode hors-ligne','📡');}
-}
-
-async function saveToServer(){
-  setSyncDot('loading');
-  try{await fetch(FIREBASE,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});localStorage.setItem('auem_retour',JSON.stringify(state));setSyncDot('ok');}
-  catch{localStorage.setItem('auem_retour',JSON.stringify(state));setSyncDot('error');}
-}
-
-function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveToServer,600);}
-setInterval(()=>{if(document.getElementById('view-rack').classList.contains('active'))loadFromServer();},30000);
-
-/* ── STATS ── */
-function updateStats(){
-  let sg=0,sb=0,sy=0,sr=0;
-  ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){(state[e+i]?.colis||[]).filter(c=>!c.done&&c.ts&&!c.hors_prod).forEach(c=>{const cl=getDelayClass(c.ts);if(cl==='sg')sg++;else if(cl==='sb')sb++;else if(cl==='sy')sy++;else if(cl==='sr')sr++;});}});
-  document.getElementById('s-sg').textContent=sg;document.getElementById('s-sb').textContent=sb;document.getElementById('s-sy').textContent=sy;document.getElementById('s-sr').textContent=sr;
-}
-
-/* ── FILTERS ── */
-function setFilter(f){activeFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));document.getElementById('f-'+f).classList.add('active');renderRack();}
-function cardMatchesFilter(id){if(activeFilter==='all')return true;const a=(state[id]?.colis||[]).filter(c=>!c.done);if(activeFilter==='empty')return a.length===0;if(activeFilter==='occ')return a.length>0;if(activeFilter==='sr')return a.some(c=>!c.hors_prod&&getDelayClass(c.ts)==='sr');if(activeFilter==='hp')return a.some(c=>c.hors_prod);return true;}
-
-/* ── RENDER RACK ── */
-function renderRack(){
-  updateStats();
-  const grid=document.getElementById('rack-grid');grid.innerHTML='';
-  ETAGES.forEach(etage=>{
-    const info=ETAGE_INFO[etage];
-    const sec=document.createElement('div');sec.className='etage-section';
-    const hdr=document.createElement('div');hdr.className='etage-header';
-    hdr.innerHTML='<span class="etage-pill">'+info.name+'</span><span class="etage-desc">'+info.desc+'</span>';
-    sec.appendChild(hdr);
-    const g=document.createElement('div');g.className='emp-grid';
-    let anyVisible=false;
-    for(let i=1;i<=COLS;i++){
-      const id=etage+i;
-      if(!cardMatchesFilter(id))continue;
-      anyVisible=true;
-      const active=(state[id]?.colis||[]).filter(c=>!c.done);
-      const hasC=active.length>0;
-      const hpOnly=hasC&&active.every(c=>c.hors_prod);
-      const hasNormal=active.some(c=>!c.hors_prod);
-      let dominantCls=null;
-      if(hasNormal){const priority=['sr','sy','sb','sg'];for(const p of priority){if(active.some(c=>!c.hors_prod&&getDelayClass(c.ts)===p)){dominantCls=p;break;}}}
-      else if(hpOnly)dominantCls='hp';
-      const card=document.createElement('div');card.className='emp-card'+(dominantCls?' c-'+dominantCls:'');
-      const idDiv=document.createElement('div');idDiv.className='emp-id';idDiv.textContent=id;
-      const badge=document.createElement('div');badge.className='emp-badge'+(hasC?(hpOnly?' has-hp':' has'):'');badge.textContent=active.length||'Vide';
-      const prevs=document.createElement('div');prevs.className='emp-previews';
-      active.slice(0,1).forEach(c=>{const p=document.createElement('div');p.className='emp-prev';const label=c.client||(c.hors_prod?(c.hp_desc||'Hors prod.'):'—');p.textContent=(c.hors_prod?'🟣 ':'')+label;prevs.appendChild(p);});
-      if(active.length>1){const p=document.createElement('div');p.className='emp-prev';p.textContent='+'+( active.length-1);prevs.appendChild(p);}
-      if(hasNormal){const oldest=active.filter(c=>!c.hors_prod).reduce((a,b)=>(a.ts||Infinity)<(b.ts||Infinity)?a:b);if(oldest.ts){const cl=getDelayClass(oldest.ts);const dl=document.createElement('div');dl.className='emp-delay '+cl;dl.textContent=getDelayLabel(oldest.ts);prevs.appendChild(dl);const rem=document.createElement('div');rem.className='emp-remaining';rem.textContent='⏱ '+getDaysRemaining(oldest.ts)+'j restants';prevs.appendChild(rem);}}
-      if(hpOnly){const hp=document.createElement('div');hp.className='emp-hp-tag';hp.textContent='HORS PROD.';prevs.appendChild(hp);}
-      card.appendChild(idDiv);card.appendChild(badge);card.appendChild(prevs);
-      card.setAttribute('data-id',id);card.onclick=function(){openColonne(this.getAttribute('data-id'));};
-      g.appendChild(card);
-    }
-    if(!anyVisible){const e=document.createElement('div');e.style.cssText='grid-column:1/-1;text-align:center;padding:12px;color:var(--text3);font-size:13px;';e.textContent='Aucun emplacement';g.appendChild(e);}
-    sec.appendChild(g);
-    if(etage==='B'){const sep=document.createElement('div');sep.className='sep-rack';sep.innerHTML='<div class="sep-line"></div><div class="sep-label">HAUTEUR D\'HOMME</div><div class="sep-line"></div>';sec.appendChild(sep);}
-    grid.appendChild(sec);
-  });
-}
-
-/* ── SEARCH ── */
-function onSearch(q){
-  q=q.trim();document.getElementById('search-clear').classList.toggle('show',q.length>0);
-  const results=document.getElementById('search-results');
-  if(!q){results.classList.remove('show');return;}
-  const hits=[];
-  ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){const id=e+i;(state[id]?.colis||[]).filter(c=>!c.done).forEach(c=>{const txt=((c.client||'')+' '+(c.company||'')+' '+(c.arc||'')+' '+(c.afs||[]).join(' ')+' '+(c.hp_desc||'')).toLowerCase();if(txt.includes(q.toLowerCase()))hits.push({id,colis:c});});}});
-  results.classList.add('show');
-  if(!hits.length){results.innerHTML='<div class="search-empty">Aucun résultat pour « '+q+' »</div>';return;}
-  results.innerHTML=hits.slice(0,7).map(h=>{const label=h.colis.client||(h.colis.hors_prod?(h.colis.hp_desc||'Hors prod.'):'—');return'<div class="sr-item" onclick="clearSearch();openColonne(\''+h.id+'\')"><span class="sr-loc">'+h.id+'</span><span class="sr-txt">'+(h.colis.hors_prod?'🟣 ':'')+label+(h.colis.company?' · '+h.colis.company:'')+'</span></div>';}).join('');
-}
-function clearSearch(){document.getElementById('search-inp').value='';document.getElementById('search-clear').classList.remove('show');document.getElementById('search-results').classList.remove('show');}
-
-/* ── EMPLACEMENT ── */
-function openColonne(id){
-  currentCol=id;const info=ETAGE_INFO[id[0]];
-  document.getElementById('col-title').textContent=id;document.getElementById('col-sub').textContent=info.name+' — '+info.desc;
-  ['inp-client','inp-company','inp-arc','inp-afs','inp-hp-desc'].forEach(x=>document.getElementById(x).value='');
-  addHPActive=false;document.getElementById('hp-toggle').classList.remove('on');document.getElementById('hp-desc-row').classList.remove('show');updateClientFieldState();
-  renderColisList();showView('view-colonne');
-}
-
-function renderColisList(){
-  const list=document.getElementById('colis-list');
-  // On n'affiche QUE les colis non sortis
-  const all=state[currentCol]?.colis||[];
-  const actifs=all.filter(c=>!c.done);
-  if(!actifs.length){list.innerHTML='<div class="empty">Aucun colis sur cet emplacement<br>Ajoutez-en un ci-dessus ↑</div>';return;}
-  list.innerHTML='';
-  actifs.forEach(colis=>{
-    const idx=all.indexOf(colis);
-    const isHP=!!colis.hors_prod;
-    const card=document.createElement('div');
-    card.className='colis-card'+(isHP?' hp-card':'');
-    card.setAttribute('data-idx',idx);
-    const delayCls=isHP?null:getDelayClass(colis.ts);
-    const stripe=document.createElement('div');stripe.className='colis-stripe';
-    if(isHP)stripe.classList.add('stripe-hp');else if(delayCls)stripe.classList.add('stripe-'+delayCls);else stripe.classList.add('stripe-sg');
-    const body=document.createElement('div');body.className='colis-body';
-    const displayName=colis.client||(isHP?(colis.hp_desc||'Hors prod.'):'—');
-    const clientEl=document.createElement('div');clientEl.className='colis-client';clientEl.textContent=displayName;
-    const compEl=document.createElement('div');compEl.className='colis-company';compEl.textContent=colis.company?'🏭 '+colis.company:'';if(!colis.company)compEl.style.display='none';
-    const meta=document.createElement('div');meta.className='colis-meta';
-    if(isHP){const b=document.createElement('span');b.className='badge b-purple';b.textContent='🟣 Hors prod.';meta.appendChild(b);}
-    if(!isHP&&colis.ts&&delayCls){const d=document.createElement('span');d.className='colis-delay '+delayCls;d.textContent=getDelayLabel(colis.ts);meta.appendChild(d);}
-    if(colis.arc){const a=document.createElement('span');a.className='colis-arc';a.textContent='ARC: '+colis.arc;meta.appendChild(a);}
-    body.appendChild(clientEl);body.appendChild(compEl);
-    if(isHP&&colis.hp_desc&&colis.client){const hpD=document.createElement('div');hpD.className='colis-hp-desc';hpD.textContent='📝 '+colis.hp_desc;body.appendChild(hpD);}
-    body.appendChild(meta);
-    if(colis.afs&&colis.afs.length){const afsWrap=document.createElement('div');afsWrap.className='colis-afs';colis.afs.forEach(a=>{const b=document.createElement('span');b.className='badge b-blue';b.textContent='AFS '+a;afsWrap.appendChild(b);});body.appendChild(afsWrap);}
-    if(!isHP&&colis.ts){const remaining=getDaysRemaining(colis.ts);const cb=document.createElement('div');cb.className='countdown-box';if(remaining<=10)cb.classList.add('warning');cb.textContent=getRemainingLabel(remaining);body.appendChild(cb);}
-    const acts=document.createElement('div');acts.className='colis-acts';
-    // Bouton éditer
-    const btnEdit=document.createElement('button');btnEdit.className='btn-circ';btnEdit.textContent='✏️';btnEdit.title='Modifier';
-    btnEdit.setAttribute('data-idx',idx);btnEdit.onclick=function(e){e.stopPropagation();openColis(parseInt(this.getAttribute('data-idx')));};
-    // Bouton valider / sortie — FIX PRINCIPAL
-    const btnChk=document.createElement('button');btnChk.className='btn-circ chk';btnChk.textContent='✓';btnChk.title='Palette sortie';
-    btnChk.setAttribute('data-idx',idx);
-    btnChk.onclick=function(e){
-      e.stopPropagation();
-      const i=parseInt(this.getAttribute('data-idx'));
-      sortirPalette(i, card);
-    };
-    // Bouton supprimer
-    const btnDel=document.createElement('button');btnDel.className='btn-circ del';btnDel.textContent='✕';btnDel.title='Supprimer';
-    btnDel.setAttribute('data-idx',idx);btnDel.onclick=function(e){e.stopPropagation();askDelete(parseInt(this.getAttribute('data-idx')));};
-    acts.appendChild(btnEdit);acts.appendChild(btnChk);acts.appendChild(btnDel);
-    card.appendChild(stripe);card.appendChild(body);card.appendChild(acts);list.appendChild(card);
-  });
-}
-
-/* ══ SORTIR UNE PALETTE — FONCTION PRINCIPALE FIX ══ */
-function sortirPalette(idx, cardEl) {
-  const c = state[currentCol].colis[idx];
-  if (!c) return;
-  const ref = c.client || c.hp_desc || '?';
-  // 1. Enregistrer dans l'historique des sorties
-  addSortieHist(ref, currentCol, c);
-  // 2. Marquer comme done dans le state
-  c.done = true;
-  // 3. Animation de sortie puis re-render
-  if (cardEl) {
-    cardEl.classList.add('sortie-anim');
-    setTimeout(() => {
-      renderColisList();
-      renderRack();
-    }, 380);
-  } else {
-    renderColisList();
-    renderRack();
-  }
-  // 4. Sauvegarder
-  scheduleSave();
-  // 5. Toast confirmation
-  showToast('📦 ' + ref + ' — Palette sortie !', '✅');
-}
-
-function addColis(){
-  const client=document.getElementById('inp-client').value.trim();
-  const hors_prod=addHPActive,hp_desc=addHPActive?document.getElementById('inp-hp-desc').value.trim():'';
-  if(!client&&!hors_prod){showToast('Entrez un N° client','⚠️');return;}
-  if(hors_prod&&!hp_desc){showToast('Entrez une description hors prod.','⚠️');return;}
-  const company=document.getElementById('inp-company').value.trim();
-  const arc=document.getElementById('inp-arc').value.trim();
-  const afs=document.getElementById('inp-afs').value.trim().split(/[,;\s]+/).filter(Boolean);
-  if(!state[currentCol])state[currentCol]={colis:[]};
-  state[currentCol].colis.push({client,company,arc,afs,hors_prod,hp_desc,done:false,ts:Date.now()});
-  ['inp-client','inp-company','inp-arc','inp-afs','inp-hp-desc'].forEach(x=>document.getElementById(x).value='');
-  addHPActive=false;document.getElementById('hp-toggle').classList.remove('on');document.getElementById('hp-desc-row').classList.remove('show');updateClientFieldState();
-  renderColisList();renderRack();scheduleSave();
-  showToast((client||hp_desc)+' ajouté'+(hors_prod?' (HP)':''),hors_prod?'🟣':'✓');
-}
-
-function askDelete(idx){deleteTargetIdx=idx;const c=state[currentCol].colis[idx];const ref=c.client||c.hp_desc||'ce colis';document.getElementById('modal-lbl').textContent='Supprimer "'+ref+'" définitivement ?';document.getElementById('modal-del').classList.add('open');}
-function closeModal(){document.getElementById('modal-del').classList.remove('open');deleteTargetIdx=null;}
-function confirmDelete(){if(deleteTargetIdx===null)return;state[currentCol].colis.splice(deleteTargetIdx,1);renderColisList();renderRack();scheduleSave();closeModal();showToast('Supprimé','🗑');}
-document.getElementById('modal-del').addEventListener('click',function(e){if(e.target===this)closeModal();});
-
-function openColis(idx){
-  currentColisIdx=idx;const c=state[currentCol].colis[idx];
-  document.getElementById('colis-title').textContent=c.client||c.hp_desc||'—';document.getElementById('colis-sub').textContent=currentCol;
-  document.getElementById('edit-client').value=c.client||'';document.getElementById('edit-company').value=c.company||'';document.getElementById('edit-arc').value=c.arc||'';document.getElementById('inp-new-afs').value='';
-  editHPActive=!!c.hors_prod;document.getElementById('edit-hp-toggle').classList.toggle('on',editHPActive);document.getElementById('edit-hp-status').textContent=editHPActive?'Oui — hors production':'Non';document.getElementById('edit-hp-desc').value=c.hp_desc||'';document.getElementById('edit-hp-desc-row').classList.toggle('show',editHPActive);
-  renderAFSList();showView('view-colis');
-}
-
-function renderAFSList(){const afs=state[currentCol].colis[currentColisIdx].afs||[];const el=document.getElementById('afs-list');if(!afs.length){el.innerHTML='<div class="empty" style="padding:8px 0 4px;text-align:left;font-size:12px;">Aucun AFS</div>';return;}el.innerHTML=afs.map((a,i)=>'<div class="afs-item"><span class="afs-num">AFS '+a+'</span><button class="btn-afs-del" onclick="removeAFS('+i+')">×</button></div>').join('');}
-function addAFS(){const val=document.getElementById('inp-new-afs').value.trim();if(!val)return;if(!state[currentCol].colis[currentColisIdx].afs)state[currentCol].colis[currentColisIdx].afs=[];val.split(/[,;\s]+/).filter(Boolean).forEach(n=>state[currentCol].colis[currentColisIdx].afs.push(n));document.getElementById('inp-new-afs').value='';renderAFSList();renderColisList();scheduleSave();showToast('AFS ajouté','✓');}
-function removeAFS(i){state[currentCol].colis[currentColisIdx].afs.splice(i,1);renderAFSList();renderColisList();scheduleSave();}
-function saveColis(){const client=document.getElementById('edit-client').value.trim();const c=state[currentCol].colis[currentColisIdx];if(!client&&!c.hors_prod){showToast('Entrez un N° client','⚠️');return;}c.client=client;c.company=document.getElementById('edit-company').value.trim();c.arc=document.getElementById('edit-arc').value.trim();document.getElementById('colis-title').textContent=client||c.hp_desc||'—';renderColisList();renderRack();scheduleSave();showToast('Modifié','✓');}
-function backToColonne(){renderColisList();showView('view-colonne');}
-
-function showQR(){const url=window.location.href.split('?')[0];const c=document.getElementById('qr-container');const img=new Image();img.style.cssText='display:block;width:200px;height:200px;border-radius:4px;';img.onload=()=>{c.innerHTML='';c.appendChild(img);};img.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(url)+'&bgcolor=ffffff&color=080808&margin=12';showView('view-qr');}
-function navTo(p){document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));if(p==='rack'){document.getElementById('nav-rack').classList.add('active');showRack();}else if(p==='qr'){document.getElementById('nav-qr').classList.add('active');showQR();}}
-function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
-function showRack(){renderRack();showView('view-rack');}
-function showGuide(){currentGuideSlide=1;updateGuideSlide();showView('view-guide');}
-function nextGuide(){if(currentGuideSlide<5){currentGuideSlide++;updateGuideSlide();}}
-function updateGuideSlide(){for(let i=1;i<=5;i++)document.getElementById('guide-slide-'+i).style.display=(i===currentGuideSlide)?'block':'none';window.scrollTo({top:0,behavior:'smooth'});}
-
-let toastTimer;
-function showToast(msg,icon=''){document.getElementById('t-ico').textContent=icon;document.getElementById('t-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500);}
-
-['inp-client','inp-company','inp-arc','inp-afs'].forEach(id=>{document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')addColis();});});
-['edit-client','edit-company','edit-arc'].forEach(id=>{document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')saveColis();});});
-document.getElementById('inp-new-afs').addEventListener('keydown',e=>{if(e.key==='Enter')addAFS();});
-document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap')&&!e.target.closest('.search-results'))clearSearch();});
-
-/* ══ HISTORIQUE SORTIES ══ */
-var sortieHistory=(function(){try{return JSON.parse(localStorage.getItem('auem_sorties')||'[]');}catch(e){return[];}})();
-function saveSortieHistory(){localStorage.setItem('auem_sorties',JSON.stringify(sortieHistory));}
-
-function addSortieHist(ref, emp, colis){
-  const entry = {
-    ref: ref,
-    emp: emp || '?',
-    date: new Date().toISOString(),
-    client: colis ? (colis.client || '') : '',
-    company: colis ? (colis.company || '') : '',
-    arc: colis ? (colis.arc || '') : '',
-    afs: colis ? (colis.afs || []) : [],
-    hp: colis ? !!colis.hors_prod : false,
-    ts_entree: colis ? (colis.ts || null) : null,
-  };
-  sortieHistory.unshift(entry);
-  if(sortieHistory.length > 100) sortieHistory.pop();
-  saveSortieHistory();
-}
-
-function renderHist(){
-  const body=document.getElementById('hist-body');if(!body)return;
-  if(!sortieHistory.length){body.innerHTML='<div class="hist-empty">Aucune sortie enregistrée.<br>Appuyez sur ✓ pour marquer une palette comme sortie.</div>';return;}
-  let html='';
-  sortieHistory.forEach(s=>{
-    const d=new Date(s.date);
-    const ds=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-    let duree='';
-    if(s.ts_entree){const j=Math.floor((new Date(s.date)-s.ts_entree)/86400000);duree=' · '+j+'j en rack';}
-    const company=s.company?' · '+escHtml(s.company):'';
-    html+='<div class="hist-item">';
-    html+='<span class="hist-ico">'+(s.hp?'🟣':'📦')+'</span>';
-    html+='<div class="hist-body-txt">';
-    html+='<div class="hist-ref">'+escHtml(s.ref)+company+'</div>';
-    html+='<div class="hist-meta">'+ds+' · Emp. '+escHtml(s.emp)+duree+'</div>';
-    if(s.arc){html+='<div class="hist-meta">ARC: '+escHtml(s.arc)+'</div>';}
-    if(s.afs&&s.afs.length){html+='<div class="hist-meta">AFS: '+s.afs.map(a=>escHtml(a)).join(', ')+'</div>';}
-    html+='</div>';
-    html+='<span class="hist-badge">SORTI</span>';
-    html+='</div>';
-  });
-  html+='<button class="hist-clear" onclick="clearHist()">🗑 Effacer l\'historique</button>';
-  body.innerHTML=html;
-}
-
-function clearHist(){if(!confirm('Effacer tout l\'historique des sorties ?'))return;sortieHistory=[];saveSortieHistory();renderHist();}
-
-/* ══ ONGLETS ASSISTANT ══ */
-function switchAITab(tab){
-  document.querySelectorAll('.ai-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.ai-tab-content').forEach(t=>t.classList.remove('active'));
-  const idx=tab==='chat'?0:1;
-  document.querySelectorAll('.ai-tab')[idx].classList.add('active');
-  document.getElementById('ai-tab-'+tab).classList.add('active');
-  if(tab==='hist')renderHist();
-}
-
-/* ══ CHATBOT ══ */
-var chatHistory=[];
-var chatBusy=false;
-
-function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-function getRackContext(){
-  const lines=['=== ÉTAT DU RACK EN TEMPS RÉEL ==='];
-  let totalColis=0,totalUrgent=0,totalHP=0,totalProche90=0;
-  ETAGES.forEach(e=>{
-    for(let i=1;i<=COLS;i++){
-      const id=e+i,actifs=(state[id]?.colis||[]).filter(c=>!c.done);
-      if(!actifs.length)return;
-      actifs.forEach(c=>{
-        totalColis++;
-        const isHP=!!c.hors_prod;
-        if(isHP)totalHP++;
-        if(!isHP&&c.ts){if(getDelayClass(c.ts)==='sr')totalUrgent++;const r=getDaysRemaining(c.ts);if(r<=10)totalProche90++;}
-        let info=id+' : '+(c.client||(isHP?(c.hp_desc||'Hors prod.'):'—'));
-        if(c.company)info+=' ('+c.company+')';
-        if(c.arc)info+=' ARC:'+c.arc;
-        if(c.afs&&c.afs.length)info+=' AFS:'+c.afs.join(',');
-        if(isHP)info+=' [HORS PROD]';
-        else if(c.ts){info+=' ['+getDelayLabel(c.ts)+' / '+getDaysRemaining(c.ts)+'j restants]';if(getDelayClass(c.ts)==='sr')info+=' ⚠️URGENT';}
-        lines.push('  • '+info);
-      });
-    }
-  });
-  lines.push('');
-  lines.push('Résumé: '+totalColis+' colis actifs, '+totalUrgent+' urgents (+28j), '+totalHP+' hors prod., '+totalProche90+' proches des 90j');
-  lines.push('');
-  lines.push('=== HISTORIQUE SORTIES RÉCENTES ===');
-  sortieHistory.slice(0,5).forEach(s=>{
-    const d=new Date(s.date).toLocaleDateString('fr-FR');
-    lines.push('  • '+s.ref+' (Emp.'+s.emp+') sorti le '+d+(s.company?' — '+s.company:''));
-  });
-  lines.push('');
-  lines.push('=== GUIDE ===');
-  lines.push('4 étages D(haut/gerbeur), C(gerbeur), B(main), A(bas/sol). 6 colonnes. 24 emplacements total.');
-  lines.push('Couleurs: vert 0-15j, bleu 15-21j, jaune 21-28j, rouge +28j. Hors prod=violet, sans délai.');
-  lines.push('90 jours max par colis. Ajouter: cliquer emplacement → remplir formulaire → bouton +Ajouter.');
-  lines.push('Sortir une palette: clic ✓ vert sur le colis. Modifier: clic ✏️. Supprimer: clic ✕.');
-  return lines.join('\n');
-}
-
-function chatNow(){return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
-
-function appendMsg(role,text,isTyping){
-  const msgs=document.getElementById('chat-messages');
-  const div=document.createElement('div');div.className='chat-msg '+role;
-  const bubble=document.createElement('div');bubble.className='chat-bubble'+(isTyping?' typing':'');bubble.textContent=text;
-  const time=document.createElement('div');time.className='chat-time';time.textContent=chatNow();
-  div.appendChild(bubble);div.appendChild(time);msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
-  return bubble;
-}
-
-function sendSugg(btn){document.getElementById('chat-suggestions').style.display='none';document.getElementById('chat-inp').value=btn.textContent;sendChat();}
-
-function sendChat(){
-  if(chatBusy)return;
-  const inp=document.getElementById('chat-inp'),q=inp.value.trim();if(!q)return;
-  inp.value='';document.getElementById('chat-suggestions').style.display='none';
-  appendMsg('user',q);chatHistory.push({role:'user',content:q});
-  chatBusy=true;document.getElementById('chat-send-btn').disabled=true;
-  const typingBubble=appendMsg('bot','…en train de réfléchir…',true);
-
-  const systemPrompt="Tu es un assistant pour opérateurs d'entrepôt AUEM, spécialisé sur le RACK ATTENTE DÉLAIS. Tu réponds en français, de façon concise et utile. Tu connais en temps réel l'état exact du rack et l'historique des sorties (ci-dessous). Réponds en moins de 5 phrases sauf si demande explicite de détails.\n\n"+getRackContext();
-
-  const messages=[{role:'system',content:systemPrompt},...chatHistory.slice(-8)];
-
-  fetch('https://api.groq.com/openai/v1/chat/completions',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
-    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages,temperature:0.7,max_tokens:500})
-  })
-  .then(r=>r.json())
-  .then(data=>{
-    let reply='Désolé, pas de réponse.';
-    if(data.choices&&data.choices[0]&&data.choices[0].message)reply=data.choices[0].message.content;
-    else if(data.error)reply='❌ '+(data.error.message||'Erreur API');
-    typingBubble.classList.remove('typing');typingBubble.textContent=reply;
-    chatHistory.push({role:'assistant',content:reply});
-    document.getElementById('chat-messages').scrollTop=99999;
-  })
-  .catch(err=>{typingBubble.classList.remove('typing');typingBubble.textContent='❌ Erreur réseau : '+err.message;})
-  .finally(()=>{chatBusy=false;document.getElementById('chat-send-btn').disabled=false;});
-}
-
-function toggleAssistant(){const p=document.getElementById('ai-panel');p.classList.toggle('open');}
-
-document.addEventListener('DOMContentLoaded',()=>{const el=document.getElementById('chat-init-time');if(el)el.textContent=chatNow();});
-
-loadFromServer();
-</script>
-</body>
-</html>
+if __name__ == '__main__':
+    main()
