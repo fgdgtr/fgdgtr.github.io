@@ -325,6 +325,40 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 </div>
 </div>
 
+
+<!-- VUE 3D -->
+<div class="view" id="view-3d">
+  <div class="view3d-wrap">
+    <canvas id="canvas-3d"></canvas>
+    <button class="btn-3d-back" onclick="showRack()">← Retour au rack</button>
+    <div class="view-dir-badge">
+      <div class="view-dir-dot"></div>
+      Vue : <span class="view-dir-lbl" id="view-dir-lbl">AVANT</span>
+    </div>
+    <div class="hud-bottom">
+      <div class="hud-legend-3d">
+        <div class="hud-leg"><div class="hud-dot-3d" style="background:#22c55e;"></div>0-15j</div>
+        <div class="hud-leg"><div class="hud-dot-3d" style="background:#3b82f6;"></div>15-21j</div>
+        <div class="hud-leg"><div class="hud-dot-3d" style="background:#f59e0b;"></div>21-28j</div>
+        <div class="hud-leg"><div class="hud-dot-3d" style="background:#ef4444;"></div>+28j</div>
+        <div class="hud-leg"><div class="hud-dot-3d" style="background:#a855f7;"></div>HP</div>
+        <div class="hud-leg"><div class="hud-dot-3d" style="background:#333;"></div>Vide</div>
+      </div>
+      <div class="hud-stats-3d">
+        <div class="hud-stat-3d"><span style="color:var(--red)" id="h3-sr">—</span> urgents</div>
+        <div class="hud-stat-3d"><span style="color:var(--purple)" id="h3-hp">—</span> HP</div>
+        <div class="hud-stat-3d"><span style="color:var(--text2)" id="h3-free">—</span> libres</div>
+      </div>
+    </div>
+    <div class="hud-hint-3d">Glisse pour tourner · Tape pour ouvrir</div>
+    <div class="tooltip-3d" id="tooltip-3d">
+      <div class="t3-id" id="t3-id"></div>
+      <div class="t3-ref" id="t3-ref"></div>
+      <div class="t3-nb" id="t3-nb"></div>
+    </div>
+  </div>
+</div>
+
 <!-- VUE EMPLACEMENT -->
 <div class="view" id="view-colonne">
 <div class="back-header">
