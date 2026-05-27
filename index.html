@@ -908,7 +908,8 @@ localStorage.setItem('auem_retour', JSON.stringify(state)); setSyncDot('ok');
 }
 
 function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveToServer, 600); }
-setInterval(() => { if(document.getElementById('view-rack').classList.contains('active')) 
+setInterval(() => { if(document.getElementById('view-rack').classList.contains('active')) loadFromServer(); }, 30000);
+
 /* ══ HISTORIQUE SORTIES ══ */
 var sortieHistory=(function(){try{return JSON.parse(localStorage.getItem('auem_sorties')||'[]');}catch(e){return[];}})();
 function saveSortieHistory(){localStorage.setItem('auem_sorties',JSON.stringify(sortieHistory));}
@@ -930,8 +931,6 @@ function renderHist(){
 }
 function clearHist(){if(!confirm("Effacer l'historique ?"))return;sortieHistory=[];saveSortieHistory();renderHist();}
 
-
-loadFromServer(); }, 30000);
 
 /* ── STATS ── */
 function updateStats() {
