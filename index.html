@@ -1415,26 +1415,55 @@ if(!e.target.closest('.search-wrap') && !e.target.closest('.search-results')) cl
 const GROQ_KEY = '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';
 var chatHistory = [], chatBusy = false;
 
-function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function getRackContext(){
-  const lines=['=== ÉTAT DU RACK EN TEMPS RÉEL ==='];
-  let totalColis=0,totalUrgent=0,totalHP=0,totalProche90=0;
-  ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){const id=e+i,actifs=(state[id]?.colis||[]).filter(c=>!c.done);if(!actifs.length)return;actifs.forEach(c=>{totalColis++;const isHP=!!c.hors_prod;if(isHP)totalHP++;if(!isHP&&c.ts){if(getDelayClass(c.ts)==='sr')totalUrgent++;const r=getDaysRemaining(c.ts);if(r<=10)totalProche90++;}let info=id+' : '+(c.client||(isHP?(c.hp_desc||'Hors prod.'):'—'));if(c.company)info+=' ('+c.company+')';if(c.arc)info+=' ARC:'+c.arc;if(c.afs&&c.afs.length)info+=' AFS:'+c.afs.join(',');if(isHP)info+=' [HORS PROD]';else if(c.ts){info+=' ['+getDelayLabel(c.ts)+' / '+getDaysRemaining(c.ts)+'j restants]';if(getDelayClass(c.ts)==='sr')info+=' ⚠️URGENT';}lines.push('  • '+info);});}});
-  lines.push('','Résumé: '+totalColis+' colis actifs, '+totalUrgent+' urgents (+28j), '+totalHP+' hors prod., '+totalProche90+' proches des 90j');
-  lines.push('','=== GUIDE ===','4 étages D(haut/gerbeur), C(gerbeur), B(main), A(bas/sol). 6 colonnes. 24 emplacements.','Couleurs: vert 0-15j, bleu 15-21j, jaune 21-28j, rouge +28j. Hors prod=violet.','90 jours max par colis.');
-  return lines.join('
-');
+  var lines = ['=== ETAT DU RACK EN TEMPS REEL ==='];
+  var totalColis=0, totalUrgent=0, totalHP=0, totalProche90=0;
+  ETAGES.forEach(function(e){
+    for(var i=1;i<=COLS;i++){
+      var id=e+i;
+      var actifs=(state[id]&&state[id].colis||[]).filter(function(c){return !c.done;});
+      if(!actifs.length) return;
+      actifs.forEach(function(c){
+        totalColis++;
+        var isHP=!!c.hors_prod;
+        if(isHP) totalHP++;
+        if(!isHP&&c.ts){
+          if(getDelayClass(c.ts)==='sr') totalUrgent++;
+          var r=getDaysRemaining(c.ts);
+          if(r<=10) totalProche90++;
+        }
+        var info=id+' : '+(c.client||(isHP?(c.hp_desc||'Hors prod.'):'—'));
+        if(c.company) info+=' ('+c.company+')';
+        if(c.arc) info+=' ARC:'+c.arc;
+        if(c.afs&&c.afs.length) info+=' AFS:'+c.afs.join(',');
+        if(isHP) info+=' [HORS PROD]';
+        else if(c.ts){
+          info+=' ['+getDelayLabel(c.ts)+' / '+getDaysRemaining(c.ts)+'j restants]';
+          if(getDelayClass(c.ts)==='sr') info+=' URGENT';
+        }
+        lines.push('  - '+info);
+      });
+    }
+  });
+  lines.push('');
+  lines.push('Resume: '+totalColis+' colis actifs, '+totalUrgent+' urgents (+28j), '+totalHP+' hors prod., '+totalProche90+' proches des 90j');
+  lines.push('');
+  lines.push('=== GUIDE ===');
+  lines.push('4 etages D(haut/gerbeur), C(gerbeur), B(main), A(bas/sol). 6 colonnes. 24 emplacements.');
+  lines.push('Couleurs: vert 0-15j, bleu 15-21j, jaune 21-28j, rouge +28j. Hors prod=violet. 90 jours max.');
+  return lines.join(' | ');
 }
 
-function chatNow(){return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+function chatNow(){ return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
 
 function appendMsg(role,text,isTyping){
-  const msgs=document.getElementById('chat-messages');
-  const div=document.createElement('div');div.className='chat-msg '+role;
-  const bubble=document.createElement('div');bubble.className='chat-bubble'+(isTyping?' typing':'');bubble.textContent=text;
-  const time=document.createElement('div');time.className='chat-time';time.textContent=chatNow();
-  div.appendChild(bubble);div.appendChild(time);msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+  var msgs=document.getElementById('chat-messages');
+  var div=document.createElement('div'); div.className='chat-msg '+role;
+  var bubble=document.createElement('div'); bubble.className='chat-bubble'+(isTyping?' typing':''); bubble.textContent=text;
+  var time=document.createElement('div'); time.className='chat-time'; time.textContent=chatNow();
+  div.appendChild(bubble); div.appendChild(time); msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
   return bubble;
 }
 
@@ -1445,50 +1474,52 @@ function sendSugg(btn){
 }
 
 function sendChat(){
-  if(chatBusy)return;
-  const inp=document.getElementById('chat-inp'),q=inp.value.trim();if(!q)return;
-  inp.value='';document.getElementById('chat-suggestions').style.display='none';
-  appendMsg('user',q);chatHistory.push({role:'user',content:q});
-  chatBusy=true;document.getElementById('chat-send-btn').disabled=true;
-  const typingBubble=appendMsg('bot','…en train de réfléchir…',true);
-  const systemPrompt="Tu es un assistant pour opérateurs d'entrepôt AUEM, spécialisé sur le RACK ATTENTE DÉLAIS. Tu réponds en français, de façon concise. Tu connais en temps réel l'état exact du rack. Réponds en moins de 5 phrases sauf si demande de détails.\n\n"+getRackContext();
-  const messages=[{role:'system',content:systemPrompt},...chatHistory.slice(-8)];
+  if(chatBusy) return;
+  var inp=document.getElementById('chat-inp'), q=inp.value.trim(); if(!q) return;
+  inp.value=''; document.getElementById('chat-suggestions').style.display='none';
+  appendMsg('user',q); chatHistory.push({role:'user',content:q});
+  chatBusy=true; document.getElementById('chat-send-btn').disabled=true;
+  var typingBubble=appendMsg('bot','...en train de reflechir...',true);
+  var systemPrompt='Tu es un assistant pour operateurs AUEM sur le RACK ATTENTE DELAIS. Reponds en francais, de facon concise. Contexte rack: '+getRackContext();
+  var messages=[{role:'system',content:systemPrompt}].concat(chatHistory.slice(-8));
   fetch('https://api.groq.com/openai/v1/chat/completions',{
     method:'POST',
     headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
-    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages,temperature:0.7,max_tokens:500})
+    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:messages,temperature:0.7,max_tokens:500})
   })
-  .then(r=>r.json())
-  .then(data=>{
-    let reply='Désolé, pas de réponse.';
-    if(data.choices&&data.choices[0]&&data.choices[0].message)reply=data.choices[0].message.content;
-    else if(data.error)reply='❌ '+(data.error.message||'Erreur API');
-    typingBubble.classList.remove('typing');typingBubble.textContent=reply;
+  .then(function(r){return r.json();})
+  .then(function(data){
+    var reply='Desole, pas de reponse.';
+    if(data.choices&&data.choices[0]&&data.choices[0].message) reply=data.choices[0].message.content;
+    else if(data.error) reply='Erreur: '+(data.error.message||'API');
+    typingBubble.classList.remove('typing'); typingBubble.textContent=reply;
     chatHistory.push({role:'assistant',content:reply});
     document.getElementById('chat-messages').scrollTop=99999;
   })
-  .catch(err=>{typingBubble.classList.remove('typing');typingBubble.textContent='❌ Erreur: '+err.message;})
-  .finally(()=>{chatBusy=false;document.getElementById('chat-send-btn').disabled=false;});
+  .catch(function(err){
+    typingBubble.classList.remove('typing'); typingBubble.textContent='Erreur reseau: '+err.message;
+  })
+  .finally(function(){ chatBusy=false; document.getElementById('chat-send-btn').disabled=false; });
 }
 
 function toggleAssistant(){
-  const p=document.getElementById('ai-panel');
+  var p=document.getElementById('ai-panel');
   p.classList.toggle('open');
-  if(p.classList.contains('open'))renderHist();
+  if(p.classList.contains('open')) renderHist();
 }
 
 function switchAITab(tab){
-  document.querySelectorAll('.ai-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.ai-tab-content').forEach(t=>t.classList.remove('active'));
-  const idx=tab==='chat'?0:1;
+  document.querySelectorAll('.ai-tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.ai-tab-content').forEach(function(t){t.classList.remove('active');});
+  var idx=tab==='chat'?0:1;
   document.querySelectorAll('.ai-tab')[idx].classList.add('active');
   document.getElementById('ai-tab-'+tab).classList.add('active');
-  if(tab==='hist')renderHist();
+  if(tab==='hist') renderHist();
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  const el=document.getElementById('chat-init-time');
-  if(el)el.textContent=chatNow();
+document.addEventListener('DOMContentLoaded',function(){
+  var el=document.getElementById('chat-init-time');
+  if(el) el.textContent=chatNow();
 });
 
 
