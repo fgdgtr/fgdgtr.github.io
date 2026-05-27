@@ -273,6 +273,45 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 @keyframes urgentPulse{0%,100%{box-shadow:0 0 6px rgba(239,68,68,.5);}50%{box-shadow:0 0 14px rgba(239,68,68,.9);}}
 /* HEURE AJOUT */
 .colis-time{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:4px;display:flex;align-items:center;gap:4px;}
+
+/* ── CHATBOT IA ── */
+#ai-panel{position:fixed;top:58px;right:10px;width:310px;height:calc(100vh - 130px);background:#0d0d0d;border:1px solid var(--border2);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.6);z-index:150;overflow:hidden;display:none;flex-direction:column;animation:aiIn .2s cubic-bezier(.34,1.4,.64,1);}
+#ai-panel.open{display:flex;}
+@keyframes aiIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:none}}
+.ai-hdr{padding:11px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ai-hdr-top{display:flex;align-items:center;gap:8px;margin-bottom:1px;}
+.ai-hdr-title{font-size:12px;font-weight:800;color:#f59e0b;letter-spacing:.5px;flex:1;}
+.ai-hdr-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:0;line-height:1;}
+.ai-hdr-close:active{color:var(--text);}
+.ai-hdr-sub{font-size:9px;color:var(--text3);letter-spacing:.3px;}
+.ai-tabs{display:flex;gap:4px;padding:8px 10px 0;flex-shrink:0;}
+.ai-tab{flex:1;padding:6px 4px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:8px 8px 0 0;color:var(--text3);font-size:10px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.3px;}
+.ai-tab.active{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#f59e0b;}
+.ai-tab-content{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.ai-tab-content.active{display:flex;}
+.chat-messages{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;scrollbar-width:thin;}
+.chat-messages::-webkit-scrollbar{width:2px;}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--border2);}
+.chat-msg{max-width:88%;display:flex;flex-direction:column;gap:2px;}
+.chat-msg.user{align-self:flex-end;align-items:flex-end;}
+.chat-msg.bot{align-self:flex-start;align-items:flex-start;}
+.chat-bubble{padding:9px 12px;border-radius:14px;font-size:12px;line-height:1.5;font-weight:500;}
+.chat-msg.user .chat-bubble{background:#f59e0b;color:#000;border-bottom-right-radius:4px;}
+.chat-msg.bot .chat-bubble{background:var(--card2);color:var(--text);border-bottom-left-radius:4px;border:1px solid var(--border2);}
+.chat-msg.bot .chat-bubble.typing{color:var(--text3);font-style:italic;}
+.chat-time{font-size:8px;color:var(--text3);font-family:'DM Mono',monospace;padding:0 3px;}
+.chat-suggestions{display:flex;flex-wrap:wrap;gap:5px;padding:6px 10px;flex-shrink:0;}
+.chat-sugg-btn{background:var(--card2);border:1px solid var(--border2);border-radius:20px;color:var(--text3);font-size:10px;font-weight:600;padding:5px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.chat-sugg-btn:active{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.3);color:#f59e0b;}
+.chat-input-row{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);flex-shrink:0;}
+.chat-inp{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:22px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:8px 13px;outline:none;}
+.chat-inp:focus{border-color:rgba(245,158,11,.4);}
+.chat-inp::placeholder{color:var(--text3);}
+.chat-send{width:34px;height:34px;background:#f59e0b;border:none;border-radius:50%;color:#000;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.chat-send:active{opacity:.8;}
+.chat-send:disabled{background:var(--border2);color:var(--text3);cursor:not-allowed;}
+.hist-body-chat{flex:1;overflow-y:auto;padding:10px;scrollbar-width:thin;}
+
 </style>
 <script>
 function show3D() {
@@ -296,6 +335,7 @@ function show3D() {
 </div>
 <div class="header-right">
 <div class="sync-dot loading" id="sync-dot"></div>
+<button class="btn-icon" onclick="toggleAssistant()" title="Assistant IA">🤖</button>
 <button class="btn-icon btn-3d-hdr" onclick="show3D()" title="Vue 3D">3D</button>
 <button class="btn-icon" onclick="showGuide()">❓</button>
 <button class="btn-icon" onclick="showQR()">⬛</button>
@@ -537,6 +577,44 @@ Hors production ?
 </div>
 </div>
 </div>
+</div>
+
+
+<!-- ── ASSISTANT IA ── -->
+<div id="ai-panel">
+  <div class="ai-hdr">
+    <div class="ai-hdr-top">
+      <span style="font-size:15px;">🤖</span>
+      <span class="ai-hdr-title">ASSISTANT RACK</span>
+      <button class="ai-hdr-close" onclick="toggleAssistant()">×</button>
+    </div>
+    <div class="ai-hdr-sub">Pose-moi n'importe quelle question</div>
+  </div>
+  <div class="ai-tabs">
+    <div class="ai-tab active" onclick="switchAITab('chat')">💬 Chat</div>
+    <div class="ai-tab" onclick="switchAITab('hist')">📦 Sorties</div>
+  </div>
+  <div class="ai-tab-content active" id="ai-tab-chat">
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot">
+        <div class="chat-bubble">Bonjour ! Je connais l'état du rack en temps réel. Pose-moi une question !</div>
+        <div class="chat-time" id="chat-init-time"></div>
+      </div>
+    </div>
+    <div class="chat-suggestions" id="chat-suggestions">
+      <button class="chat-sugg-btn" onclick="sendSugg(this)">Quels colis sont urgents ?</button>
+      <button class="chat-sugg-btn" onclick="sendSugg(this)">Colis hors production ?</button>
+      <button class="chat-sugg-btn" onclick="sendSugg(this)">Comment utiliser le rack ?</button>
+      <button class="chat-sugg-btn" onclick="sendSugg(this)">Colis proche des 90 jours ?</button>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-inp" id="chat-inp" placeholder="Tape ta question…" onkeydown="if(event.key==='Enter') sendChat()"/>
+      <button class="chat-send" id="chat-send-btn" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+  <div class="ai-tab-content" id="ai-tab-hist">
+    <div class="hist-body-chat" id="hist-body"></div>
+  </div>
 </div>
 
 <div class="modal-ov" id="modal-del">
@@ -1332,6 +1410,88 @@ document.getElementById('inp-new-afs').addEventListener('keydown', e => { if(e.k
 document.addEventListener('click', e => {
 if(!e.target.closest('.search-wrap') && !e.target.closest('.search-results')) clearSearch();
 });
+
+
+/* ══ CHATBOT GROQ ══ */
+const GROQ_KEY = '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';
+var chatHistory = [], chatBusy = false;
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function getRackContext(){
+  const lines=['=== ÉTAT DU RACK EN TEMPS RÉEL ==='];
+  let totalColis=0,totalUrgent=0,totalHP=0,totalProche90=0;
+  ETAGES.forEach(e=>{for(let i=1;i<=COLS;i++){const id=e+i,actifs=(state[id]?.colis||[]).filter(c=>!c.done);if(!actifs.length)return;actifs.forEach(c=>{totalColis++;const isHP=!!c.hors_prod;if(isHP)totalHP++;if(!isHP&&c.ts){if(getDelayClass(c.ts)==='sr')totalUrgent++;const r=getDaysRemaining(c.ts);if(r<=10)totalProche90++;}let info=id+' : '+(c.client||(isHP?(c.hp_desc||'Hors prod.'):'—'));if(c.company)info+=' ('+c.company+')';if(c.arc)info+=' ARC:'+c.arc;if(c.afs&&c.afs.length)info+=' AFS:'+c.afs.join(',');if(isHP)info+=' [HORS PROD]';else if(c.ts){info+=' ['+getDelayLabel(c.ts)+' / '+getDaysRemaining(c.ts)+'j restants]';if(getDelayClass(c.ts)==='sr')info+=' ⚠️URGENT';}lines.push('  • '+info);});}});
+  lines.push('','Résumé: '+totalColis+' colis actifs, '+totalUrgent+' urgents (+28j), '+totalHP+' hors prod., '+totalProche90+' proches des 90j');
+  lines.push('','=== GUIDE ===','4 étages D(haut/gerbeur), C(gerbeur), B(main), A(bas/sol). 6 colonnes. 24 emplacements.','Couleurs: vert 0-15j, bleu 15-21j, jaune 21-28j, rouge +28j. Hors prod=violet.','90 jours max par colis.');
+  return lines.join('
+');
+}
+
+function chatNow(){return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+
+function appendMsg(role,text,isTyping){
+  const msgs=document.getElementById('chat-messages');
+  const div=document.createElement('div');div.className='chat-msg '+role;
+  const bubble=document.createElement('div');bubble.className='chat-bubble'+(isTyping?' typing':'');bubble.textContent=text;
+  const time=document.createElement('div');time.className='chat-time';time.textContent=chatNow();
+  div.appendChild(bubble);div.appendChild(time);msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+  return bubble;
+}
+
+function sendSugg(btn){
+  document.getElementById('chat-suggestions').style.display='none';
+  document.getElementById('chat-inp').value=btn.textContent;
+  sendChat();
+}
+
+function sendChat(){
+  if(chatBusy)return;
+  const inp=document.getElementById('chat-inp'),q=inp.value.trim();if(!q)return;
+  inp.value='';document.getElementById('chat-suggestions').style.display='none';
+  appendMsg('user',q);chatHistory.push({role:'user',content:q});
+  chatBusy=true;document.getElementById('chat-send-btn').disabled=true;
+  const typingBubble=appendMsg('bot','…en train de réfléchir…',true);
+  const systemPrompt="Tu es un assistant pour opérateurs d'entrepôt AUEM, spécialisé sur le RACK ATTENTE DÉLAIS. Tu réponds en français, de façon concise. Tu connais en temps réel l'état exact du rack. Réponds en moins de 5 phrases sauf si demande de détails.\n\n"+getRackContext();
+  const messages=[{role:'system',content:systemPrompt},...chatHistory.slice(-8)];
+  fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages,temperature:0.7,max_tokens:500})
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    let reply='Désolé, pas de réponse.';
+    if(data.choices&&data.choices[0]&&data.choices[0].message)reply=data.choices[0].message.content;
+    else if(data.error)reply='❌ '+(data.error.message||'Erreur API');
+    typingBubble.classList.remove('typing');typingBubble.textContent=reply;
+    chatHistory.push({role:'assistant',content:reply});
+    document.getElementById('chat-messages').scrollTop=99999;
+  })
+  .catch(err=>{typingBubble.classList.remove('typing');typingBubble.textContent='❌ Erreur: '+err.message;})
+  .finally(()=>{chatBusy=false;document.getElementById('chat-send-btn').disabled=false;});
+}
+
+function toggleAssistant(){
+  const p=document.getElementById('ai-panel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open'))renderHist();
+}
+
+function switchAITab(tab){
+  document.querySelectorAll('.ai-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ai-tab-content').forEach(t=>t.classList.remove('active'));
+  const idx=tab==='chat'?0:1;
+  document.querySelectorAll('.ai-tab')[idx].classList.add('active');
+  document.getElementById('ai-tab-'+tab).classList.add('active');
+  if(tab==='hist')renderHist();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const el=document.getElementById('chat-init-time');
+  if(el)el.textContent=chatNow();
+});
+
 
 loadFromServer();
 </script>
