@@ -345,16 +345,16 @@ function show3D() {
 <div class="view active" id="view-rack">
 <div class="rack-view">
 <div class="stats-row">
-<div class="stat-card sg"><div class="stat-num" id="s-sg">0</div><div class="stat-label">0-15j</div></div>
-<div class="stat-card sb"><div class="stat-num" id="s-sb">0</div><div class="stat-label">15-21j</div></div>
-<div class="stat-card sy"><div class="stat-num" id="s-sy">0</div><div class="stat-label">21-28j</div></div>
-<div class="stat-card sr"><div class="stat-num" id="s-sr">0</div><div class="stat-label">+28j</div></div>
+<div class="stat-card sg"><div class="stat-num" id="s-sg">0</div><div class="stat-label">0-30j</div></div>
+<div class="stat-card sb"><div class="stat-num" id="s-sb">0</div><div class="stat-label">30-60j</div></div>
+<div class="stat-card sy"><div class="stat-num" id="s-sy">0</div><div class="stat-label">60-88j</div></div>
+<div class="stat-card sr"><div class="stat-num" id="s-sr">0</div><div class="stat-label">+88j</div></div>
 </div>
 <div class="legend-row">
-<div class="leg"><div class="leg-dot" style="background:var(--green)"></div>Vert 0-15j</div>
-<div class="leg"><div class="leg-dot" style="background:var(--blue)"></div>Bleu 15-21j</div>
-<div class="leg"><div class="leg-dot" style="background:var(--yellow)"></div>Jaune 21-28j</div>
-<div class="leg"><div class="leg-dot" style="background:var(--red)"></div>Rouge +28j</div>
+<div class="leg"><div class="leg-dot" style="background:var(--green)"></div>Vert 0-30j</div>
+<div class="leg"><div class="leg-dot" style="background:var(--blue)"></div>Bleu 30-60j</div>
+<div class="leg"><div class="leg-dot" style="background:var(--yellow)"></div>Jaune 60-88j</div>
+<div class="leg"><div class="leg-dot" style="background:var(--red)"></div>Rouge +88j</div>
 <div class="leg"><div class="leg-dot" style="background:var(--purple)"></div>Hors prod.</div>
 </div>
 <div class="search-wrap">
@@ -386,10 +386,10 @@ function show3D() {
     </div>
     <div class="hud-bottom">
       <div class="hud-legend-3d">
-        <div class="hud-leg"><div class="hud-dot-3d" style="background:#22c55e;"></div>0-15j</div>
-        <div class="hud-leg"><div class="hud-dot-3d" style="background:#3b82f6;"></div>15-21j</div>
-        <div class="hud-leg"><div class="hud-dot-3d" style="background:#f59e0b;"></div>21-28j</div>
-        <div class="hud-leg"><div class="hud-dot-3d" style="background:#ef4444;"></div>+28j</div>
+        <div class="hud-leg"><div class="hud-dot-3d" style="background:#22c55e;"></div>0-30j</div>
+        <div class="hud-leg"><div class="hud-dot-3d" style="background:#3b82f6;"></div>30-60j</div>
+        <div class="hud-leg"><div class="hud-dot-3d" style="background:#f59e0b;"></div>60-88j</div>
+        <div class="hud-leg"><div class="hud-dot-3d" style="background:#ef4444;"></div>+88j</div>
         <div class="hud-leg"><div class="hud-dot-3d" style="background:#a855f7;"></div>HP</div>
         <div class="hud-leg"><div class="hud-dot-3d" style="background:#333;"></div>Vide</div>
       </div>
@@ -525,7 +525,7 @@ Hors production ?
 <p><strong>🟠 Entreprise, ARC, AFS</strong></p>
 <p style="font-size:12px;margin-bottom:10px;color:var(--text3);">Plusieurs AFS ? Séparez par virgules ou espaces</p>
 <p style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);"><strong>📊 Couleurs automatiques selon l'âge :</strong></p>
-<p style="font-size:12px;color:var(--text3);">🟢 0-15j · 🔵 15-21j · 🟡 21-28j · 🔴 +28j</p>
+<p style="font-size:12px;color:var(--text3);">🟢 0-30j · 🔵 30-60j · 🟡 60-88j · 🔴 +88j</p>
 </div>
 <button class="btn-guide-next" onclick="nextGuide()">Suivant →</button>
 </div>
@@ -568,10 +568,10 @@ Hors production ?
 <div class="qr-name">RACK ATTENTE DELAIS — AUEM</div>
 <div class="qr-info">
 <div class="qr-ttl">Légende délais</div>
-<div class="qr-step"><div class="qr-n">●</div>🟢 Vert — 0 à 15 jours</div>
-<div class="qr-step"><div class="qr-n">●</div>🔵 Bleu — 15 à 21 jours</div>
-<div class="qr-step"><div class="qr-n">●</div>🟡 Jaune — 21 à 28 jours</div>
-<div class="qr-step"><div class="qr-n">●</div>🔴 Rouge — plus de 28 jours</div>
+<div class="qr-step"><div class="qr-n">●</div>🟢 Vert — 0 à 30 jours</div>
+<div class="qr-step"><div class="qr-n">●</div>🔵 Bleu — 30 à 60 jours</div>
+<div class="qr-step"><div class="qr-n">●</div>🟡 Jaune — 60 à 88 jours</div>
+<div class="qr-step"><div class="qr-n">●</div>🔴 Rouge — plus de 88 jours</div>
 <div class="qr-step"><div class="qr-n">●</div>🟣 Violet — Hors production (sans délai)</div>
 <div class="qr-step" style="margin-top:8px;"><strong>⏱ Chaque colis compte 90 jours max</strong></div>
 </div>
