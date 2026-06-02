@@ -789,9 +789,9 @@ let addHPActive = false, editHPActive = false;
 function getDelayClass(ts) {
 if(!ts) return null;
 const j = Math.floor((Date.now() - ts) / 86400000);
-if(j >= 28) return 'sr';
-if(j >= 21) return 'sy';
-if(j >= 15) return 'sb';
+if(j >= 88) return 'sr';
+if(j >= 60) return 'sy';
+if(j >= 30) return 'sb';
 return 'sg';
 }
 
